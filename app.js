@@ -26,7 +26,7 @@ function makeRecords() {
     const lag=type==='mid'&&index%4===0?0:2+index%6,payDate=dayOffset(date,-lag),payHour=lag===0?Math.max(0,hour-1):9+(index%10);
     const reason=type==='mid'?['不喜欢或不想要','暂时不想要了','发货等待时间长'][j%3]:type==='only'?['货品质量问题','商品瑕疵协商退款'][j%2]:['尺码不合适','不喜欢或不想要','穿着效果不符','尺码不合适','货品质量问题'][j%5];
     const subOrderId='DE202610'+String(serial).padStart(10,'0');
-    out.push({subOrderId,refundId:'RF202610'+String(serial).padStart(10,'0'),afterSale:'RE202610'+String(serial++).padStart(9,'0'),status:'success',product:item.id,sku:['灰色 / M','灰色 / L','黑色 / L'][j%3],type,stage:type==='mid'?'商家发货前':(index%4===0?'查验及配送中':'买家收货后'),reason,amount:Math.round(item.cents/item.count),payDate,payTime:payDate+' '+String(payHour).padStart(2,'0')+':'+String(minute).padStart(2,'0')+':00',refundDate:date,refundHour:hour,refundTime:date+' '+String(hour).padStart(2,'0')+':'+String(minute).padStart(2,'0')+':00'});
+    out.push({subOrderId,refundId:'RF202610'+String(serial).padStart(10,'0'),afterSale:'RE202610'+String(serial++).padStart(9,'0'),status:'success',product:item.id,sku:['灰色 / M','灰色 / L','黑色 / L'][j%3],type,reason,amount:Math.round(item.cents/item.count),payDate,payTime:payDate+' '+String(payHour).padStart(2,'0')+':'+String(minute).padStart(2,'0')+':00',refundDate:date,refundHour:hour,refundTime:date+' '+String(hour).padStart(2,'0')+':'+String(minute).padStart(2,'0')+':00'});
    }
   }
  }
@@ -60,8 +60,8 @@ function render(){
  $('#metrics').innerHTML=['all',...REFUND_TYPES].map((type,i)=>(i?`<span class="metric-operator" aria-hidden="true">${i===1?'＝':'＋'}</span>`:'')+metricCard(typeRows(rows,type),type,allAmount)).join('');
  $('#legendCurrent').textContent=`${typeName(state.type)} · ${metricName()}`;
  $('#chartCaption').textContent=state.basis==='pay'?'按支付时间归属；退款结果截至 2026-10-28 14:30，后续持续回补':range()[0]===DAY&&range()[1]===DAY?'按退款成功时间展示，未到时段不补零':'按退款成功日期展示，包含所选时间内实际发生的成功退款';
- $('#stageUnit').textContent=$('#reasonUnit').textContent='按退款金额';
- renderTrend(typeRows(rows,state.type));renderBreakdowns(rows);renderProducts(rows);
+ $('#reasonUnit').textContent='按退款金额';
+ renderTrend(typeRows(rows,state.type));renderReasons(rows);renderProducts(rows);
  $$('[data-card]').forEach(b=>b.onclick=()=>selectTrend(b.dataset.card));
  $$('[data-card-orders]').forEach(b=>b.onclick=()=>{const type=b.dataset.cardOrders;openOrders(typeRows(rows,type),typeName(type)+' · 退款订单',type)});
 }
@@ -78,12 +78,10 @@ function renderTrend(rows){
  if(isToday)svg+=`<circle cx="${x(14)}" cy="${y(cur[14])}" r="3.5" fill="#70b9ba" stroke="white" stroke-width="2"/><line x1="${x(14)}" x2="${x(14)}" y1="${T}" y2="${H-B}" stroke="#c5dddd" stroke-dasharray="3 4"/><text x="${x(14)+8}" y="17" font-size="11" fill="#79a9aa">更新至 14:30</text>`;
  $('#trend').innerHTML=svg+'</svg>';
 }
-function renderBreakdowns(rows){
+function renderReasons(rows){
  const totalValue=total(rows),value=g=>g.amount,display=g=>money(g.amount);
- const stageGroups=byGroup(rows,r=>r.stage);$('#stages').innerHTML=['商家发货前','查验及配送中','买家收货后'].map((s,i)=>{const g=stageGroups.find(g=>g.key===s)||{amount:0,count:0};return `<button class="stage-row" data-stage="${s}"><span>${s}</span><span class="bar-track"><span class="bar-fill ${i===1?'secondary':i===2?'third':''}" style="width:${totalValue?value(g)/totalValue*100:0}%;display:block"></span></span><span class="num">${display(g)}</span><span class="percent">${totalValue?(value(g)/totalValue*100).toFixed(2)+'%':'—'}</span></button>`}).join('');
  const reasons=byGroup(rows,r=>r.reason).sort((a,b)=>value(b)-value(a));const top=reasons.slice(0,5);if(reasons.length>5){const items=[...top[4].items,...reasons.slice(5).flatMap(g=>g.items)];top[4]={key:'其他原因',items,amount:total(items),count:count(items),other:true}}
  $('#reasons').innerHTML=top.map((g,i)=>`<button class="reason-row" data-reason="${g.key}"><span class="rank">${i+1}</span><span>${g.key}</span><span class="bar-track"><span class="bar-fill" style="width:${totalValue?value(g)/totalValue*100:0}%;display:block"></span></span><span class="num">${display(g)}</span><span class="percent">${totalValue?(value(g)/totalValue*100).toFixed(2)+'%':'—'}</span></button>`).join('')||'<div class="subnote">暂无数据</div>';
- $$('[data-stage]').forEach(b=>b.onclick=()=>openOrders(rows.filter(r=>r.stage===b.dataset.stage),b.dataset.stage+' · 退款订单'));
  $$('[data-reason]').forEach(b=>b.onclick=()=>openOrders(b.dataset.reason==='其他原因'?top[4].items:rows.filter(r=>r.reason===b.dataset.reason),b.dataset.reason+' · 退款订单'));
 }
 function pants(color){return `<svg viewBox="0 0 40 60" aria-hidden="true"><path d="M9 3L31 3 34 56 23 57 20 25 16 57 5 56Z" fill="${color}"/><path d="M9 5H31M20 5V25M12 9L10 16M28 9L30 16" fill="none" stroke="white" stroke-opacity=".23" stroke-width="1"/><path d="M10 20L9 53M29 20L30 53" stroke="black" stroke-opacity=".09" fill="none"/></svg>`}
