@@ -39,7 +39,7 @@ const money=c=> (c/100).toLocaleString('en-US',{minimumFractionDigits:2,maximumF
 const uniqueRecords=rows=>[...new Map(rows.filter(r=>r.status==='success').map(r=>[r.refundId,r])).values()];
 const total=rows=>uniqueRecords(rows).reduce((sum,r)=>sum+r.amount,0);
 const count=rows=>new Set(uniqueRecords(rows).map(r=>r.subOrderId)).size;
-const typeName=t=>({all:'全部退款',mid:'售中退款',return:'售后退货退款',only:'售后仅退款'}[t]);
+const typeName=t=>({all:'全部退款',mid:'发货前退款',return:'发货后退货退款',only:'发货后仅退款'}[t]);
 const metricName=()=>state.metric==='amount'?'退款金额':'退款订单数';
 const typeRows=(rows,type)=>type==='all'?rows:rows.filter(r=>r.type===type);
 const amountShare=(amount,allAmount)=>allAmount?(amount/allAmount*100).toFixed(2)+'%':'—';
