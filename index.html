@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>得物商家后台 · 退款分析</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="wash" aria-hidden="true"></div>
+  <header class="brand"><span class="logo">得物</span><strong>商家后台</strong></header>
+  <nav class="rail" aria-label="主导航">
+    <div>⌂ <span>首页</span></div><div>♧ <span>经营</span></div><div>▱ <span>商品</span></div><div>▣ <span>交易</span></div><div>♧ <span>售后</span></div><div>♧ <span>营销</span></div><div>⚑ <span>活动</span></div><div class="selected">▧ <span>数据</span></div><div>⊕ <span>财务</span></div><div>⊞ <span>其他</span></div><div class="rail-line"></div><div>♧ <span>常用</span></div>
+  </nav>
+  <aside class="sidebar" aria-label="数据中心导航">
+    <div class="nav-group">商品分析 <span>⌄</span></div>
+    <div class="nav-item">商品分析</div><div class="nav-item">商品概览</div><div class="nav-item">价格分析</div><div class="nav-item">库存分析</div>
+    <div class="nav-group spaced">经营概览</div>
+    <div class="nav-group trade">交易分析 <span>⌄</span></div>
+    <button class="nav-child" id="salesNav">成交分析</button>
+    <button class="nav-child active" aria-current="page">退款分析</button>
+    <div class="nav-group spaced">营销分析 <span>⌄</span></div><div class="nav-item">内容数据</div><div class="nav-item">活动数据</div>
+    <div class="nav-group spaced">体验履约</div><div class="nav-group spaced">人群分析 <span>⌄</span></div><div class="nav-item">人群画像</div><div class="nav-group spaced">市场数据</div>
+  </aside>
+  <header class="topbar"><span>♧ 服务市场</span><span>♧ 消息</span><span>♙ APP下载</span><span>▢ 课堂</span><span>♧ 规则</span><span>▣ 功能</span><span>⚑ 举报</span><span class="avatar">商</span></header>
+  <main>
+    <div class="page-title"><div><div class="breadcrumb">数据中心 <b>/</b> 交易分析 <b>/</b> 退款分析</div><h1>退款分析</h1></div><div class="page-meta"><span>仅统计本商家订单</span><span class="sample">示例数据</span></div></div>
+    <section class="panel filters" aria-label="筛选条件">
+      <div class="filter-row"><label for="basis">统计口径</label><select id="basis"><option value="refund">按退款时间</option><option value="pay">按支付时间</option></select><span class="sep"></span><label>统计时间</label><div class="seg period" id="period"><button data-period="today" class="on">今日实时</button><button data-period="seven">近7天</button><button data-period="thirty">近30天</button><button data-period="custom">自定义 <span class="calendar">▦</span></button></div><span class="date" id="dateRange"></span></div>
+      <div class="filter-row second"><label for="brandSelect">品牌</label><select id="brandSelect"><option>全部品牌</option><option>FAESSLIN</option></select><label for="categorySelect">类目</label><select id="categorySelect"><option>全部类目</option><option>休闲裤</option><option>牛仔裤</option></select><label for="channelSelect">出价渠道</label><select id="channelSelect"><option>全部出价渠道</option><option>品牌直发</option><option>入仓</option><option>现货</option><option>求购</option><option>预售</option><option>极速现货</option></select><input id="search" aria-label="商品搜索" placeholder="请输入商品名称、货号或SPU ID"><button class="btn primary" id="query">查询</button><button class="btn" id="reset">重置</button></div>
+      <div class="scope-note" id="scopeNote"></div>
+    </section>
+
+    <section class="panel overview">
+      <div class="section-head"><div class="head-left"><h2>退款概览</h2><span class="status"><i></i> 退款成功</span></div><div class="head-right"><span id="updated">更新至 2026-10-28 14:30:00</span><button class="text-btn" id="showOrders">查看退款订单 <span>→</span></button></div></div>
+      <div class="type-line"><span>退款方式</span><div class="seg" id="type"><button class="on" data-type="all">全部</button><button data-type="only">仅退款</button><button data-type="return">退货退款</button></div></div>
+      <div class="metric-grid" id="metrics"></div>
+      <div class="chart-head"><h3>退款趋势</h3><div class="chart-controls"><span class="legend"><i></i> <span id="legendCurrent">今日</span></span><span class="legend compare" id="compareLegend"><i></i> 昨日同时段</span><div class="seg small" id="metric"><button class="on" data-metric="amount">退款金额</button><button data-metric="count">退款订单数</button></div></div></div>
+      <div class="trend" id="trend"></div><div class="chart-caption" id="chartCaption"></div>
+    </section>
+
+    <div class="two-columns">
+      <section class="panel analysis-panel"><div class="section-head"><h2>退款申请时订单阶段 <span class="info" title="按发起退款申请时的订单履约状态划分。">?</span></h2><span class="unit" id="stageUnit">按退款金额</span></div><div class="stage-rows" id="stages"></div><div class="subnote">按退款申请时的履约状态划分，点击阶段查看对应订单</div></section>
+      <section class="panel analysis-panel"><div class="section-head"><h2>退款原因 <span class="info" title="以售后记录的退款原因为准，可查看对应订单。">?</span></h2><span class="unit" id="reasonUnit">按退款金额</span></div><div class="reason-table" id="reasons"></div></section>
+    </div>
+
+    <section class="panel products"><div class="section-head"><div class="head-left"><h2>退款商品分析</h2><span class="subtle">支持展开规格，定位具体退款商品</span></div><button class="text-btn" id="exportProducts">⇩ 导出数据</button></div><div class="table-scroll"><table><thead><tr><th class="product-col">商品信息</th><th><button id="sortAmount" class="sort active">退款金额（元） ↓</button></th><th><button id="sortCount" class="sort">退款订单数 ↕</button></th><th>金额占比</th><th>主要退款原因</th><th>操作</th></tr></thead><tbody id="productRows"></tbody></table></div><div class="table-footer"><span id="totalProducts"></span><span class="pagination"><button disabled>‹</button><button class="current">1</button><button disabled>›</button><span>10 条/页⌄</span></span></div></section>
+    <div class="bottom-note">退款金额按成功退款记录累计，部分退款仅计实际退款金额；退款订单数按销售订单去重。<button class="text-btn" id="definitions">查看指标说明</button></div>
+    <footer>示例数据仅用于页面方案展示</footer>
+  </main>
+  <div class="service"><div>◉<small>客服</small></div><div>▤<small>反馈</small></div></div>
+  <div id="overlay" class="overlay" hidden><section class="drawer"><div class="drawer-head"><div><div class="breadcrumb">退款分析 / 退款订单</div><h2 id="drawerTitle">退款订单明细</h2></div><button id="closeDrawer" class="close" aria-label="关闭明细">×</button></div><div class="drawer-scope" id="drawerScope"></div><div class="drawer-summary" id="drawerSummary"></div><div class="drawer-actions"><span>以下订单继承当前页面筛选条件</span><button class="btn" id="exportOrders">⇩ 导出订单</button></div><div id="orderTable"></div></section></div>
+  <dialog id="help"><div class="dialog-head"><h2>指标说明</h2><button class="close" id="closeHelp">×</button></div><div class="definition-text"><b>按退款时间</b><p>以退款成功时间归属日期。所选日期内退款成功的订单均计入，包含此前支付的订单。</p><b>按支付时间</b><p>以支付时间归属日期。统计所选日期支付的订单，截至当前累计产生的成功退款；后续退款将持续回补至支付日。</p><b>退款订单数</b><p>所选口径和时间内发生成功退款的销售订单去重计数。类型分组分别去重，一单涉及两种方式时，分组订单数可能重叠。</p><b>退款金额</b><p>按实际成功退款金额累计，多次退款按记录累加，部分退款只计实际退款部分。图中金额为示例商品退款金额，不含运费。</p><b>退款原因与订单阶段</b><p>原因按售后退款记录归类；订单阶段按发起该次退款申请时的履约状态归类。当前原因图按退款金额展示。</p></div></dialog>
+  <div class="toast" id="toast" role="status"></div>
+  <script src="app.js"></script>
+</body>
+</html>
