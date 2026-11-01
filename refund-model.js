@@ -4,7 +4,8 @@
   else root.RefundModel = api;
 })(typeof globalThis !== 'undefined' ? globalThis : this, function () {
   'use strict';
-  const DAY = '2026-10-28', CUTOFF = '2026-10-28 14:30:00';
+  const DAY = '2026-11-02', CUTOFF = '2026-11-02 14:30:00';
+  const REFUND_WINDOW_MS = 30 * 24 * 60 * 60 * 1000;
   const SELECTABLE_START = '2026-01-01', DATA_START = '2025-01-01';
   const REFUND_TYPES = ['mid', 'return', 'only'];
   const SKUS = ['灰色 / M', '灰色 / L', '黑色 / L'];
@@ -25,27 +26,43 @@
     const start=dayOffset(week,-((new Date(week+'T00:00:00Z').getUTCDay()+6)%7));return {start,end:dayOffset(start,6)};
   }
   function isoWeek(date) { const d=new Date(date+'T00:00:00Z');d.setUTCDate(d.getUTCDate()+3-((d.getUTCDay()+6)%7));const year=d.getUTCFullYear(),first=new Date(Date.UTC(year,0,4));const n=1+Math.round(((d-first)/86400000-3+((first.getUTCDay()+6)%7))/7);return `${year}-W${String(n).padStart(2,'0')}`; }
-  function defaults(referenceDay=DAY) { return {selectedDay:dayOffset(referenceDay,-1),selectedWeek:isoWeek(dayOffset(weekBounds(referenceDay).start,-1)),selectedMonth:dayOffset(referenceDay.slice(0,7)+'-01',-1).slice(0,7)}; }
+  function defaults(referenceDay=DAY) {
+    const yesterday=dayOffset(referenceDay,-1),week=weekBounds(referenceDay),month=referenceDay.slice(0,7);
+    return {
+      selectedDay:yesterday,
+      selectedWeek:isoWeek(week.start<=yesterday?referenceDay:dayOffset(week.start,-1)),
+      selectedMonth:month+'-01'<=yesterday?month:dayOffset(month+'-01',-1).slice(0,7)
+    };
+  }
   function getPeriod(state, referenceDay=state.referenceDay||DAY) {
-    const yesterday=dayOffset(referenceDay,-1),d={...defaults(referenceDay),...state};d.period=({calendar_day:'day',calendar_week:'week',calendar_month:'month'})[d.period]||d.period;let current;
+    const yesterday=dayOffset(referenceDay,-1),d={...defaults(referenceDay),...state};d.period=({calendar_day:'day',calendar_week:'week',calendar_month:'month'})[d.period]||d.period;let current,natural=null;
     if(d.period==='today')current={start:referenceDay,end:referenceDay};
+    else if(d.period==='one')current={start:yesterday,end:yesterday};
     else if(d.period==='seven'||d.period==='thirty')current={start:dayOffset(referenceDay,d.period==='seven'?-7:-30),end:yesterday};
     else if(d.period==='day')current={start:d.selectedDay,end:d.selectedDay};
-    else if(d.period==='week')current=weekBounds(d.selectedWeek);
-    else if(d.period==='month')current=monthBounds(d.selectedMonth);
+    else if(d.period==='week'){natural=weekBounds(d.selectedWeek);current={start:natural.start,end:natural.end<yesterday?natural.end:yesterday};}
+    else if(d.period==='month'){natural=monthBounds(d.selectedMonth);current={start:natural.start,end:natural.end<yesterday?natural.end:yesterday};}
     else current={start:d.customStart,end:d.customEnd};
+    const partial=!!natural&&current.end<natural.end;
     let previous;
-    if(d.period==='month')previous=monthBounds(dayOffset(current.start,-1).slice(0,7));
+    if(d.period==='month'){
+      previous=monthBounds(dayOffset(current.start,-1).slice(0,7));
+      if(partial){const progressEnd=dayOffset(previous.start,dayCount(current.start,current.end)-1);previous.end=progressEnd<previous.end?progressEnd:previous.end;}
+    }
+    else if(d.period==='week'){
+      const start=dayOffset(current.start,-7);
+      previous={start,end:dayOffset(start,dayCount(current.start,current.end)-1)};
+    }
     else { const n=dayCount(current.start,current.end);previous={start:dayOffset(current.start,-n),end:dayOffset(current.start,-1)}; }
-    return {current,previous,realtime:d.period==='today',comparison:d.period==='today'?'yesterday_full_day':'previous_period',period:state.period};
+    return {current,previous,realtime:d.period==='today',partial,comparison:d.period==='today'?'yesterday_full_day':partial?'same_progress':'previous_period',period:state.period};
   }
   function validateSelection(state, referenceDay=state.referenceDay||DAY) {
     let p;try { p=getPeriod(state,referenceDay); } catch(e) { return '请选择有效日期'; }
     const {start,end}=p.current;
     if(!/^\d{4}-\d{2}-\d{2}$/.test(start||'')||!/^\d{4}-\d{2}-\d{2}$/.test(end||''))return '请选择完整日期';
-    if(start>end)return '开始日期不能晚于结束日期';
+    if(start>end)return ['week','month','calendar_week','calendar_month'].includes(state.period)?'所选周期暂无已结束日期，请选择更早的周期':'开始日期不能晚于结束日期';
     if(state.period!=='today'&&end>=referenceDay)return '请选择已经结束的周期，最晚截至昨天';
-    if(state.period!=='today'&&start<SELECTABLE_START)return '示例支持选择 2026-01-01 起的完整周期';
+    if(state.period!=='today'&&start<SELECTABLE_START)return '示例支持选择 2026-01-01 起的日期';
     return '';
   }
   function createData() {
@@ -76,7 +93,12 @@
     }
     return {catalog,payments,refunds,coverage:{start:DATA_START,end:DAY},cutoff:CUTOFF};
   }
-  function uniqueRecords(rows, cutoff=CUTOFF) { return [...new Map(rows.filter(r=>r.status==='success'&&(!r.refundTime||r.refundTime<=cutoff)).map(r=>[r.refundId,r])).values()]; }
+  function timestamp(value) {
+    if(!value)return NaN;
+    const iso=value.replace(' ','T');
+    return Date.parse(/(?:Z|[+-]\d{2}:\d{2})$/.test(iso)?iso:iso+'+08:00');
+  }
+  function uniqueRecords(rows, cutoff=CUTOFF) { const end=timestamp(cutoff);return [...new Map(rows.filter(r=>r.status==='success'&&(!r.refundTime||timestamp(r.refundTime)<=end)).map(r=>[r.refundId,r])).values()]; }
   function total(rows,cutoff=CUTOFF) { return uniqueRecords(rows,cutoff).reduce((s,r)=>s+r.amount,0); }
   function count(rows,cutoff=CUTOFF) { return new Set(uniqueRecords(rows,cutoff).map(r=>r.subOrderId)).size; }
   function typeRows(rows,type) { return type==='all'?rows:rows.filter(r=>r.type===type); }
@@ -86,13 +108,23 @@
   }
   function query(data,state,range=getPeriod(state).current) {
     const cutoff=state.cutoff||data.cutoff||CUTOFF,items=data.catalog||catalog;
-    const payments=[...new Map(data.payments.filter(p=>(!p.payTime||p.payTime<=cutoff)&&p.payDate>=range.start&&p.payDate<=range.end&&matches(p,state,items)).map(p=>[p.subOrderId,p])).values()];
-    const validPaid=state.basis==='pay'?new Set(payments.map(p=>p.subOrderId)):null;
-    const refunds=uniqueRecords(data.refunds,cutoff).filter(r=>{const date=state.basis==='pay'?r.payDate:r.refundDate;return date>=range.start&&date<=range.end&&matches(r,state,items)&&(!validPaid||validPaid.has(r.subOrderId));});
+    const cutoffMs=timestamp(cutoff);
+    const payments=[...new Map(data.payments.filter(p=>(!p.payTime||timestamp(p.payTime)<=cutoffMs)&&p.payDate>=range.start&&p.payDate<=range.end&&matches(p,state,items)).map(p=>[p.subOrderId,p])).values()];
+    const validPaid=state.basis==='pay'?new Map(payments.map(p=>[p.subOrderId,p])):null;
+    const refunds=uniqueRecords(data.refunds,cutoff).filter(r=>{
+      if(!matches(r,state,items))return false;
+      if(!validPaid)return r.refundDate>=range.start&&r.refundDate<=range.end;
+      const paid=validPaid.get(r.subOrderId);if(!paid)return false;
+      const refundMs=timestamp(r.refundTime||r.refundDate+' 00:00:00'),payMs=timestamp(paid.payTime||paid.payDate+' 00:00:00');
+      return refundMs>=payMs&&refundMs<=payMs+REFUND_WINDOW_MS&&refundMs<=cutoffMs;
+    });
     const complete=!data.coverage||(range.start>=data.coverage.start&&range.end<=data.coverage.end);
     return {refunds,payments,complete,cutoff,range};
   }
-  function summarize(result,type='all') { const rows=typeRows(result.refunds,type),amount=total(rows,result.cutoff),orders=count(rows,result.cutoff),paid=new Set(result.payments.map(r=>r.subOrderId)).size;return {amount,count:orders,paid,rate:result.complete&&paid?orders/paid:null,complete:result.complete}; }
+  function summarize(result,type='all') {
+    const rows=typeRows(result.refunds,type),amount=total(rows,result.cutoff),orders=count(rows,result.cutoff),payments=[...new Map(result.payments.map(r=>[r.subOrderId,r])).values()],paid=payments.length,paidAmount=payments.reduce((sum,p)=>sum+p.amount,0);
+    return {amount,count:orders,paid,paidAmount,rate:result.complete&&paid?orders/paid:null,amountRate:result.complete&&paidAmount?amount/paidAmount:null,complete:result.complete};
+  }
   function change(current,previous,complete=true) { if(!complete||current===null||previous===null||!Number.isFinite(current)||!Number.isFinite(previous))return {value:null,reason:'对比期数据缺失，无法计算'};if(previous===0)return {value:null,reason:'上周期为0，无法计算变化率'};return {value:(current-previous)/previous,reason:''}; }
   function buildTrend(data,state,queries) {
     const period=getPeriod(state),a=queries?.current||query(data,state,period.current),b=queries?.previous||query(data,state,period.previous),curDates=dateList(period.current.start,period.current.end),prevDates=dateList(period.previous.start,period.previous.end);
@@ -101,11 +133,13 @@
     function point(result,date,index,realtime) {
       if(!date)return {value:null,reason:'无对应日期'};
       if(!result.complete)return {value:null,reason:'数据缺失'};
-      if(realtime&&date===DAY&&index>cutoffHour)return {value:null,reason:'尚未到达该时段'};
+      if(realtime&&date===(state.referenceDay||DAY)&&index>cutoffHour)return {value:null,reason:'尚未到达该时段'};
       const rows=result.refunds.filter(r=>(state.basis==='pay'?r.payDate:r.refundDate)===date&&(!realtime||Number((state.basis==='pay'?r.payTime:r.refundTime).slice(11,13))===index));
       const payments=result.payments.filter(r=>r.payDate===date&&(!realtime||Number(r.payTime.slice(11,13))===index));
       const summary=summarize({...result,refunds:rows,payments},state.type||'all');
-      return {value:state.metric==='amount'?summary.amount/100:state.metric==='rate'?summary.rate:summary.count,reason:state.metric==='rate'&&summary.rate===null?'该时段无支付订单':''};
+      const rateMetric=state.metric==='rate'||state.metric==='orderRate'||state.metric==='amountRate';
+      const value=state.metric==='amount'?summary.amount/100:state.metric==='amountRate'?summary.amountRate:rateMetric?summary.rate:summary.count;
+      return {value,reason:rateMetric&&value===null?(state.metric==='amountRate'?'该时段无成交金额':'该时段无支付订单'):''};
     }
     for(let i=0;i<n;i++) {
       const cd=period.realtime?period.current.start:curDates[i]||null,pd=period.realtime?period.previous.start:prevDates[i]||null;
@@ -113,7 +147,7 @@
       currentDates.push(cd?(cd+(period.realtime?' '+String(i).padStart(2,'0')+':00':'')):null);previousDates.push(pd?(pd+(period.realtime?' '+String(i).padStart(2,'0')+':00':'')):null);
       const c=point(a,cd,i,period.realtime),p=point(b,pd,i,period.realtime);current.push(c.value);previous.push(p.value);currentReasons.push(c.reason);previousReasons.push(p.reason);
     }
-    return {...period,labels,current,previous,currentDates,previousDates,currentReasons,previousReasons,currentLabel:period.realtime?'今日截至当前':'本期',previousLabel:period.realtime?'昨日全天':'上周期'};
+    return {...period,labels,current,previous,currentDates,previousDates,currentReasons,previousReasons,currentLabel:period.realtime?'今日截至当前':'本期',previousLabel:period.realtime?'昨日全天':period.partial?'上期同进度':'上周期'};
   }
   return {DAY,CUTOFF,SELECTABLE_START,DATA_START,REFUND_TYPES,SKUS,catalog,dayOffset,dayCount,dateList,monthBounds,weekBounds,isoWeek,defaults,getPeriod,validateSelection,createData,uniqueRecords,total,count,typeRows,matches,query,summarize,change,buildTrend};
 });
