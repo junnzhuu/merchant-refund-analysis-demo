@@ -45,7 +45,7 @@ function render(){
  $('#metrics').innerHTML=CARD_TYPES.map((type,i)=>(i?`<span class="metric-operator" aria-hidden="true">${i===1?'＝':'＋'}</span>`:'')+metricCard(cur,prev,type,allAmount,period.realtime)).join('');
  $('#rateMetric').hidden=$('#amountRateMetric').hidden=state.basis!=='pay';
  $$('#metric button').forEach(b=>b.classList.toggle('on',b.dataset.metric===state.metric));
- $('#trendSelection').textContent=typeName(state.type);
+ $$('.filter-field select').forEach(select=>{const active=select.selectedIndex>0;select.parentElement.classList.toggle('has-value',active);select.parentElement.querySelector('.filter-clear').hidden=!active});
  $('#downloadDetails').disabled=!rows.length;$('#downloadDetails').title=rows.length?'下载顶部筛选条件下的退款明细':'当前筛选条件下暂无可下载的退款明细';
  renderTrend(cur,prev);renderReasons(cur);renderProducts(cur);
  $$('[data-card]').forEach(b=>b.onclick=()=>selectTrend(b.dataset.card));
@@ -78,7 +78,6 @@ function renderReasons(result){
  const header=metric=>{const label=reasonMetricLabels[metric],active=state.reasonSort===metric,sort=active?state.reasonDirection:null;return `<th scope="col" class="reason-numeric" aria-sort="${sort==='asc'?'ascending':sort==='desc'?'descending':'none'}"><div class="reason-column-head"><button type="button" class="reason-sort ${active?'is-active':''}" data-reason-sort="${metric}" aria-label="按${label}${sort==='desc'?'升序':'降序'}排列">${label}<span class="reason-sort-icon ${sort||''}" aria-hidden="true"><i></i><i></i></span></button><button type="button" class="metric-definition reason-info" data-definition="reason|${metric}" aria-label="${label}指标释义" aria-describedby="metricTooltip">${infoIcon}</button></div></th>`};
  $('#reasons').classList.toggle('has-rates',pay);
  $('#reasons').innerHTML=`<thead><tr><th scope="col">退款原因</th>${columns.map(header).join('')}</tr></thead><tbody>${rows.map(row=>`<tr><th scope="row">${escapeHTML(row.reason)}</th>${columns.map(metric=>`<td data-reason-value="${metric}">${metric==='amount'?'¥'+money(row.amount):metric==='count'?row.count.toLocaleString():percentage(row[metric])}</td>`).join('')}</tr>`).join('')||`<tr><td colspan="${columns.length+1}" class="reason-empty">暂无符合条件的退款数据</td></tr>`}</tbody>`;
- $('#reasonScope').textContent=pay?'按支付时间':'按退款时间';
  $('#reasonTotal').textContent=`共 ${rows.length} 个退款原因`;
  $('#reasonNote').textContent=pay?'退款率以同批全部成交金额、成交订单数为分母':'按退款完成日期统计成功退款数据';
  $$('[data-reason-sort]').forEach(button=>button.onclick=()=>{const key=button.dataset.reasonSort;state.reasonDirection=state.reasonSort===key&&state.reasonDirection==='desc'?'asc':'desc';state.reasonSort=key;hideMetricTooltip();renderReasons(queryFor(...range()));bindMetricTooltips();$(`[data-reason-sort="${key}"]`).focus({preventScroll:true})});
@@ -117,7 +116,12 @@ function download(name,rows){const text='\uFEFF'+rows.map(row=>row.map(v=>'"'+St
 $('#basis').onchange=e=>{state.basis=e.target.value;if(state.basis==='refund'&&isRateMetric(state.metric))state.metric='amount';render()};
 $('#reasonType').onchange=e=>{state.reasonType=e.target.value;hideMetricTooltip();renderReasons(queryFor(...range()));bindMetricTooltips()};
 $$('#metric button').forEach(b=>b.onclick=()=>{state.metric=b.dataset.metric;render()});
-for(const [id,key] of [['brandSelect','brand'],['categorySelect','category'],['channelSelect','channel']])$('#'+id).onchange=event=>{state[key]=event.target.value;state.productPage=1;render()};
+for(const [id,key] of [['brandSelect','brand'],['categorySelect','category'],['channelSelect','channel']]){
+ const select=$('#'+id),clear=select.parentElement.querySelector('.filter-clear');
+ const apply=()=>{state[key]=select.value;state.productPage=1;render()};
+ select.onchange=apply;
+ clear.onclick=()=>{select.selectedIndex=0;apply();select.focus({preventScroll:true})};
+}
 const applyProductSearch=()=>{state.productSearch=$('#productSearch').value.trim();state.productPage=1;hideMetricTooltip();renderProducts(queryFor(...range()));bindMetricTooltips()};
 $('#productSearchForm').onsubmit=event=>{event.preventDefault();applyProductSearch()};
 $('#productSearch').onsearch=applyProductSearch;
