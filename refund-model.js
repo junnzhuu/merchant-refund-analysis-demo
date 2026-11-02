@@ -136,6 +136,28 @@
       return {reason,amount,count,amountRate,rate};
     }).sort((a,b)=>b.amount-a.amount);
   }
+  function summarizeProducts(result) {
+    const products=new Map();
+    for(const row of uniqueRecords(result.refunds,result.cutoff)) {
+      if(!products.has(row.product))products.set(row.product,[]);
+      products.get(row.product).push(row);
+    }
+    function details(refunds,payments) {
+      const scoped={...result,refunds,payments},summary=summarize(scoped);
+      const {amount,count,paid,paidAmount,rate,amountRate}=summary;
+      const reasons=summarizeReasons(scoped).map(({reason,amount:reasonAmount,count})=>({reason,amount:reasonAmount,count,amountShare:amount?reasonAmount/amount:null}));
+      return {amount,count,paid,paidAmount,rate,amountRate,reasons};
+    }
+    return [...products].map(([product,refunds])=>{
+      const payments=result.payments.filter(p=>p.product===product),groups=new Map();
+      for(const row of refunds) {
+        if(!groups.has(row.sku))groups.set(row.sku,[]);
+        groups.get(row.sku).push(row);
+      }
+      const skus=[...groups].map(([sku,items])=>({sku,...details(items,payments.filter(p=>p.sku===sku))})).sort((a,b)=>b.amount-a.amount);
+      return {product,...details(refunds,payments),skus};
+    }).sort((a,b)=>b.amount-a.amount);
+  }
   function change(current,previous,complete=true) { if(!complete||current===null||previous===null||!Number.isFinite(current)||!Number.isFinite(previous))return {value:null,reason:'对比期数据缺失，无法计算'};if(previous===0)return {value:null,reason:'上周期为0，无法计算变化率'};return {value:(current-previous)/previous,reason:''}; }
   function buildTrend(data,state,queries) {
     const period=getPeriod(state),a=queries?.current||query(data,state,period.current),b=queries?.previous||query(data,state,period.previous),curDates=dateList(period.current.start,period.current.end),prevDates=dateList(period.previous.start,period.previous.end);
@@ -160,5 +182,5 @@
     }
     return {...period,labels,current,previous,currentDates,previousDates,currentReasons,previousReasons,currentLabel:period.realtime?'今日截至当前':'本期',previousLabel:period.realtime?'昨日全天':period.partial?'上期同进度':'上周期'};
   }
-  return {DAY,CUTOFF,SELECTABLE_START,DATA_START,REFUND_TYPES,SKUS,catalog,dayOffset,dayCount,dateList,monthBounds,weekBounds,isoWeek,defaults,getPeriod,validateSelection,createData,uniqueRecords,total,count,typeRows,matches,query,summarize,summarizeReasons,change,buildTrend};
+  return {DAY,CUTOFF,SELECTABLE_START,DATA_START,REFUND_TYPES,SKUS,catalog,dayOffset,dayCount,dateList,monthBounds,weekBounds,isoWeek,defaults,getPeriod,validateSelection,createData,uniqueRecords,total,count,typeRows,matches,query,summarize,summarizeReasons,summarizeProducts,change,buildTrend};
 });

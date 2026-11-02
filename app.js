@@ -3,7 +3,7 @@ const $$ = s => [...document.querySelectorAll(s)];
 const M = RefundModel;
 const {DAY,CUTOFF,catalog,uniqueRecords,total,count} = M;
 const data=M.createData(),records=data.refunds,payments=data.payments;
-const state={basis:'refund',period:'today',type:'all',metric:'amount',search:'',brand:'全部品牌',category:'全部类目',channel:'全部出价渠道',sort:'amount',reasonType:'all',reasonSort:'amount',reasonDirection:'desc',expanded:new Set(['p0']),customStart:'2026-10-21',customEnd:'2026-10-27',...M.defaults()};
+const state={basis:'refund',period:'today',type:'all',metric:'amount',search:'',brand:'全部品牌',category:'全部类目',channel:'全部出价渠道',sort:'amount',productDirection:'desc',productPage:1,reasonType:'all',reasonSort:'amount',reasonDirection:'desc',expanded:new Set(),customStart:'2026-10-21',customEnd:'2026-10-27',...M.defaults()};
 const money=c=> (c/100).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
 const typeName=t=>({all:'全部退款',mid:'发货前退款',return:'发货后退货退款',only:'发货后仅退款'}[t]);
 const metricName=()=>({amount:'退款金额',count:'退款订单数',rate:'订单退款率',amountRate:'金额退款率'}[state.metric]);
@@ -34,7 +34,7 @@ function metricCard(current,previous,type,allAmount,realtime) {
 function selectTrend(type,metric=state.metric){const active=document.activeElement,focusKey=active?.dataset.cardMetric,focusType=active?.dataset.card;state.type=type;state.metric=metric;render();const selector=focusKey?`[data-card-metric="${focusKey}"]`:focusType?`[data-card="${focusType}"]`:null;if(selector)$(selector)?.focus({preventScroll:true})}
 let datePicker;
 function render(){
- hideMetricTooltip();
+ hideMetricTooltip();hideProductReasonTooltip();
  const period=M.getPeriod(state),cur=queryFor(period.current.start,period.current.end),prev=queryFor(period.previous.start,period.previous.end),rows=cur.refunds,[start,end]=range(),allAmount=total(rows);
  const comparison=period.realtime?'昨日全天':period.partial?'上周期同进度':'上周期';
  $('#compareRange').textContent=`对比${comparison}：${period.previous.start}${period.previous.start===period.previous.end?'':' 至 '+period.previous.end}`;
@@ -48,7 +48,7 @@ function render(){
  $('#trendSelection').textContent=`${typeName(state.type)} / ${metricName()}`;
  $('#chartCaption').textContent=period.realtime?`今日截至 14:30，对比昨日完整24小时${state.basis==='pay'?'；退款按各订单支付后30天统计':''}`:state.basis==='pay'?`${start} 至 ${end}支付订单，在各自支付后30天内的成功退款；未满30天的数据持续更新`:'横轴为本周期日期，上周期按对应进度对齐；悬停查看两期实际日期';
  $('#downloadDetails').disabled=!rows.length;$('#downloadDetails').title=rows.length?'下载当前筛选条件下的退款明细':'当前筛选条件下暂无可下载的退款明细';
- renderTrend(cur,prev);renderReasons(cur);renderProducts(rows);
+ renderTrend(cur,prev);renderReasons(cur);renderProducts(cur);
  $$('[data-card]').forEach(b=>b.onclick=()=>selectTrend(b.dataset.card));
  $$('[data-card-metric]').forEach(b=>b.onclick=()=>{const[type,metric]=b.dataset.cardMetric.split('|');selectTrend(type,metric)});
  bindMetricTooltips();datePicker?.sync();
@@ -85,27 +85,41 @@ function renderReasons(result){
  $$('[data-reason-sort]').forEach(button=>button.onclick=()=>{const key=button.dataset.reasonSort;state.reasonDirection=state.reasonSort===key&&state.reasonDirection==='desc'?'asc':'desc';state.reasonSort=key;hideMetricTooltip();renderReasons(queryFor(...range()));bindMetricTooltips();$(`[data-reason-sort="${key}"]`).focus({preventScroll:true})});
 }
 function pants(color){return `<svg viewBox="0 0 40 60" aria-hidden="true"><path d="M9 3L31 3 34 56 23 57 20 25 16 57 5 56Z" fill="${color}"/><path d="M9 5H31M20 5V25M12 9L10 16M28 9L30 16" fill="none" stroke="white" stroke-opacity=".23" stroke-width="1"/><path d="M10 20L9 53M29 20L30 53" stroke="black" stroke-opacity=".09" fill="none"/></svg>`}
-function paidOrders(productId,sku=null){return queryFor(...range()).payments.filter(p=>p.product===productId&&(!sku||p.sku===sku)).length}
-function paymentCells(items,productId,sku=null){if(state.basis!=='pay')return '';const paid=paidOrders(productId,sku);return `<td>${paid}</td><td>${paid?percentage(count(items)/paid):'—'}</td>`}
-function renderProducts(rows){
- const table=$('.products table');table.classList.toggle('pay-table',state.basis==='pay');
- table.querySelector('thead').innerHTML=`<tr><th class="product-col">商品信息</th><th><button id="sortAmount" class="sort ${state.sort==='amount'?'active':''}">退款金额（元） ↓</button></th><th><button id="sortCount" class="sort ${state.sort==='count'?'active':''}">退款订单数 ↕</button></th>${state.basis==='pay'?'<th>支付订单数</th><th>订单退款率</th>':''}<th>金额占比</th><th>主要退款原因</th></tr>`;
- $('.products .subtle').textContent=state.basis==='pay'?'订单退款率基于同批支付子订单，含未退款订单；退款按支付后30天统计':'支持展开规格，定位具体退款商品';
- const groups=byGroup(rows,r=>r.product).sort((a,b)=>b[state.sort]-a[state.sort]);const amount=total(rows);
- $('#productRows').innerHTML=groups.map(g=>{const p=catalog.find(p=>p.id===g.key),reason=byGroup(g.items,r=>r.reason).sort((a,b)=>b.amount-a.amount)[0]?.key||'—';const skuRows=state.expanded.has(p.id)?byGroup(g.items,r=>r.sku).map(s=>`<tr class="sku-row"><td>└ ${s.key}</td><td>${money(s.amount)}</td><td>${s.count}</td>${paymentCells(s.items,p.id,s.key)}<td>${amount?(s.amount/amount*100).toFixed(2):'0.00'}%</td><td>${byGroup(s.items,r=>r.reason).sort((a,b)=>b.amount-a.amount)[0]?.key||'—'}</td></tr>`).join(''):'';return `<tr><td><div class="product-info"><div class="thumb">${pants(p.color)}</div><div><div class="product-name">${p.name}</div><div class="product-sub"><span>货号：${p.code}</span><button class="sku-toggle" data-expand="${p.id}">${state.expanded.has(p.id)?'收起':'展开'} SKU ${state.expanded.has(p.id)?'⌃':'⌄'}</button></div></div></div></td><td>${money(g.amount)}</td><td>${g.count}</td>${paymentCells(g.items,p.id)}<td>${amount?(g.amount/amount*100).toFixed(2):'0.00'}%</td><td>${reason}</td></tr>${skuRows}`}).join('')||`<tr><td colspan="${state.basis==='pay'?7:5}" style="text-align:center;color:#a2a7af;height:120px">暂无符合条件的退款数据</td></tr>`;
- $('#totalProducts').textContent=`共 ${groups.length} 个商品`;
- $('#sortAmount').onclick=()=>{state.sort='amount';renderProducts(currentRows())};
- $('#sortCount').onclick=()=>{state.sort='count';renderProducts(currentRows())};
- $$('[data-expand]').forEach(b=>b.onclick=()=>{const id=b.dataset.expand;state.expanded.has(id)?state.expanded.delete(id):state.expanded.add(id);renderProducts(currentRows())});
+const productMetricLabels={amountRate:'金额退款率',rate:'订单退款率',amount:'退款金额',paidAmount:'用户支付金额',count:'退款订单数',paid:'支付订单数',reasons:'退款原因'};
+const PRODUCT_PAGE_SIZE=5;
+let productScopeSignature='',productReasonData=new Map();
+function renderProducts(result){
+ hideProductReasonTooltip();
+ const scope=JSON.stringify([state.basis,result.range,state.brand,state.category,state.channel,state.search]);
+ if(scope!==productScopeSignature){state.productPage=1;productScopeSignature=scope}
+ const pay=state.basis==='pay',columns=pay?['amountRate','rate','amount','paidAmount','count','paid']:['amount','paidAmount','count','paid'];
+ if(!columns.includes(state.sort)){state.sort='amount';state.productDirection='desc'}
+ const ranking=M.summarizeProducts(result).slice(0,20),direction=state.productDirection==='asc'?1:-1;
+ ranking.sort((a,b)=>a[state.sort]===null?(b[state.sort]===null?0:1):b[state.sort]===null?-1:(a[state.sort]-b[state.sort])*direction);
+ const pageCount=Math.max(1,Math.ceil(ranking.length/PRODUCT_PAGE_SIZE));state.productPage=Math.min(Math.max(1,state.productPage),pageCount);
+ const visible=ranking.slice((state.productPage-1)*PRODUCT_PAGE_SIZE,state.productPage*PRODUCT_PAGE_SIZE),table=$('.top-products-table');
+ table.classList.toggle('has-rates',pay);productReasonData=new Map();
+ $('#productColumns').innerHTML='<col class="col-product">'+columns.map(metric=>`<col class="col-${metric}">`).join('')+'<col class="col-reasons">';
+ const info=metric=>`<button type="button" class="metric-definition product-info-button" data-definition="product|${metric}" aria-label="${productMetricLabels[metric]}指标释义" aria-describedby="metricTooltip">${infoIcon}</button>`;
+ $('#productHeaders').innerHTML=`<tr><th scope="col">商品信息</th>${columns.map(metric=>{const active=state.sort===metric,sort=active?state.productDirection:null;return `<th scope="col" aria-sort="${sort==='asc'?'ascending':sort==='desc'?'descending':'none'}"><div class="product-column-head"><button type="button" class="product-sort ${active?'is-active':''}" data-product-sort="${metric}" aria-label="按${productMetricLabels[metric]}${sort==='desc'?'升序':'降序'}排列">${productMetricLabels[metric]}<span class="reason-sort-icon ${sort||''}" aria-hidden="true"><i></i><i></i></span></button>${info(metric)}</div></th>`}).join('')}<th scope="col"><div class="product-column-head product-reason-head">退款原因${info('reasons')}</div></th></tr>`;
+ const metricCells=row=>columns.map(metric=>`<td data-product-value="${metric}">${metric==='amount'||metric==='paidAmount'?'¥'+money(row[metric]):isRateMetric(metric)?percentage(row[metric]):row[metric].toLocaleString()}</td>`).join('');
+ const reasonsCell=(row,key,p,sku='')=>{productReasonData.set(key,{reasons:row.reasons,product:p,sku});return `<td class="product-reason-cell"><button type="button" class="product-reasons" data-product-reasons="${escapeHTML(key)}" aria-label="查看${sku?'该规格':'该商品'}全部退款原因" aria-describedby="productReasonsTooltip"><span>${escapeHTML(row.reasons.map(reason=>`${reason.reason}（${percentage(reason.amountShare)}）`).join(' ｜ '))||'—'}</span></button></td>`};
+ $('#productRows').innerHTML=visible.map(row=>{const p=catalog.find(item=>item.id===row.product),expanded=state.expanded.has(p.id),skuRows=expanded?row.skus.map(sku=>`<tr class="sku-row" data-product-sku="${p.id}"><td>└ ${escapeHTML(sku.sku)}</td>${metricCells(sku)}${reasonsCell(sku,p.id+'|'+sku.sku,p,sku.sku)}</tr>`).join(''):'';return `<tr class="top-product-row" data-product-id="${p.id}"><td><div class="product-info"><div class="thumb">${pants(p.color)}</div><div class="top-product-description"><div class="product-name" title="${escapeHTML(p.name)}">${escapeHTML(p.name)}</div><div class="product-code">货号：${escapeHTML(p.code)}</div><div class="product-meta"><span>SPU ${p.spu}</span><button type="button" class="sku-toggle" data-expand="${p.id}" aria-expanded="${expanded}">${expanded?'收起':'展开'} SKU ${expanded?'⌃':'⌄'}</button></div></div></div></td>${metricCells(row)}${reasonsCell(row,p.id,p)}</tr>${skuRows}`}).join('')||`<tr><td colspan="${columns.length+2}" class="product-empty">暂无符合条件的退款商品</td></tr>`;
+ $('#totalProducts').textContent=ranking.length?`共 ${ranking.length} 个商品，展示第 ${(state.productPage-1)*PRODUCT_PAGE_SIZE+1}–${Math.min(state.productPage*PRODUCT_PAGE_SIZE,ranking.length)} 个`:'共 0 个商品';
+ $('#productPagination').innerHTML=`<button type="button" data-product-page="${state.productPage-1}" aria-label="上一页" ${state.productPage===1?'disabled':''}>‹</button>${Array.from({length:pageCount},(_,i)=>`<button type="button" class="${state.productPage===i+1?'current':''}" data-product-page="${i+1}" ${state.productPage===i+1?'aria-current="page"':''}>${i+1}</button>`).join('')}<button type="button" data-product-page="${state.productPage+1}" aria-label="下一页" ${state.productPage===pageCount?'disabled':''}>›</button><span class="product-page-size">${PRODUCT_PAGE_SIZE} 条/页</span>`;
+ $$('[data-product-sort]').forEach(button=>button.onclick=()=>{const key=button.dataset.productSort;state.productDirection=state.sort===key&&state.productDirection==='desc'?'asc':'desc';state.sort=key;state.productPage=1;hideMetricTooltip();renderProducts(queryFor(...range()));bindMetricTooltips();$(`[data-product-sort="${key}"]`).focus({preventScroll:true})});
+ $$('[data-expand]').forEach(button=>button.onclick=()=>{const key=button.dataset.expand;state.expanded.has(key)?state.expanded.delete(key):state.expanded.add(key);renderProducts(queryFor(...range()));bindMetricTooltips();$(`[data-expand="${key}"]`).focus({preventScroll:true})});
+ $$('[data-product-page]').forEach(button=>button.onclick=()=>{state.productPage=Number(button.dataset.productPage);renderProducts(queryFor(...range()));bindMetricTooltips();$(`[data-product-page="${state.productPage}"].current`)?.focus({preventScroll:true})});
+ bindProductReasonTips();
 }
 function toast(text){$('#toast').textContent=text;$('#toast').classList.add('show');setTimeout(()=>$('#toast').classList.remove('show'),2200)}
 function download(name,rows){const text='\uFEFF'+rows.map(row=>row.map(v=>'"'+String(v).replaceAll('"','""')+'"').join(',')).join('\r\n');const url=URL.createObjectURL(new Blob([text],{type:'text/csv;charset=utf-8;'}));const a=document.createElement('a');a.href=url;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(url),1000)}
 $('#basis').onchange=e=>{state.basis=e.target.value;if(state.basis==='refund'&&isRateMetric(state.metric))state.metric='amount';render()};
 $('#reasonType').onchange=e=>{state.reasonType=e.target.value;hideMetricTooltip();renderReasons(queryFor(...range()));bindMetricTooltips()};
 $$('#metric button').forEach(b=>b.onclick=()=>{state.metric=b.dataset.metric;render()});
-$('#query').onclick=()=>{state.brand=$('#brandSelect').value;state.category=$('#categorySelect').value;state.channel=$('#channelSelect').value;state.search=$('#search').value.trim();render()};
+$('#query').onclick=()=>{state.productPage=1;state.brand=$('#brandSelect').value;state.category=$('#categorySelect').value;state.channel=$('#channelSelect').value;state.search=$('#search').value.trim();render()};
 $('#search').onkeydown=e=>{if(e.key==='Enter')$('#query').click()};
-$('#reset').onclick=()=>{state.search='';state.category='全部类目';state.channel='全部出价渠道';state.brand='全部品牌';$('#search').value='';$('#categorySelect').selectedIndex=$('#channelSelect').selectedIndex=$('#brandSelect').selectedIndex=0;render()};
+$('#reset').onclick=()=>{state.productPage=1;state.search='';state.category='全部类目';state.channel='全部出价渠道';state.brand='全部品牌';$('#search').value='';$('#categorySelect').selectedIndex=$('#channelSelect').selectedIndex=$('#brandSelect').selectedIndex=0;render()};
 $('#definitions').onclick=()=>$('#help').showModal();$('#closeHelp').onclick=()=>$('#help').close();
 $('#salesNav').onclick=()=>toast('当前为退款分析页面预览');
 const exportMeta=(type='all')=>[['统计口径',state.basis==='refund'?'按退款成功时间':'按支付时间'],['统计时间',range().join(' 至 ')],['退款类型',typeName(type)],['商品搜索',state.search||'全部商品'],['退款观察期',state.basis==='pay'?'各订单支付后30天':'按退款完成日期统计'],['数据截至',CUTOFF],['品牌/类目/出价渠道',`${state.brand}/${state.category}/${state.channel}`]];
@@ -120,19 +134,40 @@ const metricTooltip=document.createElement('div');metricTooltip.id='metricToolti
 let tooltipAnchor=null,tooltipTimer;
 function hideMetricTooltip(){clearTimeout(tooltipTimer);if(typeof metricTooltip!=='undefined'){metricTooltip.hidden=true;tooltipAnchor=null}}
 function showMetricTooltip(anchor){
- clearTimeout(tooltipTimer);tooltipAnchor=anchor;const[type,metric]=anchor.dataset.definition.split('|');
+ hideProductReasonTooltip();clearTimeout(tooltipTimer);tooltipAnchor=anchor;const[type,metric]=anchor.dataset.definition.split('|');
  const reasonCopy={
   amountRate:{definition:'该原因退款金额（支付日）÷所选周期内全部成交金额。退款金额统计这批订单在各自支付后30天内因该原因成功退款的金额。',example:'10月1日成交金额为10,000元，这批订单在各自支付后30天内因“尺码不合适”成功退款500元，该原因的金额退款率为5%。'},
   rate:{definition:'该原因退款订单数（支付日）÷所选周期内全部成交订单数。退款订单数统计这批订单在各自支付后30天内因该原因成功退款的子订单数。',example:'10月1日成交100单，这批订单在各自支付后30天内有5单因“尺码不合适”成功退款，该原因的订单退款率为5%。'},
   amount:state.basis==='pay'?{definition:'统计所选周期内支付成功的订单，在各自支付后30天内因该原因成功退款的金额总和。',example:'选择10月1日，某笔订单当天支付、10月5日因“尺码不合适”成功退款200元，这200元计入该原因在10月1日支付口径下的退款金额。'}:{definition:'统计所选周期内因该原因成功退款的金额总和，按退款完成日期统计。',example:'选择10月5日，某笔订单在10月1日支付、10月5日因“尺码不合适”成功退款200元，这200元计入该原因在10月5日退款口径下的退款金额。'},
   count:state.basis==='pay'?{definition:'统计所选周期内支付成功的订单中，在各自支付后30天内因该原因成功退款的订单数，按子订单号去重。',example:'选择10月1日，某笔当天支付的子订单在10月5日因“尺码不合适”分两笔成功退款，在该原因下仍计1单。'}:{definition:'统计所选周期内因该原因成功退款的订单数，按退款完成日期统计，按子订单号去重。',example:'选择10月5日，某笔子订单当天因“尺码不合适”分两笔成功退款，在该原因下仍计1单。'}
  };
- const copy=type==='reason'?reasonCopy[metric]:metric==='share'?{definition:'该类退款金额 ÷ 全部退款金额。用于查看不同退款类型的金额构成。',example:type==='all'?'选择10月5日，全部退款金额1,000元，全部退款金额占比为100%。':`选择10月5日，全部退款金额1,000元，其中${typeName(type)}200元，该类退款金额占比为20%。`}:RefundMetricDefinitions[type][state.basis][metric];
- metricTooltip.innerHTML=`<h4>${type==='reason'?'退款原因':typeName(type)} · ${metric==='share'?'金额占比':type==='reason'?reasonMetricLabels[metric]:metricLabel(metric)}</h4><b>指标释义</b><p>${escapeHTML(copy.definition)}</p><b>举例</b><p>${escapeHTML(copy.example)}</p>`;
+ const productCopy={
+  amountRate:{definition:'该商品退款金额（支付日）÷该商品用户支付金额。退款统计所选周期内支付的订单，在各自支付后30天内成功退款的结果。',example:'10月1日该商品用户支付金额为10,000元，这批订单在各自支付后30天内成功退款1,000元，金额退款率为10%。'},
+  rate:{definition:'该商品退款订单数（支付日）÷该商品支付订单数，按子订单号去重。退款统计这批订单在各自支付后30天内成功退款的结果。',example:'10月1日该商品支付100单，这批订单在各自支付后30天内有10单成功退款，订单退款率为10%。'},
+  amount:state.basis==='pay'?{definition:'统计所选周期内支付的该商品订单，在各自支付后30天内成功退款的金额总和。',example:'选择10月1日，该商品某笔订单当天支付、10月5日成功退款200元，这200元计入10月1日支付口径的退款金额。'}:{definition:'统计所选周期内该商品成功退款的金额总和，按退款完成日期统计。',example:'选择10月5日，该商品某笔订单10月1日支付、10月5日成功退款200元，这200元计入10月5日退款口径的退款金额。'},
+  paidAmount:{definition:'统计所选周期内该商品支付成功的金额总和，按支付完成日期统计，包含未退款订单。',example:'选择10月1日，该商品当天支付100单、合计10,000元，用户支付金额为10,000元。'},
+  count:state.basis==='pay'?{definition:'统计所选周期内支付的该商品订单中，在各自支付后30天内成功退款的子订单数，按子订单号去重。',example:'选择10月1日，该商品某笔当天支付的子订单在10月5日分两笔成功退款，退款订单数仍计1单。'}:{definition:'统计所选周期内该商品成功退款的子订单数，按退款完成日期统计，按子订单号去重。',example:'选择10月5日，该商品某笔子订单当天分两笔成功退款，退款订单数仍计1单。'},
+  paid:{definition:'统计所选周期内该商品支付成功的子订单数，按支付完成日期统计，包含未退款订单。',example:'选择10月1日，该商品当天支付100单，其中90单未退款，支付订单数仍为100单。'},
+  reasons:{definition:'按各原因退款金额占该商品退款金额的比例降序展示。原因（占比）中的占比＝该原因退款金额÷该商品退款金额；悬浮可查看全部原因，规格行以该规格退款金额为分母。',example:'选择10月5日，该商品退款1,000元，其中“尺码不合适”退款400元，展示为“尺码不合适（40.00%）”。'}
+ };
+ const copy=type==='product'?productCopy[metric]:type==='reason'?reasonCopy[metric]:metric==='share'?{definition:'该类退款金额 ÷ 全部退款金额。用于查看不同退款类型的金额构成。',example:type==='all'?'选择10月5日，全部退款金额1,000元，全部退款金额占比为100%。':`选择10月5日，全部退款金额1,000元，其中${typeName(type)}200元，该类退款金额占比为20%。`}:RefundMetricDefinitions[type][state.basis][metric];
+ metricTooltip.innerHTML=`<h4>${type==='product'?'Top退款商品':type==='reason'?'退款原因':typeName(type)} · ${metric==='share'?'金额占比':type==='product'?productMetricLabels[metric]:type==='reason'?reasonMetricLabels[metric]:metricLabel(metric)}</h4><b>指标释义</b><p>${escapeHTML(copy.definition)}</p><b>举例</b><p>${escapeHTML(copy.example)}</p>`;
  metricTooltip.hidden=false;const r=anchor.getBoundingClientRect(),t=metricTooltip.getBoundingClientRect(),left=Math.min(Math.max(12,r.left),innerWidth-t.width-12);let top=r.bottom+10;if(top+t.height>innerHeight-12)top=Math.max(12,r.top-t.height-10);metricTooltip.style.left=left+'px';metricTooltip.style.top=top+'px';
 }
 function bindMetricTooltips(){$$('[data-definition]').forEach(b=>{b.onpointerenter=()=>showMetricTooltip(b);b.onpointerleave=()=>{tooltipTimer=setTimeout(hideMetricTooltip,120)};b.onfocus=()=>showMetricTooltip(b);b.onblur=hideMetricTooltip;b.onclick=e=>{e.stopPropagation();showMetricTooltip(b)}})}
 metricTooltip.onpointerenter=()=>clearTimeout(tooltipTimer);metricTooltip.onpointerleave=hideMetricTooltip;
 document.addEventListener('keydown',e=>{if(e.key==='Escape')hideMetricTooltip()});const repositionMetricTooltip=()=>{if(tooltipAnchor&&document.activeElement===tooltipAnchor)showMetricTooltip(tooltipAnchor);else hideMetricTooltip()};window.addEventListener('scroll',repositionMetricTooltip,true);window.addEventListener('resize',repositionMetricTooltip);
-datePicker=RefundDatePicker.mount({trigger:$('#dateTrigger'),model:M,getState:()=>state,onApply:fields=>{Object.assign(state,fields);render()}});
+const productReasonTooltip=document.createElement('div');productReasonTooltip.id='productReasonsTooltip';productReasonTooltip.className='product-reasons-tooltip';productReasonTooltip.role='tooltip';productReasonTooltip.hidden=true;document.body.appendChild(productReasonTooltip);
+let productReasonAnchor=null,productReasonTimer;
+function hideProductReasonTooltip(){clearTimeout(productReasonTimer);if(typeof productReasonTooltip!=='undefined'){productReasonTooltip.hidden=true;productReasonAnchor=null}}
+function showProductReasonTooltip(anchor){
+ clearTimeout(productReasonTimer);hideMetricTooltip();productReasonAnchor=anchor;const item=productReasonData.get(anchor.dataset.productReasons);if(!item)return;
+ productReasonTooltip.innerHTML=`<h4>全部退款原因</h4><div class="product-reasons-context">${escapeHTML(item.product.code)}${item.sku?' · '+escapeHTML(item.sku):''}</div><div class="product-reasons-list">${item.reasons.map(reason=>`<div><span>${escapeHTML(reason.reason)}</span><strong>${percentage(reason.amountShare)}</strong></div>`).join('')||'<p>暂无退款原因</p>'}</div><p class="product-reasons-note">占该${item.sku?'规格':'商品'}退款金额的比例</p>`;
+ productReasonTooltip.hidden=false;const r=anchor.getBoundingClientRect(),t=productReasonTooltip.getBoundingClientRect();productReasonTooltip.style.left=Math.min(Math.max(12,r.left),innerWidth-t.width-12)+'px';productReasonTooltip.style.top=(r.bottom+10+t.height>innerHeight-12?Math.max(12,r.top-t.height-10):r.bottom+10)+'px';
+}
+function bindProductReasonTips(){$$('[data-product-reasons]').forEach(button=>{button.onpointerenter=()=>showProductReasonTooltip(button);button.onpointerleave=()=>{productReasonTimer=setTimeout(hideProductReasonTooltip,120)};button.onfocus=()=>showProductReasonTooltip(button);button.onblur=hideProductReasonTooltip;button.onclick=()=>showProductReasonTooltip(button)})}
+productReasonTooltip.onpointerenter=()=>clearTimeout(productReasonTimer);productReasonTooltip.onpointerleave=hideProductReasonTooltip;
+document.addEventListener('keydown',event=>{if(event.key==='Escape')hideProductReasonTooltip()});
+const repositionProductReasonTooltip=event=>{if(event?.target instanceof Element&&productReasonTooltip.contains(event.target))return;if(productReasonAnchor&&document.activeElement===productReasonAnchor)showProductReasonTooltip(productReasonAnchor);else hideProductReasonTooltip()};window.addEventListener('scroll',repositionProductReasonTooltip,true);window.addEventListener('resize',repositionProductReasonTooltip);
+datePicker=RefundDatePicker.mount({trigger:$('#dateTrigger'),model:M,getState:()=>state,onApply:fields=>{Object.assign(state,fields);state.productPage=1;render()}});
 render();

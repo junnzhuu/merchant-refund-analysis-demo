@@ -172,6 +172,53 @@ test('reason rates retain null denominators and missing coverage semantics from 
   assert.equal(missing.rate, null);
   assert.deepEqual(M.summarizeReasons({ ...result, refunds: [] }), []);
 });
+test('product and SKU summaries retain unrefunded payments, isolate denominators and deduplicate partial refunds', () => {
+  const fixture = {
+    ...data,
+    payments: [...payments, payment('UNREFUNDED-M', '2026-10-01', '13:00:00', 5000), payment('UNREFUNDED-S', '2026-10-01', '14:00:00', 6000, 'p0', 'S')],
+    refunds: [
+      { ...boundary, reason: '尺码' }, { ...boundary, reason: '尺码' },
+      { ...refund('A-part', 'A', '2026-10-20', '10:00:00', 500), reason: '不喜欢' },
+      { ...refund('C-success', 'C', '2026-10-20', '10:00:00', 2000), reason: '尺码' },
+      ...refunds.filter(r => r.subOrderId === 'B')
+    ]
+  };
+  const products = M.summarizeProducts(M.query(fixture, state)), [jeans, pants] = products;
+  assert.deepEqual(products.map(p => p.product), ['p1', 'p0']);
+  assert.deepEqual([jeans.amount, jeans.count, jeans.paid, jeans.paidAmount, jeans.rate, jeans.amountRate], [5000, 1, 1, 20000, 1, 0.25]);
+  assert.deepEqual([pants.amount, pants.count, pants.paid, pants.paidAmount, pants.rate, pants.amountRate], [3500, 2, 4, 31000, 0.5, 3500 / 31000]);
+  assert.deepEqual(pants.skus.map(s => s.sku), ['L', 'M']);
+  const medium = pants.skus.find(s => s.sku === 'M');
+  assert.deepEqual([medium.amount, medium.count, medium.paid, medium.paidAmount, medium.rate, medium.amountRate], [1500, 1, 2, 15000, 0.5, 0.1]);
+  assert.deepEqual(medium.reasons, [
+    { reason: '尺码', amount: 1000, count: 1, amountShare: 2 / 3 },
+    { reason: '不喜欢', amount: 500, count: 1, amountShare: 1 / 3 }
+  ]);
+  assert.deepEqual(pants.reasons.map(r => [r.reason, r.amountShare]), [['尺码', 6 / 7], ['不喜欢', 1 / 7]]);
+  for (const item of [pants, ...pants.skus]) assert(Math.abs(item.reasons.reduce((sum, r) => sum + r.amountShare, 0) - 1) < 1e-12);
+});
+test('refund-basis product denominators use same-period payments rather than refunded orders historical payments', () => {
+  const samePeriod = payment('OCT31-UNREFUNDED', '2026-10-31', '12:00:00', 40000);
+  const q = M.query({ ...data, payments: [...payments, samePeriod] }, { ...state, basis: 'refund', customStart: '2026-10-31', customEnd: '2026-10-31' });
+  const [product] = M.summarizeProducts(q);
+  assert.deepEqual([product.amount, product.count, product.paid, product.paidAmount, product.amountRate], [1500, 1, 1, 40000, 1500 / 40000]);
+  assert.equal(product.skus[0].paidAmount, 40000);
+});
+test('product summaries keep every ranked product, stable ties, and null zero or missing denominator semantics', () => {
+  const fixturePayments = Array.from({ length: 21 }, (_, i) => payment('RANK' + i, '2026-10-01', '10:00:00', 10000, 'product' + i));
+  const q = { complete: true, cutoff: M.CUTOFF, payments: fixturePayments, refunds: fixturePayments.map((p, i) => ({ ...boundary, ...p, refundId: 'rank-' + i, amount: 100, reason: '尺码' })) };
+  const products = M.summarizeProducts(q);
+  assert.deepEqual(products.map(p => p.product), fixturePayments.map(p => p.product));
+  const zero = M.summarizeProducts({ ...q, payments: [{ ...fixturePayments[0], amount: 0 }], refunds: [{ ...q.refunds[0], amount: 0 }] })[0];
+  assert.equal(zero.amountRate, null);
+  assert.equal(zero.reasons[0].amountShare, null);
+  assert.equal(zero.skus[0].reasons[0].amountShare, null);
+  const missing = M.summarizeProducts({ ...q, complete: false })[0];
+  assert.equal(missing.rate, null);
+  assert.equal(missing.amountRate, null);
+  assert.equal(missing.skus[0].rate, null);
+  assert.deepEqual(M.summarizeProducts({ ...q, refunds: [] }), []);
+});
 test('product, SKU, brand, category and channel filters restrict the payment denominator coherently', () => {
   const product = M.summarize(M.query(data, { ...state, product: 'p0' }));
   assert.equal(product.paid, 2);
