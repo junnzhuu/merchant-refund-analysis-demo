@@ -39,6 +39,7 @@ function render(){
  $('#metrics').innerHTML=CARD_TYPES.map((type,i)=>(i?`<span class="metric-operator" aria-hidden="true">${i===1?'＝':'＋'}</span>`:'')+metricCard(cur,prev,type,allAmount,period.realtime)).join('');
  $('#rateMetric').hidden=$('#amountRateMetric').hidden=state.basis!=='pay';
  $$('#metric button').forEach(b=>b.classList.toggle('on',b.dataset.metric===state.metric));
+ $('#trendSelection').textContent=`${typeName(state.type)} / ${metricName()}`;
  $('#downloadDetails').disabled=!rows.length;$('#downloadDetails').title=rows.length?'下载顶部筛选条件下的退款明细':'当前筛选条件下暂无可下载的退款明细';
  renderTrend(cur,prev);renderReasons(cur);renderProducts(cur);
  $$('[data-card]').forEach(b=>b.onclick=()=>selectTrend(b.dataset.card));
