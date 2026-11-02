@@ -1,0 +1,502 @@
+/*
+ * Dewu PC 2026 controls used by the refund-analysis demo.
+ * Source: Figma y9NHBD0tILutqTkvvijHmp, Button / Select component guides.
+ * Component radius 2px overrides the general style-token radius 4px.
+ * Load after styles.css and design-system.css; business hooks remain unchanged.
+ */
+:root {
+  --dw-control-radius: var(--dw-radius-xs);
+  --dw-control-height: 32px;
+  --dw-control-height-small: 28px;
+  --dw-control-height-large: 40px;
+  --dw-select-chevron: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='none' stroke='%23a9a9b9' stroke-width='1.4' d='m1 1 5 5 5-5'/%3E%3C/svg%3E");
+}
+
+/* Medium buttons: 32px high, 14px text, 16px horizontal padding, no shadow. */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  gap: var(--dw-button-gap);
+  height: var(--dw-control-height);
+  min-height: var(--dw-control-height);
+  padding: 0 var(--dw-button-md-padding-x);
+  border: 1px solid var(--dw-color-border);
+  border-radius: var(--dw-control-radius);
+  background: var(--dw-color-surface);
+  color: var(--dw-color-text);
+  font-family: var(--dw-font-cn);
+  font-size: var(--dw-font-body-md-size);
+  font-weight: var(--dw-font-weight-regular);
+  line-height: var(--dw-font-body-md-line-height);
+  white-space: nowrap;
+  box-shadow: none;
+}
+
+.btn:hover:not(:disabled) {
+  border-color: var(--dw-color-text);
+  background: var(--dw-color-canvas);
+  color: var(--dw-color-text);
+}
+
+.btn:active:not(:disabled) {
+  border-color: var(--dw-color-text);
+  background: var(--dw-color-page);
+  color: var(--dw-color-text);
+}
+
+.btn.primary {
+  border-color: var(--dw-color-brand);
+  background: var(--dw-color-brand);
+  color: var(--dw-color-text-inverse);
+}
+
+.btn.primary:hover:not(:disabled) {
+  border-color: var(--dw-color-brand-hover);
+  background: var(--dw-color-brand-hover);
+  color: var(--dw-color-text-inverse);
+}
+
+.btn.primary:active:not(:disabled) {
+  border-color: var(--dw-color-brand-active);
+  background: var(--dw-color-brand-active);
+  color: var(--dw-color-text-inverse);
+}
+
+.btn:disabled {
+  border-color: var(--dw-color-border-disabled);
+  background: var(--dw-color-surface);
+  color: var(--dw-color-text-disabled);
+  cursor: default;
+}
+
+.btn.primary:disabled {
+  border-color: var(--dw-color-brand-disabled);
+  background: var(--dw-color-brand-disabled);
+  color: var(--dw-color-text-inverse);
+}
+
+.btn:focus-visible {
+  outline: 2px solid var(--dw-color-focus-ring);
+  outline-offset: 2px;
+  box-shadow: none;
+}
+
+/* Keep the global filters in one row; their surrounding panel owns its layout. */
+.filter-line {
+  display: flex;
+  align-items: center;
+  flex-wrap: nowrap;
+  gap: var(--dw-space-8);
+  width: 100%;
+  min-width: 1026px;
+}
+
+.filter-line select,
+.date-trigger,
+.reason-controls #reasonType {
+  box-sizing: border-box;
+  height: var(--dw-control-height);
+  border: 1px solid var(--dw-color-border);
+  border-radius: var(--dw-control-radius);
+  background-color: var(--dw-color-input-background);
+  color: var(--dw-color-text);
+  font-family: var(--dw-font-cn);
+  font-size: var(--dw-font-body-md-size);
+  font-weight: var(--dw-font-weight-regular);
+  line-height: var(--dw-font-body-md-line-height);
+  box-shadow: none;
+}
+
+.filter-line select,
+.reason-controls #reasonType {
+  appearance: none;
+  min-width: 0;
+  padding: 0 32px 0 var(--dw-input-padding-x);
+  background-image: var(--dw-select-chevron);
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  cursor: pointer;
+}
+
+.filter-line #basis {
+  flex: 0 0 140px;
+  width: 140px;
+  padding-left: var(--dw-input-padding-x);
+  padding-right: 28px;
+}
+
+.filter-field {
+  display: flex;
+  align-items: center;
+  box-sizing: border-box;
+  height: var(--dw-control-height);
+  min-width: 0;
+  padding-left: var(--dw-input-padding-x);
+  border: 1px solid var(--dw-color-border);
+  border-radius: var(--dw-control-radius);
+  background: var(--dw-color-input-background);
+  box-shadow: none;
+}
+
+.filter-field.brand-field {
+  flex: 1 0 144px;
+}
+
+.filter-field.category-field {
+  flex: 1 0 124px;
+}
+
+.filter-field.channel-field {
+  flex: 1 0 164px;
+}
+
+.filter-field label {
+  flex: none;
+  color: var(--dw-color-text-secondary);
+  font-family: var(--dw-font-cn);
+  font-size: var(--dw-font-body-md-size);
+  line-height: var(--dw-font-body-md-line-height);
+  white-space: nowrap;
+}
+
+.filter-line .filter-field select {
+  flex: 1 1 0;
+  width: 0;
+  min-width: 0;
+  max-width: none;
+  height: 30px;
+  padding: 0 24px 0 0;
+  border: 0;
+  border-radius: 0;
+  background-color: transparent;
+  background-position: right 12px center;
+  color: var(--dw-color-text);
+  font-size: var(--dw-font-body-md-size);
+  outline: none;
+  box-shadow: none;
+}
+
+.filter-line > select:hover,
+.filter-field:hover,
+.date-trigger:hover,
+.reason-controls #reasonType:hover {
+  border-color: var(--dw-color-input-border-hover);
+}
+
+.filter-line > select:focus-visible,
+.date-trigger:focus-visible,
+.reason-controls #reasonType:focus-visible {
+  border-color: var(--dw-color-border-focus);
+  outline: 2px solid var(--dw-color-focus-ring-subtle);
+  outline-offset: 1px;
+  box-shadow: none;
+}
+
+.filter-field:focus-within,
+.date-trigger[aria-expanded="true"] {
+  border-color: var(--dw-color-border-focus);
+  box-shadow: none;
+}
+
+.filter-field:focus-within {
+  outline: 2px solid var(--dw-color-focus-ring-subtle);
+  outline-offset: 1px;
+}
+
+.filter-line .filter-field select:focus-visible {
+  outline: none;
+  box-shadow: none;
+}
+
+.date-trigger {
+  display: flex;
+  align-items: center;
+  flex: 0 0 278px;
+  gap: var(--dw-space-4);
+  width: 278px;
+  padding: 0 var(--dw-input-padding-x);
+  text-align: left;
+  white-space: nowrap;
+}
+
+.date-trigger .rdp-trigger-label,
+.date-trigger .rdp-trigger-range {
+  font-size: var(--dw-font-body-md-size);
+  line-height: var(--dw-font-body-md-line-height);
+}
+
+.date-trigger .rdp-trigger-range {
+  color: var(--dw-color-text);
+  font-family: var(--dw-font-en);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: var(--dw-letter-spacing-none);
+}
+
+.date-trigger .rdp-trigger-separator {
+  color: var(--dw-color-border-strong);
+}
+
+.date-trigger > .rdp-icon {
+  flex: none;
+  width: 16px;
+  height: 16px;
+  margin-left: auto;
+  color: var(--dw-color-icon-tertiary);
+}
+
+.filter-line .btn {
+  flex: 0 0 64px;
+  width: 64px;
+  height: var(--dw-control-height);
+  padding: 0 var(--dw-button-md-padding-x);
+}
+
+.btn.download-details {
+  flex: 0 0 108px;
+  width: 108px;
+  height: var(--dw-control-height);
+  min-height: var(--dw-control-height);
+  gap: var(--dw-space-4);
+  padding: 0 var(--dw-button-md-padding-x);
+  border-color: var(--dw-color-border);
+  background: var(--dw-color-surface);
+  color: var(--dw-color-text);
+  font-size: var(--dw-font-body-md-size);
+}
+
+.btn.download-details svg {
+  flex: none;
+  width: 14px;
+  height: 14px;
+  stroke: currentColor;
+}
+
+.btn.download-details:hover:not(:disabled) {
+  border-color: var(--dw-color-text);
+  background: var(--dw-color-canvas);
+  color: var(--dw-color-text);
+}
+
+.btn.download-details:active:not(:disabled) {
+  background: var(--dw-color-page);
+  color: var(--dw-color-text);
+}
+
+.btn.download-details:disabled {
+  border-color: var(--dw-color-border-disabled);
+  background: var(--dw-color-surface);
+  color: var(--dw-color-text-disabled);
+}
+
+/* Joined metric choices use the existing selected state and remain one row. */
+#metric.seg {
+  display: inline-flex;
+  align-items: stretch;
+  flex-wrap: nowrap;
+  gap: 0;
+  height: var(--dw-control-height);
+  border: 0;
+  border-radius: var(--dw-control-radius);
+  background: transparent;
+  overflow: visible;
+  box-shadow: none;
+}
+
+#metric.seg.small button {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  height: var(--dw-control-height);
+  min-height: var(--dw-control-height);
+  margin: 0 0 0 -1px;
+  padding: 0 var(--dw-space-12);
+  border: 1px solid var(--dw-color-border);
+  border-radius: 0;
+  background: var(--dw-color-surface);
+  color: var(--dw-color-text-secondary);
+  font-family: var(--dw-font-cn);
+  font-size: var(--dw-font-body-md-size);
+  font-weight: var(--dw-font-weight-regular);
+  line-height: var(--dw-font-body-md-line-height);
+  white-space: nowrap;
+  box-shadow: none;
+}
+
+#metric.seg.small button:first-child {
+  margin-left: 0;
+  border-radius: var(--dw-control-radius) 0 0 var(--dw-control-radius);
+}
+
+#metric.seg.small button:last-child {
+  border-radius: 0 var(--dw-control-radius) var(--dw-control-radius) 0;
+}
+
+#metric:has(#amountRateMetric[hidden]) button[data-metric="count"] {
+  border-radius: 0 var(--dw-control-radius) var(--dw-control-radius) 0;
+}
+
+#metric.seg.small button:hover {
+  z-index: 1;
+  border-color: var(--dw-color-brand-hover);
+  background: var(--dw-color-brand-subtle);
+  color: var(--dw-color-brand-active);
+}
+
+#metric.seg.small button.on {
+  z-index: 2;
+  border-color: var(--dw-color-brand);
+  background: var(--dw-color-brand-subtle);
+  color: var(--dw-color-text-brand);
+}
+
+#metric.seg.small button:focus-visible {
+  z-index: 3;
+  outline: 2px solid var(--dw-color-focus-ring);
+  outline-offset: 2px;
+}
+
+.reason-controls #reasonType {
+  width: 160px;
+  min-width: 160px;
+}
+
+/* Local search remains within Top refund products. */
+.product-search-form {
+  display: flex;
+  align-items: center;
+  flex-wrap: nowrap;
+  gap: var(--dw-space-8);
+  margin: 0;
+}
+
+.product-search-input {
+  display: flex;
+  align-items: center;
+  flex: none;
+  gap: var(--dw-input-gap);
+  box-sizing: border-box;
+  width: 256px;
+  height: var(--dw-control-height);
+  padding: 0 var(--dw-input-padding-x);
+  border: 1px solid var(--dw-color-border);
+  border-radius: var(--dw-control-radius);
+  background: var(--dw-color-input-background);
+  box-shadow: none;
+}
+
+.product-search-input svg {
+  flex: none;
+  width: 14px;
+  height: 14px;
+  stroke: var(--dw-color-icon-tertiary);
+}
+
+.product-search-input input {
+  flex: 1;
+  width: 100%;
+  min-width: 0;
+  height: 30px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: var(--dw-color-text);
+  font-family: var(--dw-font-cn);
+  font-size: var(--dw-font-body-md-size);
+  line-height: var(--dw-font-body-md-line-height);
+  outline: none;
+  box-shadow: none;
+}
+
+.product-search-input input::placeholder {
+  color: var(--dw-color-text-placeholder);
+  opacity: 1;
+}
+
+.product-search-input:hover {
+  border-color: var(--dw-color-input-border-hover);
+}
+
+.product-search-input:focus-within {
+  border-color: var(--dw-color-border-focus);
+  outline: 2px solid var(--dw-color-focus-ring-subtle);
+  outline-offset: 1px;
+  box-shadow: none;
+}
+
+.product-search-input input:focus-visible {
+  outline: none;
+  box-shadow: none;
+}
+
+.product-search-form .btn {
+  min-width: 64px;
+  height: var(--dw-control-height);
+  padding: 0 var(--dw-button-md-padding-x);
+  font-size: var(--dw-font-body-md-size);
+}
+
+/* Pagination retains the existing data-product-page and current states. */
+#productPagination {
+  display: flex;
+  align-items: center;
+  gap: var(--dw-space-8);
+}
+
+#productPagination button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--dw-control-height);
+  height: var(--dw-control-height);
+  padding: 0;
+  border: 1px solid var(--dw-color-border);
+  border-radius: var(--dw-control-radius);
+  background: var(--dw-color-surface);
+  color: var(--dw-color-text-secondary);
+  font-family: var(--dw-font-en);
+  font-size: var(--dw-font-body-md-size);
+  line-height: var(--dw-font-body-md-line-height);
+  box-shadow: none;
+}
+
+#productPagination button:hover:not(:disabled) {
+  border-color: var(--dw-color-brand-hover);
+  color: var(--dw-color-brand-active);
+}
+
+#productPagination button.current {
+  border-color: var(--dw-color-brand);
+  background: var(--dw-color-brand-subtle);
+  color: var(--dw-color-text-brand);
+}
+
+#productPagination button:disabled {
+  border-color: var(--dw-color-border-disabled);
+  background: var(--dw-color-surface);
+  color: var(--dw-color-text-disabled);
+  cursor: default;
+}
+
+#productPagination button:focus-visible {
+  outline: 2px solid var(--dw-color-focus-ring);
+  outline-offset: 2px;
+}
+
+#productPagination .product-page-size {
+  display: inline-flex;
+  align-items: center;
+  height: var(--dw-control-height);
+  margin-left: var(--dw-space-4);
+  background: transparent;
+  color: var(--dw-color-text-tertiary);
+  font-family: var(--dw-font-cn);
+  font-size: var(--dw-font-body-md-size);
+  line-height: var(--dw-font-body-md-line-height);
+  white-space: nowrap;
+}

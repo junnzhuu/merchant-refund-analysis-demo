@@ -51,14 +51,14 @@ function renderTrend(current,previous){
  const series=M.buildTrend(data,state,{current,previous}),{labels,current:cur}=series;
  const values=cur.filter(v=>v!==null),max=Math.max(...values,isRateMetric(state.metric)?.01:1);
  const step=state.metric==='amount'?Math.max(100,Math.ceil(max/4/100)*100):isRateMetric(state.metric)?Math.max(.01,Math.ceil(max/4/.01)*.01):Math.max(1,Math.ceil(max/4));
- const upper=step*4,W=1500,H=220,L=64,R=15,T=20,B=32,x=i=>labels.length===1?(L+W-R)/2:L+i*(W-L-R)/(labels.length-1),y=v=>T+(H-T-B)*(1-v/upper);
+ const upper=step*4,W=Math.max(800,Math.round($('#trend').getBoundingClientRect().width||1500)),H=280,L=64,R=16,T=24,B=40,x=i=>labels.length===1?(L+W-R)/2:L+i*(W-L-R)/(labels.length-1),y=v=>T+(H-T-B)*(1-v/upper);
  const path=arr=>{let active=false;return arr.map((v,i)=>{if(v===null){active=false;return ''}const s=`${active?'L':'M'}${x(i).toFixed(1)},${y(v).toFixed(1)}`;active=true;return s}).join(' ')};
- let svg=`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${typeName(state.type)} · ${metricName()} · ${series.currentLabel}趋势"><text x="5" y="12" font-size="11" fill="#9ba1aa">${state.metric==='amount'?'单位：元':isRateMetric(state.metric)?'单位：%':'单位：单'}</text>`;
- for(let i=0;i<=4;i++){const v=upper/4*i;svg+=`<line x1="${L}" y1="${y(v)}" x2="${W-R}" y2="${y(v)}" stroke="#edf0f4" stroke-dasharray="4 4"/><text x="${L-15}" y="${y(v)+4}" text-anchor="end" fill="#999fa9" font-size="11">${isRateMetric(state.metric)?(v*100).toFixed(0)+'%':v.toLocaleString()}</text>`}
- svg+=`<path d="${path(cur)}" fill="none" stroke="#70b9ba" stroke-width="2.3" stroke-linejoin="round"/>`;
- if(labels.length===1||cur.filter(v=>v!==null).length===1)cur.forEach((v,i)=>{if(v!==null)svg+=`<circle cx="${x(i)}" cy="${y(v)}" r="4" fill="#70b9ba" stroke="white" stroke-width="1.5"/>`});
- labels.forEach((label,i)=>{if(series.realtime?i%2===0||i===23:labels.length<=8||i%Math.ceil(labels.length/8)===0||i===labels.length-1)svg+=`<text x="${x(i)}" y="${H-8}" text-anchor="middle" fill="#999fa9" font-size="11">${escapeHTML(label)}</text>`});
- if(series.realtime)svg+=`<line x1="${x(14)}" x2="${x(14)}" y1="${T}" y2="${H-B}" stroke="#c5dddd" stroke-dasharray="3 4"/><text x="${x(14)+8}" y="17" font-size="11" fill="#79a9aa">更新至 14:30</text>`;
+ let svg=`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${typeName(state.type)} · ${metricName()} · ${series.currentLabel}趋势"><text x="5" y="12" font-size="12" fill="var(--dw-color-chart-label)">${state.metric==='amount'?'单位：元':isRateMetric(state.metric)?'单位：%':'单位：单'}</text>`;
+ for(let i=0;i<=4;i++){const v=upper/4*i;svg+=`<line x1="${L}" y1="${y(v)}" x2="${W-R}" y2="${y(v)}" stroke="var(--dw-color-chart-grid)" stroke-dasharray="4 4"/><text x="${L-15}" y="${y(v)+4}" text-anchor="end" fill="var(--dw-color-chart-label)" font-size="12">${isRateMetric(state.metric)?(v*100).toFixed(0)+'%':v.toLocaleString()}</text>`}
+ svg+=`<path d="${path(cur)}" fill="none" stroke="var(--dw-color-chart-1)" stroke-width="2.3" stroke-linejoin="round"/>`;
+ if(labels.length===1||cur.filter(v=>v!==null).length===1)cur.forEach((v,i)=>{if(v!==null)svg+=`<circle cx="${x(i)}" cy="${y(v)}" r="4" fill="var(--dw-color-chart-1)" stroke="white" stroke-width="1.5"/>`});
+ labels.forEach((label,i)=>{if(series.realtime?i%2===0||i===23:labels.length<=8||i%Math.ceil(labels.length/8)===0||i===labels.length-1)svg+=`<text x="${x(i)}" y="${H-8}" text-anchor="middle" fill="var(--dw-color-chart-label)" font-size="12">${escapeHTML(label)}</text>`});
+ if(series.realtime)svg+=`<line x1="${x(14)}" x2="${x(14)}" y1="${T}" y2="${H-B}" stroke="var(--dw-color-chart-reference)" stroke-dasharray="3 4"/><text x="${x(14)+8}" y="17" font-size="12" fill="var(--dw-color-chart-label)">更新至 14:30</text>`;
  labels.forEach((_,i)=>{const left=labels.length===1?L:i?((x(i-1)+x(i))/2):L,right=labels.length===1?W-R:i===labels.length-1?W-R:((x(i)+x(i+1))/2);svg+=`<rect class="trend-hit" data-trend-index="${i}" x="${left}" y="${T}" width="${Math.max(1,right-left)}" height="${H-T-B}" fill="transparent"><title>${escapeHTML(`${metricName()}\n${series.currentLabel} ${series.currentDates[i]||'无对应日期'}：${trendValue(cur[i],series.currentReasons[i])}`)}</title></rect>`});
  $('#trend').innerHTML=svg+'</svg><div class="trend-tooltip" id="trendTooltip" hidden></div>';
  $$('[data-trend-index]').forEach(hit=>{hit.onpointermove=e=>{const i=Number(hit.dataset.trendIndex),tip=$('#trendTooltip'),rect=$('#trend').getBoundingClientRect();tip.innerHTML=`<b>${metricName()}</b><div><i></i>${series.currentLabel} · ${series.currentDates[i]||'无对应日期'}<strong>${trendValue(cur[i],series.currentReasons[i])}</strong></div>`;tip.hidden=false;tip.style.left=Math.min(Math.max(0,e.clientX-rect.left+15),Math.max(0,rect.width-340))+'px';tip.style.top='15px'};hit.onpointerleave=()=>$('#trendTooltip').hidden=true});
@@ -147,7 +147,7 @@ function showMetricTooltip(anchor){
   reasons:{definition:'按各原因退款金额占该商品退款金额的比例降序展示。原因（占比）中的占比＝该原因退款金额÷该商品退款金额；悬浮可查看全部原因，规格行以该规格退款金额为分母。',example:'选择10月5日，该商品退款1,000元，其中“尺码不合适”退款400元，展示为“尺码不合适（40.00%）”。'}
  };
  const copy=type==='product'?productCopy[metric]:type==='reason'?reasonCopy[metric]:metric==='share'?{definition:'该类退款金额 ÷ 全部退款金额。用于查看不同退款类型的金额构成。',example:type==='all'?'选择10月5日，全部退款金额1,000元，全部退款金额占比为100%。':`选择10月5日，全部退款金额1,000元，其中${typeName(type)}200元，该类退款金额占比为20%。`}:RefundMetricDefinitions[type][state.basis][metric];
- metricTooltip.innerHTML=`<h4>${type==='product'?'Top退款商品':type==='reason'?'退款原因':typeName(type)} · ${metric==='share'?'金额占比':type==='product'?productMetricLabels[metric]:type==='reason'?reasonMetricLabels[metric]:metricLabel(metric)}</h4><b>指标释义</b><p>${escapeHTML(copy.definition)}</p><b>举例</b><p>${escapeHTML(copy.example)}</p>`;
+ metricTooltip.innerHTML=`<p><b>指标释义：</b>${escapeHTML(copy.definition)}</p><p><b>举例：</b>${escapeHTML(copy.example)}</p>`;
  metricTooltip.hidden=false;
  const r=anchor.getBoundingClientRect(),t=metricTooltip.getBoundingClientRect(),center=r.left+r.width/2;
  const left=Math.min(Math.max(12,center-t.width/2),innerWidth-t.width-12),above=r.top-t.height-10;
@@ -173,3 +173,16 @@ document.addEventListener('keydown',event=>{if(event.key==='Escape')hideProductR
 const repositionProductReasonTooltip=event=>{if(event?.target instanceof Element&&productReasonTooltip.contains(event.target))return;if(productReasonAnchor&&document.activeElement===productReasonAnchor)showProductReasonTooltip(productReasonAnchor);else hideProductReasonTooltip()};window.addEventListener('scroll',repositionProductReasonTooltip,true);window.addEventListener('resize',repositionProductReasonTooltip);
 datePicker=RefundDatePicker.mount({trigger:$('#dateTrigger'),model:M,getState:()=>state,onApply:fields=>{Object.assign(state,fields);state.productPage=1;render()}});
 render();
+
+// Recalculate only the displayed SVG when its container changes width.
+if (typeof ResizeObserver === 'function') {
+ let chartWidth = 0;
+ const chartResizeObserver = new ResizeObserver(entries => {
+  const width = Math.round(entries[0].contentRect.width);
+  if (width === chartWidth) return;
+  chartWidth = width;
+  const period = M.getPeriod(state);
+  renderTrend(queryFor(period.current.start,period.current.end),queryFor(period.previous.start,period.previous.end));
+ });
+ chartResizeObserver.observe($('#trend'));
+}

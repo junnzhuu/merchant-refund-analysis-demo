@@ -1,0 +1,185 @@
+/*
+ * Dewu PC 2026 — dashboard subset of the style tokens.
+ * Source: Figma y9NHBD0tILutqTkvvijHmp, style page 36577:2472.
+ * https://www.figma.com/design/y9NHBD0tILutqTkvvijHmp?node-id=36577-2472
+ * Values were checked against the exported style sheets on 2026-11-02.
+ * Component color semantics take precedence over the divergent legacy border sheet.
+ */
+:root {
+  /* Brand and interaction states. */
+  --dw-color-brand: #01c2c3;
+  --dw-color-brand-hover: #23cfc9;
+  --dw-color-brand-active: #16a5af;
+  --dw-color-brand-disabled: #a6e9ea;
+  --dw-color-brand-subtle: #f2fcfc;
+
+  /* Neutral surfaces, text, icons and boundaries. */
+  --dw-color-page: #f5f5f9;
+  --dw-color-canvas: #f8f8fa;
+  --dw-color-surface: #ffffff;
+  --dw-color-surface-hover: #f5f5f9;
+  --dw-color-surface-active: #f1f1f5;
+  --dw-color-surface-selected: var(--dw-color-brand-subtle);
+  --dw-color-surface-disabled: #f5f5f9;
+  --dw-color-text: #14151a;
+  --dw-color-text-secondary: #4c4c59;
+  --dw-color-text-tertiary: #7f7f8e;
+  --dw-color-text-placeholder: #7f7f8e;
+  --dw-color-text-disabled: #c7c7d7;
+  --dw-color-text-inverse: #ffffff;
+  --dw-color-text-brand: var(--dw-color-brand-active);
+  --dw-color-icon: #14151a;
+  --dw-color-icon-secondary: #4c4c59;
+  --dw-color-icon-tertiary: #a9a9b9;
+  --dw-color-icon-disabled: #c7c7d7;
+  --dw-color-border: #dcdce6;
+  --dw-color-border-subtle: #f1f1f5;
+  --dw-color-border-strong: #a9a9b9;
+  --dw-color-border-hover: var(--dw-color-brand);
+  --dw-color-border-focus: var(--dw-color-brand);
+  --dw-color-border-disabled: #f1f1f5;
+  --dw-color-input-border-hover: #a9a9b9;
+  --dw-color-divider: #f1f1f5;
+  --dw-color-divider-strong: #dcdce6;
+  --dw-color-focus-ring: var(--dw-color-brand);
+  --dw-color-focus-ring-subtle: #a6e9ea;
+
+  /* Functional text uses the accessible semantic shade, rather than icon fill. */
+  --dw-color-success: #16a5af;
+  --dw-color-success-background: #f2fcfc;
+  --dw-color-success-border: #a6e9ea;
+  --dw-color-error: #df2020;
+  --dw-color-error-fill: #ff4444;
+  --dw-color-error-background: #fff6f6;
+  --dw-color-error-border: #ffbbbb;
+  --dw-color-warning: #e38d00;
+  --dw-color-warning-fill: #fc9d00;
+  --dw-color-warning-background: #fffaf2;
+  --dw-color-warning-border: #fee6bf;
+  --dw-color-info: #1052c0;
+  --dw-color-info-fill: #4a8cff;
+  --dw-color-info-background: #eff5ff;
+  --dw-color-info-border: #b6ccf2;
+  --dw-color-link: #1052c0;
+  --dw-color-link-hover: #5693ff;
+  --dw-color-link-active: #1052c0;
+
+  /* Dashboard component colors. */
+  --dw-color-card-background: var(--dw-color-surface);
+  --dw-color-card-border: var(--dw-color-border-subtle);
+  --dw-color-table-header: #f5f5f9;
+  --dw-color-table-header-text: #4c4c59;
+  --dw-color-table-row-hover: #f5f5f9;
+  --dw-color-table-row-selected: #f2fcfc;
+  --dw-color-table-border: #f1f1f5;
+  --dw-color-input-background: #ffffff;
+  --dw-color-input-disabled: #f1f1f5;
+  --dw-color-tooltip-background: #14151a;
+  --dw-color-tooltip-text: #ffffff;
+  --dw-color-calendar-text: #2b2c3c;
+  --dw-color-calendar-disabled: #c7c7d7;
+
+  /* Ordered visualization palette, plus grid/annotation/reference colors. */
+  --dw-color-chart-1: #01c2c3;
+  --dw-color-chart-2: #1a8cff;
+  --dw-color-chart-3: #ff742e;
+  --dw-color-chart-4: #6840e5;
+  --dw-color-chart-5: #54db68;
+  --dw-color-chart-grid: #dcdce6;
+  --dw-color-chart-label: #4c4c59;
+  --dw-color-chart-reference: #a9a9b9;
+
+  /* Named source fonts with system fallbacks; no third-party font request. */
+  --dw-font-cn: "PingFang SC", "Microsoft YaHei", sans-serif;
+  --dw-font-label: "Noto Sans SC", "PingFang SC", "Microsoft YaHei", sans-serif;
+  --dw-font-en: "Roboto", Arial, sans-serif;
+  --dw-font-number: "Roboto Condensed", "Arial Narrow", "Roboto", Arial, sans-serif;
+  --dw-font-weight-regular: 400;
+  --dw-font-weight-medium: 500;
+  --dw-font-weight-semibold: 600;
+  --dw-font-weight-bold: 700;
+  --dw-letter-spacing-none: 0;
+  --dw-letter-spacing-normal: 0.5px;
+
+  /* Chinese page, section and control text. */
+  --dw-font-headline-sm-size: 24px;
+  --dw-font-headline-sm-line-height: 32px;
+  --dw-font-title-xl-size: 20px;
+  --dw-font-title-xl-line-height: 28px;
+  --dw-font-title-lg-size: 18px;
+  --dw-font-title-lg-line-height: 26px;
+  --dw-font-title-md-size: 16px;
+  --dw-font-title-md-line-height: 24px;
+  --dw-font-title-sm-size: 14px;
+  --dw-font-title-sm-line-height: 22px;
+  --dw-font-body-lg-size: 16px;
+  --dw-font-body-lg-line-height: 24px;
+  --dw-font-body-md-size: 14px;
+  --dw-font-body-md-line-height: 22px;
+  --dw-font-body-sm-size: 12px;
+  --dw-font-body-sm-line-height: 20px;
+  --dw-font-compact-md-size: 14px;
+  --dw-font-compact-md-line-height: 20px;
+  --dw-font-compact-sm-size: 12px;
+  --dw-font-compact-sm-line-height: 16px;
+  --dw-font-label-sm-size: 12px;
+  --dw-font-label-sm-line-height: 16px;
+  --dw-font-label-xs-size: 10px;
+  --dw-font-label-xs-line-height: 14px;
+
+  /* Number token source defines size and bold weight, but no line-height. */
+  --dw-font-number-xl-size: 28px;
+  --dw-font-number-lg-size: 22px;
+  --dw-font-number-md-size: 20px;
+  --dw-font-number-sm-size: 16px;
+  --dw-font-number-xs-size: 12px;
+  --dw-font-number-weight: var(--dw-font-weight-bold);
+
+  /* Published spacing primitives; candidate 96/128 values are omitted. */
+  --dw-space-0: 0;
+  --dw-space-1: 1px;
+  --dw-space-2: 2px;
+  --dw-space-4: 4px;
+  --dw-space-6: 6px;
+  --dw-space-8: 8px;
+  --dw-space-10: 10px;
+  --dw-space-12: 12px;
+  --dw-space-16: 16px;
+  --dw-space-20: 20px;
+  --dw-space-24: 24px;
+  --dw-space-32: 32px;
+  --dw-space-40: 40px;
+  --dw-space-48: 48px;
+  --dw-space-64: 64px;
+  --dw-space-80: 80px;
+  --dw-page-gap: var(--dw-space-24);
+  --dw-page-padding: var(--dw-space-40);
+  --dw-button-gap: var(--dw-space-4);
+  --dw-button-sm-padding-x: var(--dw-space-12);
+  --dw-button-md-padding-x: var(--dw-space-16);
+  --dw-button-lg-padding-x: var(--dw-space-20);
+  --dw-button-sm-padding-y: var(--dw-space-4);
+  --dw-button-lg-padding-y: var(--dw-space-8);
+  --dw-input-gap: var(--dw-space-4);
+  --dw-input-padding-x: var(--dw-space-12);
+  --dw-input-md-padding-y: var(--dw-space-6);
+  --dw-input-lg-padding-y: var(--dw-space-10);
+  --dw-popover-gap: var(--dw-space-8);
+  --dw-popover-padding-x: var(--dw-space-16);
+  --dw-popover-padding-y: var(--dw-space-12);
+
+  /* Card/dialog spacing is pending in the source and intentionally not aliased. */
+  --dw-radius-none: 0;
+  --dw-radius-xs: 2px;
+  --dw-radius-sm: 4px;
+  --dw-radius-lg: 8px;
+  --dw-radius-pill: 999px;
+
+  /* Shadow effect styles; tooltip uses the source's 300 effect style. */
+  --dw-shadow-none: none;
+  --dw-shadow-card: 0 2px 6px 0 rgb(0 0 0 / 6%);
+  --dw-shadow-tooltip: 0 2px 8px 0 rgb(0 0 0 / 8%);
+  --dw-shadow-drawer: 0 4px 12px 0 rgb(0 0 0 / 12%);
+  --dw-shadow-popover: 0 6px 16px 0 rgb(0 0 0 / 16%);
+  --dw-shadow-dialog: 0 12px 32px 0 rgb(0 0 0 / 20%);
+}

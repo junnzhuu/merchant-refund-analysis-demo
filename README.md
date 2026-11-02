@@ -16,7 +16,7 @@ Top退款商品区域提供“可搜索商品名称/ID”的独立搜索框，�
 
 ## 运行与验证
 
-无构建依赖，运行文件为 `index.html`、`styles.css`、`refund-model.js`、`metric-definitions.js`、`date-picker.js`、`app.js`。
+无构建依赖，运行文件为 `index.html`、`styles.css`、四份 `design-*.css`、`refund-model.js`、`metric-definitions.js`、`date-picker.js`、`app.js`。
 
 ```bash
 python3 -m http.server 8766
@@ -34,4 +34,15 @@ GitHub Pages 从 `main` 分支根目录发布，推送后重新部署。
 
 `tests/trend-view.cjs` 直接验证实际趋势渲染函数：上期不影响本期纵轴或悬浮内容，单点/全零/缺失数据、四类指标单位以及实时截止与未来留空，共5项专项检查。
 
-核心区隐藏状态标签、口径说明、更新时间和对比日期；趋势区隐藏类型/指标副标题、图例和图下注释，仅保留标题、指标切换和趋势图，卡片内对比数据保留。
+核心区隐藏状态标签、口径说明、更新时间和对比日期；趋势区保留随卡片和指标联动的“退款类型 / 指标”副标题，隐藏图例和图下注释，卡片内对比数据保留。
+
+
+## 视觉规范
+
+2026-11-02 对照得物 PC 2026 规范完成样式统一，来源为 Figma 文件 `y9NHBD0tILutqTkvvijHmp` 的 style、Layout、Menu、Button、Select、Table、Card、Tooltip、Date Picker 页。MCP 读取额度到达上限后的组件规则，通过已授权浏览器的正常 PDF 导出读取；内部规范原文不随 Demo 发布。
+
+`design-tokens.css` 保存基础色、字体、间距、圆角和阴影；`design-layout.css` 负责页面骨架和表格；`design-system.css` 负责指标、趋势和浮层；`design-controls.css` 负责表单控件。四份样式在原有样式后统一覆盖，保留业务 DOM 钩子。
+
+页面采用最新 Layout 的业务展开规则：导航 200px、顶栏 60px、页面外边距 24px、默认容器内边距 20px、模块间距 16px；优先于较早通用 Card 文档的 24px 容器规则。Button / Select 使用各自组件规则的 Medium 32px、14px 字号和 2px 圆角。表格数据保持 14px，通过容器横向滚动承载宽列；商品信息列固定。较窄内容区的四类指标通过局部滚动保留等号与加号关系。
+
+指标问号采用深色、带箭头的纯文字提示，保留释义和按日举例；复杂商品原因列表使用独立浅色浮层。中文和数字使用规范字体名称及系统回退，不额外请求外部字体文件。页面主色为 `#01C2C3`，文字使用对应语义颜色，图表跟随容器宽度计算可读坐标。
