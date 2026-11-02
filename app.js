@@ -3,7 +3,7 @@ const $$ = s => [...document.querySelectorAll(s)];
 const M = RefundModel;
 const {DAY,CUTOFF,catalog,uniqueRecords,total,count} = M;
 const data=M.createData(),records=data.refunds,payments=data.payments;
-const state={basis:'refund',period:'today',type:'all',metric:'amount',productSearch:'',brand:'全部品牌',category:'全部类目',channel:'全部出价渠道',sort:'amount',productDirection:'desc',productPage:1,reasonType:'all',reasonSort:'amount',reasonDirection:'desc',expanded:new Set(),customStart:'2026-10-21',customEnd:'2026-10-27',...M.defaults()};
+const state={basis:'pay',period:'today',type:'all',metric:'amount',productSearch:'',brand:'全部品牌',category:'全部类目',channel:'全部出价渠道',sort:'amount',productDirection:'desc',productPage:1,reasonType:'all',reasonSort:'amount',reasonDirection:'desc',expanded:new Set(),customStart:'2026-10-21',customEnd:'2026-10-27',...M.defaults()};
 const money=c=> (c/100).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
 const typeName=t=>({all:'全部退款',mid:'发货前退款',return:'发货后退货退款',only:'发货后仅退款'}[t]);
 const metricName=()=>({amount:'退款金额',count:'退款订单数',rate:'订单退款率',amountRate:'金额退款率'}[state.metric]);
@@ -35,17 +35,10 @@ function selectTrend(type,metric=state.metric){const active=document.activeEleme
 let datePicker;
 function render(){
  hideMetricTooltip();hideProductReasonTooltip();
- const period=M.getPeriod(state),cur=queryFor(period.current.start,period.current.end),prev=queryFor(period.previous.start,period.previous.end),rows=cur.refunds,[start,end]=range(),allAmount=total(rows);
- const comparison=period.realtime?'昨日全天':period.partial?'上周期同进度':'上周期';
- $('#compareRange').textContent=`卡片对比${comparison}：${period.previous.start}${period.previous.start===period.previous.end?'':' 至 '+period.previous.end}`;
- $('#scopeNote').textContent=state.basis==='refund'?'按退款完成日期统计成功退款数据':'按支付日期统计，退款观察期为各订单支付后30天';
- $('#updated').textContent=`更新至 ${CUTOFF.replace('T',' ')}`;
+ const period=M.getPeriod(state),cur=queryFor(period.current.start,period.current.end),prev=queryFor(period.previous.start,period.previous.end),rows=cur.refunds,allAmount=total(rows);
  $('#metrics').innerHTML=CARD_TYPES.map((type,i)=>(i?`<span class="metric-operator" aria-hidden="true">${i===1?'＝':'＋'}</span>`:'')+metricCard(cur,prev,type,allAmount,period.realtime)).join('');
  $('#rateMetric').hidden=$('#amountRateMetric').hidden=state.basis!=='pay';
  $$('#metric button').forEach(b=>b.classList.toggle('on',b.dataset.metric===state.metric));
- $('#legendCurrent').textContent=period.realtime?'今日截至当前':'本期';
- $('#trendSelection').textContent=`${typeName(state.type)} / ${metricName()}`;
- $('#chartCaption').textContent=period.realtime?`今日数据截至 14:30${state.basis==='pay'?'；退款按各订单支付后30天统计':''}`:state.basis==='pay'?`${start} 至 ${end}支付订单，在各自支付后30天内的成功退款；未满30天的数据持续更新`:'横轴为本周期日期；悬停查看对应日期及指标值';
  $('#downloadDetails').disabled=!rows.length;$('#downloadDetails').title=rows.length?'下载顶部筛选条件下的退款明细':'当前筛选条件下暂无可下载的退款明细';
  renderTrend(cur,prev);renderReasons(cur);renderProducts(cur);
  $$('[data-card]').forEach(b=>b.onclick=()=>selectTrend(b.dataset.card));
