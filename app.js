@@ -3,7 +3,7 @@ const $$ = s => [...document.querySelectorAll(s)];
 const M = RefundModel;
 const {DAY,CUTOFF,catalog,uniqueRecords,total,count} = M;
 const data=M.createData(),records=data.refunds,payments=data.payments;
-const state={basis:'refund',period:'today',type:'all',metric:'amount',search:'',brand:'全部品牌',category:'全部类目',channel:'全部出价渠道',sort:'amount',productDirection:'desc',productPage:1,reasonType:'all',reasonSort:'amount',reasonDirection:'desc',expanded:new Set(),customStart:'2026-10-21',customEnd:'2026-10-27',...M.defaults()};
+const state={basis:'refund',period:'today',type:'all',metric:'amount',productSearch:'',brand:'全部品牌',category:'全部类目',channel:'全部出价渠道',sort:'amount',productDirection:'desc',productPage:1,reasonType:'all',reasonSort:'amount',reasonDirection:'desc',expanded:new Set(),customStart:'2026-10-21',customEnd:'2026-10-27',...M.defaults()};
 const money=c=> (c/100).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
 const typeName=t=>({all:'全部退款',mid:'发货前退款',return:'发货后退货退款',only:'发货后仅退款'}[t]);
 const metricName=()=>({amount:'退款金额',count:'退款订单数',rate:'订单退款率',amountRate:'金额退款率'}[state.metric]);
@@ -14,7 +14,7 @@ function range(){const r=M.getPeriod(state).current;return[r.start,r.end]}
 function baseFilter(r){return M.matches(r,state,catalog)}
 // Reuse one coherent pair of period queries while only card/metric/sort state changes.
 let queryCacheSignature='',queryCache=new Map();
-function queryFor(start,end){const signature=JSON.stringify([state.basis,state.period,state.selectedDay,state.selectedWeek,state.selectedMonth,state.customStart,state.customEnd,state.brand,state.category,state.channel,state.search]);if(signature!==queryCacheSignature){queryCacheSignature=signature;queryCache.clear()}const key=start+'|'+end;if(!queryCache.has(key))queryCache.set(key,M.query(data,state,{start,end}));return queryCache.get(key)}
+function queryFor(start,end){const signature=JSON.stringify([state.basis,state.period,state.selectedDay,state.selectedWeek,state.selectedMonth,state.customStart,state.customEnd,state.brand,state.category,state.channel]);if(signature!==queryCacheSignature){queryCacheSignature=signature;queryCache.clear()}const key=start+'|'+end;if(!queryCache.has(key))queryCache.set(key,M.query(data,state,{start,end}));return queryCache.get(key)}
 function rowsFor(start,end){return queryFor(start,end).refunds}
 function currentRows(){return rowsFor(...range())}
 function byGroup(rows,fn){const map=new Map();for(const r of uniqueRecords(rows)){const key=fn(r);if(!map.has(key))map.set(key,[]);map.get(key).push(r)}return[...map].map(([key,items])=>({key,items,amount:total(items),count:count(items)}))}
@@ -46,7 +46,7 @@ function render(){
  $('#legendCurrent').textContent=period.realtime?'今日截至当前':'本期';
  $('#trendSelection').textContent=`${typeName(state.type)} / ${metricName()}`;
  $('#chartCaption').textContent=period.realtime?`今日数据截至 14:30${state.basis==='pay'?'；退款按各订单支付后30天统计':''}`:state.basis==='pay'?`${start} 至 ${end}支付订单，在各自支付后30天内的成功退款；未满30天的数据持续更新`:'横轴为本周期日期；悬停查看对应日期及指标值';
- $('#downloadDetails').disabled=!rows.length;$('#downloadDetails').title=rows.length?'下载当前筛选条件下的退款明细':'当前筛选条件下暂无可下载的退款明细';
+ $('#downloadDetails').disabled=!rows.length;$('#downloadDetails').title=rows.length?'下载顶部筛选条件下的退款明细':'当前筛选条件下暂无可下载的退款明细';
  renderTrend(cur,prev);renderReasons(cur);renderProducts(cur);
  $$('[data-card]').forEach(b=>b.onclick=()=>selectTrend(b.dataset.card));
  $$('[data-card-metric]').forEach(b=>b.onclick=()=>{const[type,metric]=b.dataset.cardMetric.split('|');selectTrend(type,metric)});
@@ -89,11 +89,12 @@ const PRODUCT_PAGE_SIZE=5;
 let productScopeSignature='',productReasonData=new Map();
 function renderProducts(result){
  hideProductReasonTooltip();
- const scope=JSON.stringify([state.basis,result.range,state.brand,state.category,state.channel,state.search]);
+ const scope=JSON.stringify([state.basis,result.range,state.brand,state.category,state.channel,state.productSearch]);
  if(scope!==productScopeSignature){state.productPage=1;productScopeSignature=scope}
  const pay=state.basis==='pay',columns=pay?['amountRate','rate','amount','paidAmount','count','paid']:['amount','paidAmount','count','paid'];
  if(!columns.includes(state.sort)){state.sort='amount';state.productDirection='desc'}
- const ranking=M.summarizeProducts(result).slice(0,20),direction=state.productDirection==='asc'?1:-1;
+ const productResult=state.productSearch?{...result,refunds:result.refunds.filter(row=>M.matches(row,{search:state.productSearch},catalog)),payments:result.payments.filter(row=>M.matches(row,{search:state.productSearch},catalog))}:result;
+ const ranking=M.summarizeProducts(productResult).slice(0,20),direction=state.productDirection==='asc'?1:-1;
  ranking.sort((a,b)=>a[state.sort]===null?(b[state.sort]===null?0:1):b[state.sort]===null?-1:(a[state.sort]-b[state.sort])*direction);
  const pageCount=Math.max(1,Math.ceil(ranking.length/PRODUCT_PAGE_SIZE));state.productPage=Math.min(Math.max(1,state.productPage),pageCount);
  const visible=ranking.slice((state.productPage-1)*PRODUCT_PAGE_SIZE,state.productPage*PRODUCT_PAGE_SIZE),table=$('.top-products-table');
@@ -116,12 +117,14 @@ function download(name,rows){const text='\uFEFF'+rows.map(row=>row.map(v=>'"'+St
 $('#basis').onchange=e=>{state.basis=e.target.value;if(state.basis==='refund'&&isRateMetric(state.metric))state.metric='amount';render()};
 $('#reasonType').onchange=e=>{state.reasonType=e.target.value;hideMetricTooltip();renderReasons(queryFor(...range()));bindMetricTooltips()};
 $$('#metric button').forEach(b=>b.onclick=()=>{state.metric=b.dataset.metric;render()});
-$('#query').onclick=()=>{state.productPage=1;state.brand=$('#brandSelect').value;state.category=$('#categorySelect').value;state.channel=$('#channelSelect').value;state.search=$('#search').value.trim();render()};
-$('#search').onkeydown=e=>{if(e.key==='Enter')$('#query').click()};
-$('#reset').onclick=()=>{state.productPage=1;state.search='';state.category='全部类目';state.channel='全部出价渠道';state.brand='全部品牌';$('#search').value='';$('#categorySelect').selectedIndex=$('#channelSelect').selectedIndex=$('#brandSelect').selectedIndex=0;render()};
+$('#query').onclick=()=>{state.productPage=1;state.brand=$('#brandSelect').value;state.category=$('#categorySelect').value;state.channel=$('#channelSelect').value;render()};
+const applyProductSearch=()=>{state.productSearch=$('#productSearch').value.trim();state.productPage=1;hideMetricTooltip();renderProducts(queryFor(...range()));bindMetricTooltips()};
+$('#productSearchForm').onsubmit=event=>{event.preventDefault();applyProductSearch()};
+$('#productSearch').onsearch=applyProductSearch;
+$('#reset').onclick=()=>{state.productPage=1;state.category='全部类目';state.channel='全部出价渠道';state.brand='全部品牌';$('#categorySelect').selectedIndex=$('#channelSelect').selectedIndex=$('#brandSelect').selectedIndex=0;render()};
 $('#definitions').onclick=()=>$('#help').showModal();$('#closeHelp').onclick=()=>$('#help').close();
 $('#salesNav').onclick=()=>toast('当前为退款分析页面预览');
-const exportMeta=(type='all')=>[['统计口径',state.basis==='refund'?'按退款成功时间':'按支付时间'],['统计时间',range().join(' 至 ')],['退款类型',typeName(type)],['商品搜索',state.search||'全部商品'],['退款观察期',state.basis==='pay'?'各订单支付后30天':'按退款完成日期统计'],['数据截至',CUTOFF],['品牌/类目/出价渠道',`${state.brand}/${state.category}/${state.channel}`]];
+const exportMeta=(type='all')=>[['统计口径',state.basis==='refund'?'按退款成功时间':'按支付时间'],['统计时间',range().join(' 至 ')],['退款类型',typeName(type)],['商品范围','顶部筛选条件下的全部商品'],['退款观察期',state.basis==='pay'?'各订单支付后30天':'按退款完成日期统计'],['数据截至',CUTOFF],['品牌/类目/出价渠道',`${state.brand}/${state.category}/${state.channel}`]];
 function detailExportRows(){
  const rows=uniqueRecords(currentRows()).sort((a,b)=>b.refundTime.localeCompare(a.refundTime));
  const header=['子订单号','售后单号','商品名称','货号','规格','品牌','类目','出价渠道','支付时间','退款成功时间','实际退款金额（元）','退款类型','退款原因','状态'];
