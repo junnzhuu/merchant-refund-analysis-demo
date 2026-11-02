@@ -3,7 +3,7 @@ const $$ = s => [...document.querySelectorAll(s)];
 const M = RefundModel;
 const {DAY,CUTOFF,catalog,uniqueRecords,total,count} = M;
 const data=M.createData(),records=data.refunds,payments=data.payments;
-const state={basis:'refund',period:'today',type:'all',metric:'amount',search:'',brand:'全部品牌',category:'全部类目',channel:'全部出价渠道',sort:'amount',reasonSort:'amount',reasonDirection:'desc',expanded:new Set(['p0']),customStart:'2026-10-21',customEnd:'2026-10-27',...M.defaults()};
+const state={basis:'refund',period:'today',type:'all',metric:'amount',search:'',brand:'全部品牌',category:'全部类目',channel:'全部出价渠道',sort:'amount',reasonType:'all',reasonSort:'amount',reasonDirection:'desc',expanded:new Set(['p0']),customStart:'2026-10-21',customEnd:'2026-10-27',...M.defaults()};
 const money=c=> (c/100).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
 const typeName=t=>({all:'全部退款',mid:'发货前退款',return:'发货后退货退款',only:'发货后仅退款'}[t]);
 const metricName=()=>({amount:'退款金额',count:'退款订单数',rate:'订单退款率',amountRate:'金额退款率'}[state.metric]);
@@ -74,7 +74,7 @@ const reasonMetricLabels={amountRate:'金额退款率',rate:'订单退款率',am
 function renderReasons(result){
  const pay=state.basis==='pay',columns=pay?['amountRate','rate','amount','count']:['amount','count'];
  if(!columns.includes(state.reasonSort)){state.reasonSort='amount';state.reasonDirection='desc'}
- const direction=state.reasonDirection==='asc'?1:-1,rows=M.summarizeReasons(result);
+ const direction=state.reasonDirection==='asc'?1:-1,rows=M.summarizeReasons({...result,refunds:M.typeRows(result.refunds,state.reasonType)});
  rows.sort((a,b)=>a[state.reasonSort]===null?(b[state.reasonSort]===null?0:1):b[state.reasonSort]===null?-1:(a[state.reasonSort]-b[state.reasonSort])*direction);
  const header=metric=>{const label=reasonMetricLabels[metric],active=state.reasonSort===metric,sort=active?state.reasonDirection:null;return `<th scope="col" class="reason-numeric" aria-sort="${sort==='asc'?'ascending':sort==='desc'?'descending':'none'}"><div class="reason-column-head"><button type="button" class="reason-sort ${active?'is-active':''}" data-reason-sort="${metric}" aria-label="按${label}${sort==='desc'?'升序':'降序'}排列">${label}<span class="reason-sort-icon ${sort||''}" aria-hidden="true"><i></i><i></i></span></button><button type="button" class="metric-definition reason-info" data-definition="reason|${metric}" aria-label="${label}指标释义" aria-describedby="metricTooltip">${infoIcon}</button></div></th>`};
  $('#reasons').classList.toggle('has-rates',pay);
@@ -101,6 +101,7 @@ function renderProducts(rows){
 function toast(text){$('#toast').textContent=text;$('#toast').classList.add('show');setTimeout(()=>$('#toast').classList.remove('show'),2200)}
 function download(name,rows){const text='\uFEFF'+rows.map(row=>row.map(v=>'"'+String(v).replaceAll('"','""')+'"').join(',')).join('\r\n');const url=URL.createObjectURL(new Blob([text],{type:'text/csv;charset=utf-8;'}));const a=document.createElement('a');a.href=url;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(url),1000)}
 $('#basis').onchange=e=>{state.basis=e.target.value;if(state.basis==='refund'&&isRateMetric(state.metric))state.metric='amount';render()};
+$('#reasonType').onchange=e=>{state.reasonType=e.target.value;hideMetricTooltip();renderReasons(queryFor(...range()));bindMetricTooltips()};
 $$('#metric button').forEach(b=>b.onclick=()=>{state.metric=b.dataset.metric;render()});
 $('#query').onclick=()=>{state.brand=$('#brandSelect').value;state.category=$('#categorySelect').value;state.channel=$('#channelSelect').value;state.search=$('#search').value.trim();render()};
 $('#search').onkeydown=e=>{if(e.key==='Enter')$('#query').click()};
