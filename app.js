@@ -22,8 +22,8 @@ function changeText(value,previous,complete=true){const c=M.change(value,previou
 const CARD_TYPES=['all','mid','only','return'];
 const isRateMetric=metric=>metric==='rate'||metric==='amountRate';
 const metricLabel=metric=>({amount:'退款金额（元）',count:'退款订单数',rate:'订单退款率',amountRate:'金额退款率'}[metric]);
-const infoIcon='<svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="6.1"/><path d="M8 7v4M8 4.5v.4"/></svg>';
-function definitionButton(type,metric,label){return `<button type="button" class="metric-definition" data-definition="${type}|${metric}" aria-describedby="metricTooltip">${label}${infoIcon}</button>`}
+const infoIcon='<svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="6.1"/><path d="M6.3 5.9a1.75 1.75 0 0 1 3.4.6c0 1.2-1.7 1.5-1.7 2.7M8 11.4h.01"/></svg>';
+function definitionButton(type,metric,label){return `<span class="metric-definition-label">${label}<button type="button" class="metric-definition" data-definition="${type}|${metric}" aria-label="${label}指标释义" aria-describedby="metricTooltip">${infoIcon}</button></span>`}
 function metricCard(current,previous,type,allAmount,realtime) {
  const c=M.summarize(current,type),p=M.summarize(previous,type),share=type==='all'?(allAmount?'100%':'—'):amountShare(c.amount,allAmount);
  const format=(value,metric)=>value===null?'—':metric==='amount'?money(value):isRateMetric(metric)?percentage(value):value.toLocaleString();
@@ -147,7 +147,13 @@ function showMetricTooltip(anchor){
  };
  const copy=type==='product'?productCopy[metric]:type==='reason'?reasonCopy[metric]:metric==='share'?{definition:'该类退款金额 ÷ 全部退款金额。用于查看不同退款类型的金额构成。',example:type==='all'?'选择10月5日，全部退款金额1,000元，全部退款金额占比为100%。':`选择10月5日，全部退款金额1,000元，其中${typeName(type)}200元，该类退款金额占比为20%。`}:RefundMetricDefinitions[type][state.basis][metric];
  metricTooltip.innerHTML=`<h4>${type==='product'?'Top退款商品':type==='reason'?'退款原因':typeName(type)} · ${metric==='share'?'金额占比':type==='product'?productMetricLabels[metric]:type==='reason'?reasonMetricLabels[metric]:metricLabel(metric)}</h4><b>指标释义</b><p>${escapeHTML(copy.definition)}</p><b>举例</b><p>${escapeHTML(copy.example)}</p>`;
- metricTooltip.hidden=false;const r=anchor.getBoundingClientRect(),t=metricTooltip.getBoundingClientRect(),left=Math.min(Math.max(12,r.left),innerWidth-t.width-12);let top=r.bottom+10;if(top+t.height>innerHeight-12)top=Math.max(12,r.top-t.height-10);metricTooltip.style.left=left+'px';metricTooltip.style.top=top+'px';
+ metricTooltip.hidden=false;
+ const r=anchor.getBoundingClientRect(),t=metricTooltip.getBoundingClientRect(),center=r.left+r.width/2;
+ const left=Math.min(Math.max(12,center-t.width/2),innerWidth-t.width-12),above=r.top-t.height-10;
+ const placement=above>=12?'top':'bottom',top=placement==='top'?above:r.bottom+10;
+ metricTooltip.dataset.placement=placement;
+ metricTooltip.style.left=left+'px';metricTooltip.style.top=Math.max(12,Math.min(top,innerHeight-t.height-12))+'px';
+ metricTooltip.style.setProperty('--tooltip-arrow-x',Math.min(Math.max(14,center-left),t.width-14)+'px');
 }
 function bindMetricTooltips(){$$('[data-definition]').forEach(b=>{b.onpointerenter=()=>showMetricTooltip(b);b.onpointerleave=()=>{tooltipTimer=setTimeout(hideMetricTooltip,120)};b.onfocus=()=>showMetricTooltip(b);b.onblur=hideMetricTooltip;b.onclick=e=>{e.stopPropagation();showMetricTooltip(b)}})}
 metricTooltip.onpointerenter=()=>clearTimeout(tooltipTimer);metricTooltip.onpointerleave=hideMetricTooltip;
