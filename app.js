@@ -1,7 +1,7 @@
 const $ = s => document.querySelector(s);
 const $$ = s => [...document.querySelectorAll(s)];
 const M = RefundModel;
-const {DAY,CUTOFF,catalog,REFUND_TYPES,dayOffset,uniqueRecords,total,count,typeRows} = M;
+const {DAY,CUTOFF,catalog,uniqueRecords,total,count} = M;
 const data=M.createData(),records=data.refunds,payments=data.payments;
 const state={basis:'refund',period:'today',type:'all',metric:'amount',search:'',brand:'全部品牌',category:'全部类目',channel:'全部出价渠道',sort:'amount',expanded:new Set(['p0']),customStart:'2026-10-21',customEnd:'2026-10-27',...M.defaults()};
 const money=c=> (c/100).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
@@ -46,8 +46,9 @@ function render(){
  $('#legendCurrent').textContent=period.realtime?'今日截至当前':'本期';
  $('#legendPrevious').textContent=comparison;
  $('#trendSelection').textContent=`${typeName(state.type)} / ${metricName()}`;
- $('#chartCaption').textContent=period.realtime?`今日截至 14:30，对比昨日完整24小时${state.basis==='pay'?'；退款按各订单支付后30天统计':''}`:state.basis==='pay'?`${start} 至 ${end}支付订单，在各自支付后30天内的成功退款；未满30天的数据持续更新`:'本期与上周期按周期内第几天对齐；悬停查看实际日期';
+ $('#chartCaption').textContent=period.realtime?`今日截至 14:30，对比昨日完整24小时${state.basis==='pay'?'；退款按各订单支付后30天统计':''}`:state.basis==='pay'?`${start} 至 ${end}支付订单，在各自支付后30天内的成功退款；未满30天的数据持续更新`:'横轴为本周期日期，上周期按对应进度对齐；悬停查看两期实际日期';
  $('#reasonUnit').textContent='按退款金额';
+ $('#downloadDetails').disabled=!rows.length;$('#downloadDetails').title=rows.length?'下载当前筛选条件下的退款明细':'当前筛选条件下暂无可下载的退款明细';
  renderTrend(cur,prev);renderReasons(rows);renderProducts(rows);
  $$('[data-card]').forEach(b=>b.onclick=()=>selectTrend(b.dataset.card));
  $$('[data-card-metric]').forEach(b=>b.onclick=()=>{const[type,metric]=b.dataset.cardMetric.split('|');selectTrend(type,metric)});
@@ -73,28 +74,22 @@ function renderTrend(current,previous){
 function renderReasons(rows){
  const totalValue=total(rows),value=g=>g.amount,display=g=>money(g.amount);
  const reasons=byGroup(rows,r=>r.reason).sort((a,b)=>value(b)-value(a));const top=reasons.slice(0,5);if(reasons.length>5){const items=[...top[4].items,...reasons.slice(5).flatMap(g=>g.items)];top[4]={key:'其他原因',items,amount:total(items),count:count(items),other:true}}
- $('#reasons').innerHTML=top.map((g,i)=>`<button class="reason-row" data-reason="${g.key}"><span class="rank">${i+1}</span><span>${g.key}</span><span class="bar-track"><span class="bar-fill" style="width:${totalValue?value(g)/totalValue*100:0}%;display:block"></span></span><span class="num">${display(g)}</span><span class="percent">${totalValue?(value(g)/totalValue*100).toFixed(2)+'%':'—'}</span></button>`).join('')||'<div class="subnote">暂无数据</div>';
- $$('[data-reason]').forEach(b=>b.onclick=()=>openOrders(b.dataset.reason==='其他原因'?top[4].items:rows.filter(r=>r.reason===b.dataset.reason),b.dataset.reason+' · 退款订单'));
+ $('#reasons').innerHTML=top.map((g,i)=>`<div class="reason-row"><span class="rank">${i+1}</span><span>${g.key}</span><span class="bar-track"><span class="bar-fill" style="width:${totalValue?value(g)/totalValue*100:0}%;display:block"></span></span><span class="num">${display(g)}</span><span class="percent">${totalValue?(value(g)/totalValue*100).toFixed(2)+'%':'—'}</span></div>`).join('')||'<div class="subnote">暂无数据</div>';
 }
 function pants(color){return `<svg viewBox="0 0 40 60" aria-hidden="true"><path d="M9 3L31 3 34 56 23 57 20 25 16 57 5 56Z" fill="${color}"/><path d="M9 5H31M20 5V25M12 9L10 16M28 9L30 16" fill="none" stroke="white" stroke-opacity=".23" stroke-width="1"/><path d="M10 20L9 53M29 20L30 53" stroke="black" stroke-opacity=".09" fill="none"/></svg>`}
 function paidOrders(productId,sku=null){return queryFor(...range()).payments.filter(p=>p.product===productId&&(!sku||p.sku===sku)).length}
 function paymentCells(items,productId,sku=null){if(state.basis!=='pay')return '';const paid=paidOrders(productId,sku);return `<td>${paid}</td><td>${paid?percentage(count(items)/paid):'—'}</td>`}
 function renderProducts(rows){
  const table=$('.products table');table.classList.toggle('pay-table',state.basis==='pay');
- table.querySelector('thead').innerHTML=`<tr><th class="product-col">商品信息</th><th><button id="sortAmount" class="sort ${state.sort==='amount'?'active':''}">退款金额（元） ↓</button></th><th><button id="sortCount" class="sort ${state.sort==='count'?'active':''}">退款订单数 ↕</button></th>${state.basis==='pay'?'<th>支付订单数</th><th>订单退款率</th>':''}<th>金额占比</th><th>主要退款原因</th><th>操作</th></tr>`;
+ table.querySelector('thead').innerHTML=`<tr><th class="product-col">商品信息</th><th><button id="sortAmount" class="sort ${state.sort==='amount'?'active':''}">退款金额（元） ↓</button></th><th><button id="sortCount" class="sort ${state.sort==='count'?'active':''}">退款订单数 ↕</button></th>${state.basis==='pay'?'<th>支付订单数</th><th>订单退款率</th>':''}<th>金额占比</th><th>主要退款原因</th></tr>`;
  $('.products .subtle').textContent=state.basis==='pay'?'订单退款率基于同批支付子订单，含未退款订单；退款按支付后30天统计':'支持展开规格，定位具体退款商品';
  const groups=byGroup(rows,r=>r.product).sort((a,b)=>b[state.sort]-a[state.sort]);const amount=total(rows);
- $('#productRows').innerHTML=groups.map(g=>{const p=catalog.find(p=>p.id===g.key),reason=byGroup(g.items,r=>r.reason).sort((a,b)=>b.amount-a.amount)[0]?.key||'—';const skuRows=state.expanded.has(p.id)?byGroup(g.items,r=>r.sku).map(s=>`<tr class="sku-row"><td>└ ${s.key}</td><td>${money(s.amount)}</td><td>${s.count}</td>${paymentCells(s.items,p.id,s.key)}<td>${amount?(s.amount/amount*100).toFixed(2):'0.00'}%</td><td>${byGroup(s.items,r=>r.reason).sort((a,b)=>b.amount-a.amount)[0]?.key||'—'}</td><td><button class="text-btn" data-sku="${p.id}|${s.key}">查看订单</button></td></tr>`).join(''):'';return `<tr><td><div class="product-info"><div class="thumb">${pants(p.color)}</div><div><div class="product-name">${p.name}</div><div class="product-sub"><span>货号：${p.code}</span><button class="sku-toggle" data-expand="${p.id}">${state.expanded.has(p.id)?'收起':'展开'} SKU ${state.expanded.has(p.id)?'⌃':'⌄'}</button></div></div></div></td><td>${money(g.amount)}</td><td>${g.count}</td>${paymentCells(g.items,p.id)}<td>${amount?(g.amount/amount*100).toFixed(2):'0.00'}%</td><td>${reason}</td><td><button class="text-btn" data-product="${p.id}">查看订单</button></td></tr>${skuRows}`}).join('')||`<tr><td colspan="${state.basis==='pay'?8:6}" style="text-align:center;color:#a2a7af;height:120px">暂无符合条件的退款数据</td></tr>`;
+ $('#productRows').innerHTML=groups.map(g=>{const p=catalog.find(p=>p.id===g.key),reason=byGroup(g.items,r=>r.reason).sort((a,b)=>b.amount-a.amount)[0]?.key||'—';const skuRows=state.expanded.has(p.id)?byGroup(g.items,r=>r.sku).map(s=>`<tr class="sku-row"><td>└ ${s.key}</td><td>${money(s.amount)}</td><td>${s.count}</td>${paymentCells(s.items,p.id,s.key)}<td>${amount?(s.amount/amount*100).toFixed(2):'0.00'}%</td><td>${byGroup(s.items,r=>r.reason).sort((a,b)=>b.amount-a.amount)[0]?.key||'—'}</td></tr>`).join(''):'';return `<tr><td><div class="product-info"><div class="thumb">${pants(p.color)}</div><div><div class="product-name">${p.name}</div><div class="product-sub"><span>货号：${p.code}</span><button class="sku-toggle" data-expand="${p.id}">${state.expanded.has(p.id)?'收起':'展开'} SKU ${state.expanded.has(p.id)?'⌃':'⌄'}</button></div></div></div></td><td>${money(g.amount)}</td><td>${g.count}</td>${paymentCells(g.items,p.id)}<td>${amount?(g.amount/amount*100).toFixed(2):'0.00'}%</td><td>${reason}</td></tr>${skuRows}`}).join('')||`<tr><td colspan="${state.basis==='pay'?7:5}" style="text-align:center;color:#a2a7af;height:120px">暂无符合条件的退款数据</td></tr>`;
  $('#totalProducts').textContent=`共 ${groups.length} 个商品`;
  $('#sortAmount').onclick=()=>{state.sort='amount';renderProducts(currentRows())};
  $('#sortCount').onclick=()=>{state.sort='count';renderProducts(currentRows())};
  $$('[data-expand]').forEach(b=>b.onclick=()=>{const id=b.dataset.expand;state.expanded.has(id)?state.expanded.delete(id):state.expanded.add(id);renderProducts(currentRows())});
- $$('[data-product]').forEach(b=>b.onclick=()=>openOrders(rows.filter(r=>r.product===b.dataset.product),catalog.find(p=>p.id===b.dataset.product).code+' · 退款订单'));
- $$('[data-sku]').forEach(b=>b.onclick=()=>{const[p,sku]=b.dataset.sku.split('|');openOrders(rows.filter(r=>r.product===p&&r.sku===sku),sku+' · 退款订单')});
 }
-let drawerRows=[],drawerType='all',drawerLabel='';
-function openOrders(rows,title,type='all'){rows=uniqueRecords(rows);drawerRows=rows;drawerType=type;drawerLabel=title;$('#drawerTitle').textContent=title;const[start,end]=range();$('#drawerScope').textContent=`仅统计本商家订单 ｜ ${state.basis==='refund'?'按退款时间（退款成功）':'按支付时间'} ｜ ${start} 至 ${end} ｜ ${typeName(type)} ｜ ${title} ｜ 退款成功 ｜ 数据截至 ${CUTOFF}`;$('#drawerSummary').innerHTML=`<span>退款订单数 <b>${count(rows)}</b></span><span>退款金额（元） <b>${money(total(rows))}</b></span>`;$('#orderTable').innerHTML=`<table class="orders"><thead><tr><th>子订单号 / 售后单号</th><th>商品 / 规格</th><th>支付时间</th><th>退款成功时间</th><th>退款金额</th><th>退款类型</th><th>状态</th></tr></thead><tbody>${[...rows].sort((a,b)=>b.refundTime.localeCompare(a.refundTime)).slice(0,20).map(r=>{const p=catalog.find(p=>p.id===r.product);return `<tr><td>${r.subOrderId}<br><span style="color:#a4a8b0">${r.afterSale}</span></td><td class="order-product">${p.code}<br><span style="color:#a4a8b0">${r.sku}</span></td><td>${r.payTime.slice(0,10)}<br>${r.payTime.slice(11)}</td><td>${r.refundDate}<br>${r.refundTime.slice(11)}</td><td>${money(r.amount)}</td><td>${typeName(r.type)}</td><td><span class="success">退款成功</span></td></tr>`}).join('')}</tbody></table><div class="subnote">${rows.length>20?'当前预览前 20 条，导出可查看全部订单。':'已展示全部符合条件的订单。'}</div>`;$('#overlay').hidden=false;document.body.style.overflow='hidden'}
-function closeOrders(){$('#overlay').hidden=true;document.body.style.overflow=''}
 function toast(text){$('#toast').textContent=text;$('#toast').classList.add('show');setTimeout(()=>$('#toast').classList.remove('show'),2200)}
 function download(name,rows){const text='\uFEFF'+rows.map(row=>row.map(v=>'"'+String(v).replaceAll('"','""')+'"').join(',')).join('\r\n');const url=URL.createObjectURL(new Blob([text],{type:'text/csv;charset=utf-8;'}));const a=document.createElement('a');a.href=url;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(url),1000)}
 $('#basis').onchange=e=>{state.basis=e.target.value;if(state.basis==='refund'&&isRateMetric(state.metric))state.metric='amount';render()};
@@ -102,14 +97,15 @@ $$('#metric button').forEach(b=>b.onclick=()=>{state.metric=b.dataset.metric;ren
 $('#query').onclick=()=>{state.brand=$('#brandSelect').value;state.category=$('#categorySelect').value;state.channel=$('#channelSelect').value;state.search=$('#search').value.trim();render()};
 $('#search').onkeydown=e=>{if(e.key==='Enter')$('#query').click()};
 $('#reset').onclick=()=>{state.search='';state.category='全部类目';state.channel='全部出价渠道';state.brand='全部品牌';$('#search').value='';$('#categorySelect').selectedIndex=$('#channelSelect').selectedIndex=$('#brandSelect').selectedIndex=0;render()};
-$('#showOrders').onclick=()=>openOrders(currentRows(),'退款订单明细');$('#closeDrawer').onclick=closeOrders;$('#overlay').onclick=e=>{if(e.target===$('#overlay'))closeOrders()};
-document.addEventListener('keydown',e=>{if(e.key==='Escape')closeOrders()});
 $('#definitions').onclick=()=>$('#help').showModal();$('#closeHelp').onclick=()=>$('#help').close();
 $('#salesNav').onclick=()=>toast('当前为退款分析页面预览');
 const exportMeta=(type='all')=>[['统计口径',state.basis==='refund'?'按退款成功时间':'按支付时间'],['统计时间',range().join(' 至 ')],['退款类型',typeName(type)],['商品搜索',state.search||'全部商品'],['退款观察期',state.basis==='pay'?'各订单支付后30天':'按退款完成日期统计'],['数据截至',CUTOFF],['品牌/类目/出价渠道',`${state.brand}/${state.category}/${state.channel}`]];
-function productExportRows(){const header=['商品名称','货号','规格','退款金额','退款订单数',...(state.basis==='pay'?['支付订单数','订单退款率']:[]),'金额占比','主要退款原因'],rows=currentRows(),all=total(rows),out=[];for(const g of byGroup(rows,r=>r.product)){const p=catalog.find(p=>p.id===g.key),write=(items,sku='全部规格')=>{const paid=paidOrders(p.id,sku==='全部规格'?null:sku),amount=total(items);out.push([p.name,p.code,sku,money(amount),count(items),...(state.basis==='pay'?[paid,paid?percentage(count(items)/paid):'—']:[]),amountShare(amount,all),byGroup(items,r=>r.reason).sort((a,b)=>b.amount-a.amount)[0]?.key||'—'])};write(g.items);for(const s of byGroup(g.items,r=>r.sku))write(s.items,s.key)}return[...exportMeta(),header,...out]}
-$('#exportProducts').onclick=()=>download('退款商品分析_示例数据.csv',productExportRows());
-$('#exportOrders').onclick=()=>download('退款订单明细_示例数据.csv',[...exportMeta(drawerType),['下钻范围',drawerLabel],['子订单号','售后单号','货号','规格','支付时间','退款成功时间','实际退款金额','退款类型','退款原因'],...drawerRows.map(r=>[r.subOrderId,r.afterSale,catalog.find(p=>p.id===r.product).code,r.sku,r.payTime,r.refundTime,money(r.amount),typeName(r.type),r.reason])]);
+function detailExportRows(){
+ const rows=uniqueRecords(currentRows()).sort((a,b)=>b.refundTime.localeCompare(a.refundTime));
+ const header=['子订单号','售后单号','商品名称','货号','规格','品牌','类目','出价渠道','支付时间','退款成功时间','实际退款金额（元）','退款类型','退款原因','状态'];
+ return [...exportMeta(),['退款订单数',count(rows)],['退款金额（元）',money(total(rows))],[],header,...rows.map(r=>{const p=catalog.find(p=>p.id===r.product);return[r.subOrderId,r.afterSale,p.name,p.code,r.sku,p.brand||p.name.split(' ')[0],p.category,p.channel,r.payTime,r.refundTime,money(r.amount),typeName(r.type),r.reason,'退款成功']})];
+}
+$('#downloadDetails').onclick=()=>{const[start,end]=range();download(`退款明细_${state.basis==='pay'?'支付时间':'退款时间'}_${start}_${end}.csv`,detailExportRows())};
 // Tooltip content follows the confirmed PRD; floating surface stays visible above cards.
 const metricTooltip=document.createElement('div');metricTooltip.id='metricTooltip';metricTooltip.className='metric-tooltip';metricTooltip.role='tooltip';metricTooltip.hidden=true;document.body.appendChild(metricTooltip);
 let tooltipAnchor=null,tooltipTimer;

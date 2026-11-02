@@ -188,6 +188,22 @@ test('amount and order trend metrics preserve cents versus yuan and ratio units'
   assert.deepEqual(M.buildTrend(data, { ...state, metric: 'orderRate' }).current, [2 / 3]);
   assert.deepEqual(M.buildTrend(data, { ...state, metric: 'amountRate' }).current, [0.15]);
 });
+test('historical trend labels use the actual current dates including a single day and cross year ranges', () => {
+  assert.deepEqual(M.buildTrend(data, state).labels, ['10-01']);
+  assert.deepEqual(M.buildTrend(data, { ...state, period: 'seven' }).labels, ['10-26', '10-27', '10-28', '10-29', '10-30', '10-31', '11-01']);
+  assert.deepEqual(M.buildTrend(data, { ...state, customStart: '2025-12-31', customEnd: '2026-01-01' }).labels, ['2025-12-31', '2026-01-01']);
+});
+test('a longer previous month does not extend the current date axis or shrink its full period summary', () => {
+  const paid = payment('JAN-END', '2026-01-30', '10:00:00', 10000);
+  const janEnd = { ...paid, refundId: 'JAN-END-1', refundDate: '2026-01-31', refundTime: '2026-01-31 10:00:00', amount: 1234, type: 'mid', status: 'success' };
+  const fixture = { ...data, payments: [paid], refunds: [janEnd] };
+  const s = { ...state, basis: 'refund', period: 'calendar_month', selectedMonth: '2026-02', metric: 'amount' };
+  const previous = M.query(fixture, s, M.getPeriod(s).previous), trend = M.buildTrend(fixture, s);
+  assert.equal(trend.labels.length, 28);
+  assert.deepEqual([trend.labels[0], trend.labels.at(-1)], ['02-01', '02-28']);
+  assert.equal(trend.previousDates.at(-1), '2026-01-28');
+  assert.equal(M.summarize(previous).amount, 1234);
+});
 test('period amount rate uses total refund amount divided by total paid amount instead of averaging points', () => {
   const extraPayment = payment('E', '2026-10-02', '09:00:00', 100000);
   const extraRefund = { ...extraPayment, refundId: 'E-1', refundDate: '2026-10-03', refundTime: '2026-10-03 09:00:00', amount: 10000, status: 'success', type: 'only' };
@@ -210,6 +226,7 @@ test('trend null reasons distinguish missing coverage and each zero denominator'
 test('realtime amount rate uses hourly payments and leaves future hours empty', () => {
   const trend = M.buildTrend(data, { ...state, period: 'today', metric: 'amountRate' });
   assert.equal(trend.current.length, 24);
+  assert.deepEqual([trend.labels[0], trend.labels.at(-1)], ['00:00', '23:00']);
   assert.equal(trend.current[10], 0.05);
   assert.equal(trend.current[11], null);
   assert.equal(trend.currentReasons[11], '该时段无成交金额');

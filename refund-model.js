@@ -128,7 +128,7 @@
   function change(current,previous,complete=true) { if(!complete||current===null||previous===null||!Number.isFinite(current)||!Number.isFinite(previous))return {value:null,reason:'对比期数据缺失，无法计算'};if(previous===0)return {value:null,reason:'上周期为0，无法计算变化率'};return {value:(current-previous)/previous,reason:''}; }
   function buildTrend(data,state,queries) {
     const period=getPeriod(state),a=queries?.current||query(data,state,period.current),b=queries?.previous||query(data,state,period.previous),curDates=dateList(period.current.start,period.current.end),prevDates=dateList(period.previous.start,period.previous.end);
-    const n=period.realtime?24:Math.max(curDates.length,prevDates.length),labels=[],current=[],previous=[],currentDates=[],previousDates=[],currentReasons=[],previousReasons=[];
+    const n=period.realtime?24:curDates.length,crossYear=period.current.start.slice(0,4)!==period.current.end.slice(0,4),labels=[],current=[],previous=[],currentDates=[],previousDates=[],currentReasons=[],previousReasons=[];
     const cutoffHour=Number((state.cutoff||data.cutoff||CUTOFF).slice(11,13));
     function point(result,date,index,realtime) {
       if(!date)return {value:null,reason:'无对应日期'};
@@ -143,7 +143,7 @@
     }
     for(let i=0;i<n;i++) {
       const cd=period.realtime?period.current.start:curDates[i]||null,pd=period.realtime?period.previous.start:prevDates[i]||null;
-      labels.push(period.realtime?String(i).padStart(2,'0')+':00':n===1?'所选日期':`第${i+1}天`);
+      labels.push(period.realtime?String(i).padStart(2,'0')+':00':crossYear?cd:cd.slice(5));
       currentDates.push(cd?(cd+(period.realtime?' '+String(i).padStart(2,'0')+':00':'')):null);previousDates.push(pd?(pd+(period.realtime?' '+String(i).padStart(2,'0')+':00':'')):null);
       const c=point(a,cd,i,period.realtime),p=point(b,pd,i,period.realtime);current.push(c.value);previous.push(p.value);currentReasons.push(c.reason);previousReasons.push(p.reason);
     }
