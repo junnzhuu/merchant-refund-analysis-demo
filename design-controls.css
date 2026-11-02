@@ -90,7 +90,7 @@
   flex-wrap: nowrap;
   gap: var(--dw-space-8);
   width: 100%;
-  min-width: 1026px;
+  min-width: 882px;
 }
 
 .filter-line select,
@@ -244,13 +244,6 @@
   height: 16px;
   margin-left: auto;
   color: var(--dw-color-icon-tertiary);
-}
-
-.filter-line .btn {
-  flex: 0 0 64px;
-  width: 64px;
-  height: var(--dw-control-height);
-  padding: 0 var(--dw-button-md-padding-x);
 }
 
 .btn.download-details {
