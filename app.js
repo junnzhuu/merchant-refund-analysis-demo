@@ -37,16 +37,15 @@ function render(){
  hideMetricTooltip();hideProductReasonTooltip();
  const period=M.getPeriod(state),cur=queryFor(period.current.start,period.current.end),prev=queryFor(period.previous.start,period.previous.end),rows=cur.refunds,[start,end]=range(),allAmount=total(rows);
  const comparison=period.realtime?'昨日全天':period.partial?'上周期同进度':'上周期';
- $('#compareRange').textContent=`对比${comparison}：${period.previous.start}${period.previous.start===period.previous.end?'':' 至 '+period.previous.end}`;
+ $('#compareRange').textContent=`卡片对比${comparison}：${period.previous.start}${period.previous.start===period.previous.end?'':' 至 '+period.previous.end}`;
  $('#scopeNote').textContent=state.basis==='refund'?'按退款完成日期统计成功退款数据':'按支付日期统计，退款观察期为各订单支付后30天';
  $('#updated').textContent=`更新至 ${CUTOFF.replace('T',' ')}`;
  $('#metrics').innerHTML=CARD_TYPES.map((type,i)=>(i?`<span class="metric-operator" aria-hidden="true">${i===1?'＝':'＋'}</span>`:'')+metricCard(cur,prev,type,allAmount,period.realtime)).join('');
  $('#rateMetric').hidden=$('#amountRateMetric').hidden=state.basis!=='pay';
  $$('#metric button').forEach(b=>b.classList.toggle('on',b.dataset.metric===state.metric));
  $('#legendCurrent').textContent=period.realtime?'今日截至当前':'本期';
- $('#legendPrevious').textContent=comparison;
  $('#trendSelection').textContent=`${typeName(state.type)} / ${metricName()}`;
- $('#chartCaption').textContent=period.realtime?`今日截至 14:30，对比昨日完整24小时${state.basis==='pay'?'；退款按各订单支付后30天统计':''}`:state.basis==='pay'?`${start} 至 ${end}支付订单，在各自支付后30天内的成功退款；未满30天的数据持续更新`:'横轴为本周期日期，上周期按对应进度对齐；悬停查看两期实际日期';
+ $('#chartCaption').textContent=period.realtime?`今日数据截至 14:30${state.basis==='pay'?'；退款按各订单支付后30天统计':''}`:state.basis==='pay'?`${start} 至 ${end}支付订单，在各自支付后30天内的成功退款；未满30天的数据持续更新`:'横轴为本周期日期；悬停查看对应日期及指标值';
  $('#downloadDetails').disabled=!rows.length;$('#downloadDetails').title=rows.length?'下载当前筛选条件下的退款明细':'当前筛选条件下暂无可下载的退款明细';
  renderTrend(cur,prev);renderReasons(cur);renderProducts(cur);
  $$('[data-card]').forEach(b=>b.onclick=()=>selectTrend(b.dataset.card));
@@ -55,20 +54,20 @@ function render(){
 }
 function trendValue(value,reason){return value===null?(reason||'—'):state.metric==='amount'?money(value*100)+'元':isRateMetric(state.metric)?percentage(value):value.toLocaleString()+'单'}
 function renderTrend(current,previous){
- const series=M.buildTrend(data,state,{current,previous}),{labels,current:cur,previous:prev}=series;
- const values=[...cur,...prev].filter(v=>v!==null),max=Math.max(...values,isRateMetric(state.metric)?.01:1);
+ const series=M.buildTrend(data,state,{current,previous}),{labels,current:cur}=series;
+ const values=cur.filter(v=>v!==null),max=Math.max(...values,isRateMetric(state.metric)?.01:1);
  const step=state.metric==='amount'?Math.max(100,Math.ceil(max/4/100)*100):isRateMetric(state.metric)?Math.max(.01,Math.ceil(max/4/.01)*.01):Math.max(1,Math.ceil(max/4));
  const upper=step*4,W=1500,H=220,L=64,R=15,T=20,B=32,x=i=>labels.length===1?(L+W-R)/2:L+i*(W-L-R)/(labels.length-1),y=v=>T+(H-T-B)*(1-v/upper);
  const path=arr=>{let active=false;return arr.map((v,i)=>{if(v===null){active=false;return ''}const s=`${active?'L':'M'}${x(i).toFixed(1)},${y(v).toFixed(1)}`;active=true;return s}).join(' ')};
- let svg=`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${typeName(state.type)} · ${metricName()} · ${series.currentLabel}与${series.previousLabel}趋势"><text x="5" y="12" font-size="11" fill="#9ba1aa">${state.metric==='amount'?'单位：元':isRateMetric(state.metric)?'单位：%':'单位：单'}</text>`;
+ let svg=`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${typeName(state.type)} · ${metricName()} · ${series.currentLabel}趋势"><text x="5" y="12" font-size="11" fill="#9ba1aa">${state.metric==='amount'?'单位：元':isRateMetric(state.metric)?'单位：%':'单位：单'}</text>`;
  for(let i=0;i<=4;i++){const v=upper/4*i;svg+=`<line x1="${L}" y1="${y(v)}" x2="${W-R}" y2="${y(v)}" stroke="#edf0f4" stroke-dasharray="4 4"/><text x="${L-15}" y="${y(v)+4}" text-anchor="end" fill="#999fa9" font-size="11">${isRateMetric(state.metric)?(v*100).toFixed(0)+'%':v.toLocaleString()}</text>`}
- svg+=`<path d="${path(prev)}" fill="none" stroke="#9aaebe" stroke-width="2" stroke-dasharray="6 5" stroke-linejoin="round"/><path d="${path(cur)}" fill="none" stroke="#70b9ba" stroke-width="2.3" stroke-linejoin="round"/>`;
- [prev,cur].forEach((a,k)=>{if(labels.length===1||a.filter(v=>v!==null).length===1)a.forEach((v,i)=>{if(v!==null)svg+=`<circle cx="${x(i)}" cy="${y(v)}" r="4" fill="${k?'#70b9ba':'#9aaebe'}" stroke="white" stroke-width="1.5"/>`})});
+ svg+=`<path d="${path(cur)}" fill="none" stroke="#70b9ba" stroke-width="2.3" stroke-linejoin="round"/>`;
+ if(labels.length===1||cur.filter(v=>v!==null).length===1)cur.forEach((v,i)=>{if(v!==null)svg+=`<circle cx="${x(i)}" cy="${y(v)}" r="4" fill="#70b9ba" stroke="white" stroke-width="1.5"/>`});
  labels.forEach((label,i)=>{if(series.realtime?i%2===0||i===23:labels.length<=8||i%Math.ceil(labels.length/8)===0||i===labels.length-1)svg+=`<text x="${x(i)}" y="${H-8}" text-anchor="middle" fill="#999fa9" font-size="11">${escapeHTML(label)}</text>`});
  if(series.realtime)svg+=`<line x1="${x(14)}" x2="${x(14)}" y1="${T}" y2="${H-B}" stroke="#c5dddd" stroke-dasharray="3 4"/><text x="${x(14)+8}" y="17" font-size="11" fill="#79a9aa">更新至 14:30</text>`;
- labels.forEach((_,i)=>{const left=labels.length===1?L:i?((x(i-1)+x(i))/2):L,right=labels.length===1?W-R:i===labels.length-1?W-R:((x(i)+x(i+1))/2);svg+=`<rect class="trend-hit" data-trend-index="${i}" x="${left}" y="${T}" width="${Math.max(1,right-left)}" height="${H-T-B}" fill="transparent"><title>${escapeHTML(`${metricName()}\n${series.currentLabel} ${series.currentDates[i]||'无对应日期'}：${trendValue(cur[i],series.currentReasons[i])}\n${series.previousLabel} ${series.previousDates[i]||'无对应日期'}：${trendValue(prev[i],series.previousReasons[i])}`)}</title></rect>`});
+ labels.forEach((_,i)=>{const left=labels.length===1?L:i?((x(i-1)+x(i))/2):L,right=labels.length===1?W-R:i===labels.length-1?W-R:((x(i)+x(i+1))/2);svg+=`<rect class="trend-hit" data-trend-index="${i}" x="${left}" y="${T}" width="${Math.max(1,right-left)}" height="${H-T-B}" fill="transparent"><title>${escapeHTML(`${metricName()}\n${series.currentLabel} ${series.currentDates[i]||'无对应日期'}：${trendValue(cur[i],series.currentReasons[i])}`)}</title></rect>`});
  $('#trend').innerHTML=svg+'</svg><div class="trend-tooltip" id="trendTooltip" hidden></div>';
- $$('[data-trend-index]').forEach(hit=>{hit.onpointermove=e=>{const i=Number(hit.dataset.trendIndex),tip=$('#trendTooltip'),rect=$('#trend').getBoundingClientRect();tip.innerHTML=`<b>${metricName()}</b><div><i></i>${series.currentLabel} · ${series.currentDates[i]||'无对应日期'}<strong>${trendValue(cur[i],series.currentReasons[i])}</strong></div><div class="previous"><i></i>${series.previousLabel} · ${series.previousDates[i]||'无对应日期'}<strong>${trendValue(prev[i],series.previousReasons[i])}</strong></div>`;tip.hidden=false;tip.style.left=Math.min(Math.max(0,e.clientX-rect.left+15),Math.max(0,rect.width-340))+'px';tip.style.top='15px'};hit.onpointerleave=()=>$('#trendTooltip').hidden=true});
+ $$('[data-trend-index]').forEach(hit=>{hit.onpointermove=e=>{const i=Number(hit.dataset.trendIndex),tip=$('#trendTooltip'),rect=$('#trend').getBoundingClientRect();tip.innerHTML=`<b>${metricName()}</b><div><i></i>${series.currentLabel} · ${series.currentDates[i]||'无对应日期'}<strong>${trendValue(cur[i],series.currentReasons[i])}</strong></div>`;tip.hidden=false;tip.style.left=Math.min(Math.max(0,e.clientX-rect.left+15),Math.max(0,rect.width-340))+'px';tip.style.top='15px'};hit.onpointerleave=()=>$('#trendTooltip').hidden=true});
 }
 const reasonMetricLabels={amountRate:'金额退款率',rate:'订单退款率',amount:'退款金额',count:'退款订单数'};
 function renderReasons(result){
