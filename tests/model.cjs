@@ -139,6 +139,39 @@ test('classification rates use the same complete payment cohort and add up', () 
   for (const key of ['amount', 'count', 'rate', 'amountRate']) assert(Math.abs(parts.reduce((n, p) => n + p[key], 0) - all[key]) < 1e-12);
   assert.deepEqual(M.query(data, { ...state, type: 'only' }), q);
 });
+test('reason summaries deduplicate records and orders while sharing all paid order and amount denominators', () => {
+  const reasonRefunds = [
+    { ...boundary, reason: '尺码' }, { ...boundary, reason: '尺码' },
+    { ...refunds.find(r => r.refundId === 'B-1'), reason: '尺码' },
+    { ...refunds.find(r => r.refundId === 'B-2'), reason: '不喜欢' },
+    { ...refund('B-3', 'B', '2026-10-18', '10:00:00', 500, 'return'), reason: '尺码' },
+    { ...refunds.find(r => r.refundId === 'A-over'), reason: '超出观察期' }
+  ];
+  const reasons = M.summarizeReasons(M.query({ ...data, refunds: reasonRefunds }, state));
+  assert.deepEqual(reasons, [
+    { reason: '尺码', amount: 3500, count: 2, amountRate: 3500 / 40000, rate: 2 / 3 },
+    { reason: '不喜欢', amount: 3000, count: 1, amountRate: 3000 / 40000, rate: 1 / 3 }
+  ]);
+});
+test('all refund reasons remain present with stable source order for equal amounts', () => {
+  const reasonRefunds = [100, 300, 200, 300, 50, 40, 30].map((amount, i) => ({ ...boundary, refundId: 'reason-' + i, reason: '原因' + i, amount }));
+  const reasons = M.summarizeReasons(M.query({ ...data, refunds: reasonRefunds }, state));
+  assert.deepEqual(reasons.map(r => r.reason), ['原因1', '原因3', '原因2', '原因0', '原因4', '原因5', '原因6']);
+  assert(reasons.every(r => r.count === 1));
+});
+test('reason rates retain null denominators and missing coverage semantics from summaries', () => {
+  const result = M.query({ ...data, refunds: [boundary] }, state);
+  const noPayments = M.summarizeReasons({ ...result, payments: [] })[0];
+  assert.equal(noPayments.amountRate, null);
+  assert.equal(noPayments.rate, null);
+  const zeroAmount = M.summarizeReasons({ ...result, payments: [{ ...payments[0], amount: 0 }] })[0];
+  assert.equal(zeroAmount.amountRate, null);
+  assert.equal(zeroAmount.rate, 1);
+  const missing = M.summarizeReasons({ ...result, complete: false })[0];
+  assert.equal(missing.amountRate, null);
+  assert.equal(missing.rate, null);
+  assert.deepEqual(M.summarizeReasons({ ...result, refunds: [] }), []);
+});
 test('product, SKU, brand, category and channel filters restrict the payment denominator coherently', () => {
   const product = M.summarize(M.query(data, { ...state, product: 'p0' }));
   assert.equal(product.paid, 2);

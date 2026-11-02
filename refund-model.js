@@ -125,6 +125,17 @@
     const rows=typeRows(result.refunds,type),amount=total(rows,result.cutoff),orders=count(rows,result.cutoff),payments=[...new Map(result.payments.map(r=>[r.subOrderId,r])).values()],paid=payments.length,paidAmount=payments.reduce((sum,p)=>sum+p.amount,0);
     return {amount,count:orders,paid,paidAmount,rate:result.complete&&paid?orders/paid:null,amountRate:result.complete&&paidAmount?amount/paidAmount:null,complete:result.complete};
   }
+  function summarizeReasons(result) {
+    const groups=new Map();
+    for(const row of uniqueRecords(result.refunds,result.cutoff)) {
+      if(!groups.has(row.reason))groups.set(row.reason,[]);
+      groups.get(row.reason).push(row);
+    }
+    return [...groups].map(([reason,refunds])=>{
+      const {amount,count,amountRate,rate}=summarize({...result,refunds});
+      return {reason,amount,count,amountRate,rate};
+    }).sort((a,b)=>b.amount-a.amount);
+  }
   function change(current,previous,complete=true) { if(!complete||current===null||previous===null||!Number.isFinite(current)||!Number.isFinite(previous))return {value:null,reason:'对比期数据缺失，无法计算'};if(previous===0)return {value:null,reason:'上周期为0，无法计算变化率'};return {value:(current-previous)/previous,reason:''}; }
   function buildTrend(data,state,queries) {
     const period=getPeriod(state),a=queries?.current||query(data,state,period.current),b=queries?.previous||query(data,state,period.previous),curDates=dateList(period.current.start,period.current.end),prevDates=dateList(period.previous.start,period.previous.end);
@@ -149,5 +160,5 @@
     }
     return {...period,labels,current,previous,currentDates,previousDates,currentReasons,previousReasons,currentLabel:period.realtime?'今日截至当前':'本期',previousLabel:period.realtime?'昨日全天':period.partial?'上期同进度':'上周期'};
   }
-  return {DAY,CUTOFF,SELECTABLE_START,DATA_START,REFUND_TYPES,SKUS,catalog,dayOffset,dayCount,dateList,monthBounds,weekBounds,isoWeek,defaults,getPeriod,validateSelection,createData,uniqueRecords,total,count,typeRows,matches,query,summarize,change,buildTrend};
+  return {DAY,CUTOFF,SELECTABLE_START,DATA_START,REFUND_TYPES,SKUS,catalog,dayOffset,dayCount,dateList,monthBounds,weekBounds,isoWeek,defaults,getPeriod,validateSelection,createData,uniqueRecords,total,count,typeRows,matches,query,summarize,summarizeReasons,change,buildTrend};
 });

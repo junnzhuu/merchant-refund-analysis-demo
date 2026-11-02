@@ -3,7 +3,7 @@ const $$ = s => [...document.querySelectorAll(s)];
 const M = RefundModel;
 const {DAY,CUTOFF,catalog,uniqueRecords,total,count} = M;
 const data=M.createData(),records=data.refunds,payments=data.payments;
-const state={basis:'refund',period:'today',type:'all',metric:'amount',search:'',brand:'全部品牌',category:'全部类目',channel:'全部出价渠道',sort:'amount',expanded:new Set(['p0']),customStart:'2026-10-21',customEnd:'2026-10-27',...M.defaults()};
+const state={basis:'refund',period:'today',type:'all',metric:'amount',search:'',brand:'全部品牌',category:'全部类目',channel:'全部出价渠道',sort:'amount',reasonSort:'amount',reasonDirection:'desc',expanded:new Set(['p0']),customStart:'2026-10-21',customEnd:'2026-10-27',...M.defaults()};
 const money=c=> (c/100).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
 const typeName=t=>({all:'全部退款',mid:'发货前退款',return:'发货后退货退款',only:'发货后仅退款'}[t]);
 const metricName=()=>({amount:'退款金额',count:'退款订单数',rate:'订单退款率',amountRate:'金额退款率'}[state.metric]);
@@ -47,9 +47,8 @@ function render(){
  $('#legendPrevious').textContent=comparison;
  $('#trendSelection').textContent=`${typeName(state.type)} / ${metricName()}`;
  $('#chartCaption').textContent=period.realtime?`今日截至 14:30，对比昨日完整24小时${state.basis==='pay'?'；退款按各订单支付后30天统计':''}`:state.basis==='pay'?`${start} 至 ${end}支付订单，在各自支付后30天内的成功退款；未满30天的数据持续更新`:'横轴为本周期日期，上周期按对应进度对齐；悬停查看两期实际日期';
- $('#reasonUnit').textContent='按退款金额';
  $('#downloadDetails').disabled=!rows.length;$('#downloadDetails').title=rows.length?'下载当前筛选条件下的退款明细':'当前筛选条件下暂无可下载的退款明细';
- renderTrend(cur,prev);renderReasons(rows);renderProducts(rows);
+ renderTrend(cur,prev);renderReasons(cur);renderProducts(rows);
  $$('[data-card]').forEach(b=>b.onclick=()=>selectTrend(b.dataset.card));
  $$('[data-card-metric]').forEach(b=>b.onclick=()=>{const[type,metric]=b.dataset.cardMetric.split('|');selectTrend(type,metric)});
  bindMetricTooltips();datePicker?.sync();
@@ -71,10 +70,19 @@ function renderTrend(current,previous){
  $('#trend').innerHTML=svg+'</svg><div class="trend-tooltip" id="trendTooltip" hidden></div>';
  $$('[data-trend-index]').forEach(hit=>{hit.onpointermove=e=>{const i=Number(hit.dataset.trendIndex),tip=$('#trendTooltip'),rect=$('#trend').getBoundingClientRect();tip.innerHTML=`<b>${metricName()}</b><div><i></i>${series.currentLabel} · ${series.currentDates[i]||'无对应日期'}<strong>${trendValue(cur[i],series.currentReasons[i])}</strong></div><div class="previous"><i></i>${series.previousLabel} · ${series.previousDates[i]||'无对应日期'}<strong>${trendValue(prev[i],series.previousReasons[i])}</strong></div>`;tip.hidden=false;tip.style.left=Math.min(Math.max(0,e.clientX-rect.left+15),Math.max(0,rect.width-340))+'px';tip.style.top='15px'};hit.onpointerleave=()=>$('#trendTooltip').hidden=true});
 }
-function renderReasons(rows){
- const totalValue=total(rows),value=g=>g.amount,display=g=>money(g.amount);
- const reasons=byGroup(rows,r=>r.reason).sort((a,b)=>value(b)-value(a));const top=reasons.slice(0,5);if(reasons.length>5){const items=[...top[4].items,...reasons.slice(5).flatMap(g=>g.items)];top[4]={key:'其他原因',items,amount:total(items),count:count(items),other:true}}
- $('#reasons').innerHTML=top.map((g,i)=>`<div class="reason-row"><span class="rank">${i+1}</span><span>${g.key}</span><span class="bar-track"><span class="bar-fill" style="width:${totalValue?value(g)/totalValue*100:0}%;display:block"></span></span><span class="num">${display(g)}</span><span class="percent">${totalValue?(value(g)/totalValue*100).toFixed(2)+'%':'—'}</span></div>`).join('')||'<div class="subnote">暂无数据</div>';
+const reasonMetricLabels={amountRate:'金额退款率',rate:'订单退款率',amount:'退款金额',count:'退款订单数'};
+function renderReasons(result){
+ const pay=state.basis==='pay',columns=pay?['amountRate','rate','amount','count']:['amount','count'];
+ if(!columns.includes(state.reasonSort)){state.reasonSort='amount';state.reasonDirection='desc'}
+ const direction=state.reasonDirection==='asc'?1:-1,rows=M.summarizeReasons(result);
+ rows.sort((a,b)=>a[state.reasonSort]===null?(b[state.reasonSort]===null?0:1):b[state.reasonSort]===null?-1:(a[state.reasonSort]-b[state.reasonSort])*direction);
+ const header=metric=>{const label=reasonMetricLabels[metric],active=state.reasonSort===metric,sort=active?state.reasonDirection:null;return `<th scope="col" class="reason-numeric" aria-sort="${sort==='asc'?'ascending':sort==='desc'?'descending':'none'}"><div class="reason-column-head"><button type="button" class="reason-sort ${active?'is-active':''}" data-reason-sort="${metric}" aria-label="按${label}${sort==='desc'?'升序':'降序'}排列">${label}<span class="reason-sort-icon ${sort||''}" aria-hidden="true"><i></i><i></i></span></button><button type="button" class="metric-definition reason-info" data-definition="reason|${metric}" aria-label="${label}指标释义" aria-describedby="metricTooltip">${infoIcon}</button></div></th>`};
+ $('#reasons').classList.toggle('has-rates',pay);
+ $('#reasons').innerHTML=`<thead><tr><th scope="col">退款原因</th>${columns.map(header).join('')}</tr></thead><tbody>${rows.map(row=>`<tr><th scope="row">${escapeHTML(row.reason)}</th>${columns.map(metric=>`<td data-reason-value="${metric}">${metric==='amount'?'¥'+money(row.amount):metric==='count'?row.count.toLocaleString():percentage(row[metric])}</td>`).join('')}</tr>`).join('')||`<tr><td colspan="${columns.length+1}" class="reason-empty">暂无符合条件的退款数据</td></tr>`}</tbody>`;
+ $('#reasonScope').textContent=pay?'按支付时间':'按退款时间';
+ $('#reasonTotal').textContent=`共 ${rows.length} 个退款原因`;
+ $('#reasonNote').textContent=pay?'退款率以同批全部成交金额、成交订单数为分母':'按退款完成日期统计成功退款数据';
+ $$('[data-reason-sort]').forEach(button=>button.onclick=()=>{const key=button.dataset.reasonSort;state.reasonDirection=state.reasonSort===key&&state.reasonDirection==='desc'?'asc':'desc';state.reasonSort=key;hideMetricTooltip();renderReasons(queryFor(...range()));bindMetricTooltips();$(`[data-reason-sort="${key}"]`).focus({preventScroll:true})});
 }
 function pants(color){return `<svg viewBox="0 0 40 60" aria-hidden="true"><path d="M9 3L31 3 34 56 23 57 20 25 16 57 5 56Z" fill="${color}"/><path d="M9 5H31M20 5V25M12 9L10 16M28 9L30 16" fill="none" stroke="white" stroke-opacity=".23" stroke-width="1"/><path d="M10 20L9 53M29 20L30 53" stroke="black" stroke-opacity=".09" fill="none"/></svg>`}
 function paidOrders(productId,sku=null){return queryFor(...range()).payments.filter(p=>p.product===productId&&(!sku||p.sku===sku)).length}
@@ -112,8 +120,14 @@ let tooltipAnchor=null,tooltipTimer;
 function hideMetricTooltip(){clearTimeout(tooltipTimer);if(typeof metricTooltip!=='undefined'){metricTooltip.hidden=true;tooltipAnchor=null}}
 function showMetricTooltip(anchor){
  clearTimeout(tooltipTimer);tooltipAnchor=anchor;const[type,metric]=anchor.dataset.definition.split('|');
- const copy=metric==='share'?{definition:'该类退款金额 ÷ 全部退款金额。用于查看不同退款类型的金额构成。',example:type==='all'?'选择10月5日，全部退款金额1,000元，全部退款金额占比为100%。':`选择10月5日，全部退款金额1,000元，其中${typeName(type)}200元，该类退款金额占比为20%。`}:RefundMetricDefinitions[type][state.basis][metric];
- metricTooltip.innerHTML=`<h4>${typeName(type)} · ${metric==='share'?'金额占比':metricLabel(metric)}</h4><b>指标释义</b><p>${escapeHTML(copy.definition)}</p><b>举例</b><p>${escapeHTML(copy.example)}</p>`;
+ const reasonCopy={
+  amountRate:{definition:'该原因退款金额（支付日）÷所选周期内全部成交金额。退款金额统计这批订单在各自支付后30天内因该原因成功退款的金额。',example:'10月1日成交金额为10,000元，这批订单在各自支付后30天内因“尺码不合适”成功退款500元，该原因的金额退款率为5%。'},
+  rate:{definition:'该原因退款订单数（支付日）÷所选周期内全部成交订单数。退款订单数统计这批订单在各自支付后30天内因该原因成功退款的子订单数。',example:'10月1日成交100单，这批订单在各自支付后30天内有5单因“尺码不合适”成功退款，该原因的订单退款率为5%。'},
+  amount:state.basis==='pay'?{definition:'统计所选周期内支付成功的订单，在各自支付后30天内因该原因成功退款的金额总和。',example:'选择10月1日，某笔订单当天支付、10月5日因“尺码不合适”成功退款200元，这200元计入该原因在10月1日支付口径下的退款金额。'}:{definition:'统计所选周期内因该原因成功退款的金额总和，按退款完成日期统计。',example:'选择10月5日，某笔订单在10月1日支付、10月5日因“尺码不合适”成功退款200元，这200元计入该原因在10月5日退款口径下的退款金额。'},
+  count:state.basis==='pay'?{definition:'统计所选周期内支付成功的订单中，在各自支付后30天内因该原因成功退款的订单数，按子订单号去重。',example:'选择10月1日，某笔当天支付的子订单在10月5日因“尺码不合适”分两笔成功退款，在该原因下仍计1单。'}:{definition:'统计所选周期内因该原因成功退款的订单数，按退款完成日期统计，按子订单号去重。',example:'选择10月5日，某笔子订单当天因“尺码不合适”分两笔成功退款，在该原因下仍计1单。'}
+ };
+ const copy=type==='reason'?reasonCopy[metric]:metric==='share'?{definition:'该类退款金额 ÷ 全部退款金额。用于查看不同退款类型的金额构成。',example:type==='all'?'选择10月5日，全部退款金额1,000元，全部退款金额占比为100%。':`选择10月5日，全部退款金额1,000元，其中${typeName(type)}200元，该类退款金额占比为20%。`}:RefundMetricDefinitions[type][state.basis][metric];
+ metricTooltip.innerHTML=`<h4>${type==='reason'?'退款原因':typeName(type)} · ${metric==='share'?'金额占比':type==='reason'?reasonMetricLabels[metric]:metricLabel(metric)}</h4><b>指标释义</b><p>${escapeHTML(copy.definition)}</p><b>举例</b><p>${escapeHTML(copy.example)}</p>`;
  metricTooltip.hidden=false;const r=anchor.getBoundingClientRect(),t=metricTooltip.getBoundingClientRect(),left=Math.min(Math.max(12,r.left),innerWidth-t.width-12);let top=r.bottom+10;if(top+t.height>innerHeight-12)top=Math.max(12,r.top-t.height-10);metricTooltip.style.left=left+'px';metricTooltip.style.top=top+'px';
 }
 function bindMetricTooltips(){$$('[data-definition]').forEach(b=>{b.onpointerenter=()=>showMetricTooltip(b);b.onpointerleave=()=>{tooltipTimer=setTimeout(hideMetricTooltip,120)};b.onfocus=()=>showMetricTooltip(b);b.onblur=hideMetricTooltip;b.onclick=e=>{e.stopPropagation();showMetricTooltip(b)}})}
