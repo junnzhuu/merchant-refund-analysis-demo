@@ -21,15 +21,21 @@ function byGroup(rows,fn){const map=new Map();for(const r of uniqueRecords(rows)
 function changeText(value,previous,complete=true){const c=M.change(value,previous,complete);return `<span class="change ${c.value>0?'rise':c.value<0?'fall':''}" title="${c.reason||'（本期值－上周期值）÷上周期值'}">较上周期 <b>${c.value===null?'—':(c.value>0?'+':'')+(c.value*100).toFixed(2)+'%'}</b></span>`}
 const CARD_TYPES=['all','mid','only','return'];
 const isRateMetric=metric=>metric==='rate'||metric==='amountRate';
-const metricLabel=metric=>({amount:'退款金额（元）',count:'退款订单数',rate:'订单退款率',amountRate:'金额退款率'}[metric]);
+const metricLabel=metric=>({amount:'退款金额',count:'退款订单数',rate:'订单退款率',amountRate:'金额退款率'}[metric]);
 const infoIcon='<svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="6.1"/><path d="M6.3 5.9a1.75 1.75 0 0 1 3.4.6c0 1.2-1.7 1.5-1.7 2.7M8 11.4h.01"/></svg>';
+const refundTypeDefinitions={
+ mid:'订单在所选时间口径下（支付时间/退款时间），所选时间范围内，商家还未发货，买家就产生了退款；或买家退款时间早于商家发货时间产生的退款金额。',
+ only:'订单在所选时间口径下（支付时间/退款时间），所选时间范围内，商家已发货，买家无需退货就完成退款所产生的退款金额。',
+ return:'订单在所选时间口径下（支付时间/退款时间），所选时间范围内，商家已发货，买家退回商品并完成退款所产生的退款金额。'
+};
 function definitionButton(type,metric,label){return `<span class="metric-definition-label">${label}<button type="button" class="metric-definition" data-definition="${type}|${metric}" aria-label="${label}指标释义" aria-describedby="metricTooltip">${infoIcon}</button></span>`}
 function metricCard(current,previous,type,allAmount,realtime) {
  const c=M.summarize(current,type),p=M.summarize(previous,type),share=type==='all'?(allAmount?'100%':'—'):amountShare(c.amount,allAmount);
- const format=(value,metric)=>value===null?'—':metric==='amount'?money(value):isRateMetric(metric)?percentage(value):value.toLocaleString();
+ const format=(value,metric)=>value===null?'—':metric==='amount'?'¥'+money(value):isRateMetric(metric)?percentage(value):value.toLocaleString();
  const compare=metric=>realtime?`<span class="change">昨日全天 <b>${previous.complete?format(p[metric],metric):'—'}</b></span>`:changeText(c[metric],p[metric],current.complete&&previous.complete);
- const cell=metric=>`<div class="metric-cell ${isRateMetric(metric)?'rate-cell':''} ${state.type===type&&state.metric===metric?'is-active':''}">${definitionButton(type,metric,metricLabel(metric))}<button class="metric-value ${metric==='amount'&&money(c.amount).length>10?'long-value':''}" data-card-metric="${type}|${metric}" aria-label="查看${typeName(type)}${metricLabel(metric)}趋势" aria-pressed="${state.type===type&&state.metric===metric}"><strong>${format(c[metric],metric)}${metric==='count'?'<em>单</em>':''}</strong>${compare(metric)}</button></div>`;
- return `<article class="metric-card ${state.type===type?'selected':''} ${state.basis==='pay'?'with-rate':''}"><div class="metric-card-head"><button class="card-select" data-card="${type}" aria-pressed="${state.type===type}">${typeName(type)}</button><span class="amount-share">${definitionButton(type,'share','金额占比')} <b>${share}</b></span></div><div class="metric-content">${cell('amount')}${cell('count')}</div>${state.basis==='pay'?`<div class="metric-rates">${cell('amountRate')}${cell('rate')}</div>`:''}</article>`;
+ const cell=metric=>`<div class="metric-cell ${isRateMetric(metric)?'rate-cell':''} ${state.type===type&&state.metric===metric?'is-active':''}">${definitionButton(type,metric,metricLabel(metric))}<button class="metric-value ${metric==='amount'&&format(c.amount,metric).length>10?'long-value':''}" data-card-metric="${type}|${metric}" aria-label="查看${typeName(type)}${metricLabel(metric)}趋势" aria-pressed="${state.type===type&&state.metric===metric}"><strong>${format(c[metric],metric)}</strong>${compare(metric)}</button></div>`;
+ const typeHelp=type==='all'?'':`<button type="button" class="metric-definition card-type-definition" data-definition="${type}|type" aria-label="${typeName(type)}说明" aria-describedby="metricTooltip">${infoIcon}</button>`;
+ return `<article class="metric-card ${state.type===type?'selected':''} ${state.basis==='pay'?'with-rate':''}"><div class="metric-card-head"><div class="card-title"><button class="card-select" data-card="${type}" aria-pressed="${state.type===type}">${typeName(type)}</button>${typeHelp}</div><span class="amount-share">金额占比 <b>${share}</b></span></div><div class="metric-content">${cell('amount')}${cell('count')}</div>${state.basis==='pay'?`<div class="metric-rates">${cell('amountRate')}${cell('rate')}</div>`:''}</article>`;
 }
 function selectTrend(type,metric=state.metric){const active=document.activeElement,focusKey=active?.dataset.cardMetric,focusType=active?.dataset.card;state.type=type;state.metric=metric;render();const selector=focusKey?`[data-card-metric="${focusKey}"]`:focusType?`[data-card="${focusType}"]`:null;if(selector)$(selector)?.focus({preventScroll:true})}
 let datePicker;
@@ -146,8 +152,8 @@ function showMetricTooltip(anchor){
   paid:{definition:'统计所选周期内该商品支付成功的子订单数，按支付完成日期统计，包含未退款订单。',example:'选择10月1日，该商品当天支付100单，其中90单未退款，支付订单数仍为100单。'},
   reasons:{definition:'按各原因退款金额占该商品退款金额的比例降序展示。原因（占比）中的占比＝该原因退款金额÷该商品退款金额；悬浮可查看全部原因，规格行以该规格退款金额为分母。',example:'选择10月5日，该商品退款1,000元，其中“尺码不合适”退款400元，展示为“尺码不合适（40.00%）”。'}
  };
- const copy=type==='product'?productCopy[metric]:type==='reason'?reasonCopy[metric]:metric==='share'?{definition:'该类退款金额 ÷ 全部退款金额。用于查看不同退款类型的金额构成。',example:type==='all'?'选择10月5日，全部退款金额1,000元，全部退款金额占比为100%。':`选择10月5日，全部退款金额1,000元，其中${typeName(type)}200元，该类退款金额占比为20%。`}:RefundMetricDefinitions[type][state.basis][metric];
- metricTooltip.innerHTML=`<p><b>指标释义：</b>${escapeHTML(copy.definition)}</p><p><b>举例：</b>${escapeHTML(copy.example)}</p>`;
+ const copy=metric==='type'?{definition:refundTypeDefinitions[type]}:type==='product'?productCopy[metric]:type==='reason'?reasonCopy[metric]:RefundMetricDefinitions[type][state.basis][metric];
+ metricTooltip.innerHTML=metric==='type'?`<p>${escapeHTML(copy.definition)}</p>`:`<p><b>指标释义：</b>${escapeHTML(copy.definition)}</p><p><b>举例：</b>${escapeHTML(copy.example)}</p>`;
  metricTooltip.hidden=false;
  const r=anchor.getBoundingClientRect(),t=metricTooltip.getBoundingClientRect(),center=r.left+r.width/2;
  const left=Math.min(Math.max(12,center-t.width/2),innerWidth-t.width-12),above=r.top-t.height-10;

@@ -46,6 +46,7 @@ button:focus-visible, input:focus-visible, select:focus-visible {
 }
 .metric-card.with-rate { min-height: 286px; }
 .metric-card-head { min-height: 22px; gap: 4px; align-items: center; }
+.card-title { display: inline-flex; align-items: center; gap: 4px; flex: none; white-space: nowrap; }
 .card-select {
   padding: 0;
   color: var(--dw-color-text);
@@ -57,8 +58,6 @@ button:focus-visible, input:focus-visible, select:focus-visible {
 .amount-share { gap: 4px; color: var(--dw-color-text-tertiary); font-size: 12px; line-height: 20px; }
 .amount-share b { margin: 0; font: 500 12px/20px var(--dw-font-en); color: var(--dw-color-text-secondary); }
 .metric-card.selected .amount-share b { color: var(--dw-color-text-brand); }
-.amount-share .metric-definition-label { gap: 3px; font-size: 12px; }
-.amount-share .metric-definition svg { width: 12px; height: 12px; }
 .metric-content, .metric-rates { grid-template-columns: minmax(0,1.25fr) minmax(0,1fr); gap: 12px; margin-top: 20px; }
 .metric-definition-label {
   gap: 4px;
