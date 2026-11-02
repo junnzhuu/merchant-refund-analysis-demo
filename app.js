@@ -188,10 +188,23 @@ if (typeof ResizeObserver === 'function') {
  let chartWidth = 0;
  const chartResizeObserver = new ResizeObserver(entries => {
   const width = Math.round(entries[0].contentRect.width);
-  if (width === chartWidth) return;
+  if (width <= 0 || width === chartWidth) return;
   chartWidth = width;
   const period = M.getPeriod(state);
   renderTrend(queryFor(period.current.start,period.current.end),queryFor(period.previous.start,period.previous.end));
  });
  chartResizeObserver.observe($('#trend'));
 }
+
+// Keep the existing analytics DOM and state mounted while the shell changes views.
+window.RefundAnalysisDemo = {
+ getData:()=>data,
+ applyScope(scope){
+  Object.assign(state,scope,{type:'all',metric:'amount',productSearch:'',sort:'amount',productDirection:'desc',productPage:1,reasonType:'all',reasonSort:'amount',reasonDirection:'desc',expanded:new Set()});
+  for(const [id,key] of [['basis','basis'],['brandSelect','brand'],['categorySelect','category'],['channelSelect','channel'],['reasonType','reasonType']])$('#'+id).value=state[key];
+  $('#productSearch').value='';
+  render();
+ },
+ suspend(){datePicker?.close();hideMetricTooltip();hideProductReasonTooltip();if($('#help').open)$('#help').close()},
+ resume(){render()}
+};
