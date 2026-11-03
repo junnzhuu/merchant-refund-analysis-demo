@@ -38,7 +38,7 @@ function metricCard(current,previous,type,allAmount,realtime) {
  return `<article class="metric-card ${state.type===type?'selected':''} ${state.basis==='pay'?'with-rate':''}"><div class="metric-card-head"><div class="card-title"><button class="card-select" data-card="${type}" aria-pressed="${state.type===type}">${typeName(type)}</button>${typeHelp}</div><span class="amount-share">金额占比 <b>${share}</b></span></div><div class="metric-content">${cell('amount')}${cell('count')}</div>${state.basis==='pay'?`<div class="metric-rates">${cell('amountRate')}${cell('rate')}</div>`:''}</article>`;
 }
 function selectTrend(type,metric=state.metric){const active=document.activeElement,focusKey=active?.dataset.cardMetric,focusType=active?.dataset.card;state.type=type;state.metric=metric;render();const selector=focusKey?`[data-card-metric="${focusKey}"]`:focusType?`[data-card="${focusType}"]`:null;if(selector)$(selector)?.focus({preventScroll:true})}
-let datePicker;
+let datePicker,exporting=false,excelLibraryPromise;
 function render(){
  hideMetricTooltip();hideProductReasonTooltip();
  const period=M.getPeriod(state),cur=queryFor(period.current.start,period.current.end),prev=queryFor(period.previous.start,period.previous.end),rows=cur.refunds,allAmount=total(rows);
@@ -46,7 +46,7 @@ function render(){
  $('#rateMetric').hidden=$('#amountRateMetric').hidden=state.basis!=='pay';
  $$('#metric button').forEach(b=>b.classList.toggle('on',b.dataset.metric===state.metric));
  $$('.filter-field select').forEach(select=>{const active=select.selectedIndex>0;select.parentElement.classList.toggle('has-value',active);select.parentElement.querySelector('.filter-clear').hidden=!active});
- $('#downloadDetails').disabled=!rows.length;$('#downloadDetails').title=rows.length?'下载顶部筛选条件下的退款明细':'当前筛选条件下暂无可下载的退款明细';
+ $('#downloadDetails').disabled=exporting;$('#downloadDetails').title='下载当前筛选条件下的核心数据、全部退款商品及退款原因（XLSX）';
  renderTrend(cur,prev);renderReasons(cur);renderProducts(cur);
  $$('[data-card]').forEach(b=>b.onclick=()=>selectTrend(b.dataset.card));
  $$('[data-card-metric]').forEach(b=>b.onclick=()=>{const[type,metric]=b.dataset.cardMetric.split('|');selectTrend(type,metric)});
@@ -136,7 +136,6 @@ function renderProducts(result){
  bindProductCopyButtons();
 }
 function toast(text){$('#toast').textContent=text;$('#toast').classList.add('show');setTimeout(()=>$('#toast').classList.remove('show'),2200)}
-function download(name,rows){const text='\uFEFF'+rows.map(row=>row.map(v=>'"'+String(v).replaceAll('"','""')+'"').join(',')).join('\r\n');const url=URL.createObjectURL(new Blob([text],{type:'text/csv;charset=utf-8;'}));const a=document.createElement('a');a.href=url;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(url),1000)}
 $('#basis').onchange=e=>{state.basis=e.target.value;if(state.basis==='refund'&&isRateMetric(state.metric))state.metric='amount';render()};
 $('#reasonType').onchange=e=>{state.reasonType=e.target.value;hideMetricTooltip();renderReasons(queryFor(...range()));bindMetricTooltips()};
 $('#productType').onchange=e=>{state.productType=e.target.value;state.productPage=1;hideMetricTooltip();renderProducts(queryFor(...range()));bindMetricTooltips()};
@@ -152,13 +151,28 @@ $('#productSearchForm').onsubmit=event=>{event.preventDefault();applyProductSear
 $('#productSearch').onsearch=applyProductSearch;
 $('#definitions').onclick=()=>$('#help').showModal();$('#closeHelp').onclick=()=>$('#help').close();
 $('#salesNav').onclick=()=>toast('当前为退款分析页面预览');
-const exportMeta=(type='all')=>[['统计口径',state.basis==='refund'?'按退款成功时间':'按支付时间'],['统计时间',range().join(' 至 ')],['退款类型',typeName(type)],['商品范围','顶部筛选条件下的全部商品'],['退款观察期',state.basis==='pay'?'各订单支付后30天':'按退款完成日期统计'],['数据截至',CUTOFF],['品牌/类目/出价渠道',`${state.brand}/${state.category}/${state.channel}`]];
-function detailExportRows(){
- const rows=uniqueRecords(currentRows()).sort((a,b)=>b.refundTime.localeCompare(a.refundTime));
- const header=['子订单号','售后单号','商品名称','货号','规格','品牌','类目','出价渠道','支付时间','退款成功时间','实际退款金额（元）','退款类型','一级退款原因','二级退款原因','状态'];
- return [...exportMeta(),['退款订单数',count(rows)],['退款金额（元）',money(total(rows))],[],header,...rows.map(r=>{const p=catalog.find(p=>p.id===r.product);return[r.subOrderId,r.afterSale,p.name,p.code,r.sku,p.brand||p.name.split(' ')[0],p.category,p.channel,r.payTime,r.refundTime,money(r.amount),typeName(r.type),M.REASON_GROUPS.find(group=>group.id===r.reasonGroup)?.name||'其他',r.reason,'退款成功']})];
+function loadExcelLibrary(){
+ if(window.ExcelJS)return Promise.resolve(window.ExcelJS);
+ if(!excelLibraryPromise)excelLibraryPromise=new Promise((resolve,reject)=>{
+  const script=document.createElement('script');script.src='vendor/exceljs-4.4.0.min.js';
+  script.onload=()=>window.ExcelJS?resolve(window.ExcelJS):reject(new Error('Excel library unavailable'));
+  script.onerror=()=>{script.remove();reject(new Error('Excel library failed to load'))};document.head.appendChild(script);
+ }).catch(error=>{excelLibraryPromise=null;throw error});
+ return excelLibraryPromise;
 }
-$('#downloadDetails').onclick=()=>{const[start,end]=range();download(`退款明细_${state.basis==='pay'?'支付时间':'退款时间'}_${start}_${end}.csv`,detailExportRows())};
+$('#downloadDetails').onclick=async()=>{
+ if(exporting)return;
+ const button=$('#downloadDetails');exporting=true;button.disabled=true;button.setAttribute('aria-busy','true');
+ try{
+  // Snapshot applied filters before the asynchronous library load.
+  const period=M.getPeriod(state),report=RefundExport.buildReport(data,{...state},{current:queryFor(period.current.start,period.current.end),previous:queryFor(period.previous.start,period.previous.end)});
+  const ExcelJS=await loadExcelLibrary(),workbook=RefundExport.createWorkbook(report,ExcelJS),buffer=await workbook.xlsx.writeBuffer();
+  const url=URL.createObjectURL(new Blob([buffer],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'})),link=document.createElement('a');
+  link.href=url;link.download=report.filename;document.body.appendChild(link);link.click();link.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);
+  toast('已下载，包含核心数据、退款商品和退款原因');
+ }catch(error){console.error('Refund XLSX export failed',error);toast('下载失败，请重试')}
+ finally{exporting=false;button.disabled=false;button.removeAttribute('aria-busy')}
+};
 // Tooltip content follows the confirmed PRD; floating surface stays visible above cards.
 const metricTooltip=document.createElement('div');metricTooltip.id='metricTooltip';metricTooltip.className='metric-tooltip';metricTooltip.role='tooltip';metricTooltip.hidden=true;document.body.appendChild(metricTooltip);
 let tooltipAnchor=null,tooltipTimer;
