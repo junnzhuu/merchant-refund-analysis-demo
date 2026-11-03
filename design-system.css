@@ -19,7 +19,7 @@ button:focus-visible, input:focus-visible, select:focus-visible {
 }
 [hidden] { display: none !important; }
 
-/* Four selectable metric groups retain the equation and the shared trend. */
+/* Five selectable cards retain the four-stage equation and the shared trend. */
 .overview { padding: 20px; }
 .overview .overview-head { flex-wrap: nowrap; align-items: center; }
 .overview-head h2 { flex: none; }
@@ -54,9 +54,9 @@ button:focus-visible, input:focus-visible, select:focus-visible {
 }
 .metric-scroll { width: 100%; overflow-x: auto; scrollbar-width: thin; }
 .metric-grid {
-  min-width: 1068px;
+  min-width: 1504px;
   margin-top: 16px;
-  grid-template-columns: minmax(0,1fr) 20px minmax(0,1fr) 20px minmax(0,1fr) 20px minmax(0,1fr);
+  grid-template-columns: minmax(0,1fr) 20px minmax(0,1fr) 20px minmax(0,1fr) 20px minmax(0,1fr) 20px minmax(0,1fr);
   gap: 8px;
   align-items: stretch;
 }

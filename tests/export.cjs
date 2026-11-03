@@ -11,7 +11,7 @@ const report=E.buildReport(data,state),[core,products,reasons]=report.sheets;
   await test('three ordered sheets reconcile with current card totals and comparisons',()=>{
     assert.deepEqual(report.sheets.map(s=>s.name),['核心数据','退款商品','退款原因']);
     const period=M.getPeriod(state),cur=M.query(data,state),prev=M.query(data,state,period.previous),expected=M.summarize(cur),last=M.summarize(prev);
-    assert.equal(core.rows.length,4);assert.equal(core.rows[0].amount,50390.37);assert.equal(core.rows[0].count,193);
+    assert.equal(core.rows.length,5);assert.equal(core.rows[0].amount,50390.37);assert.equal(core.rows[0].count,193);
     assert.equal(core.rows[0].amountCompare,M.change(expected.amount,last.amount).value);
     assert.equal(products.rows.reduce((s,row)=>s+Math.round(row.amount*100),0),expected.amount);
     assert(reasons.metadata.some(text=>text.includes('不可重复相加')));
@@ -82,7 +82,7 @@ const report=E.buildReport(data,state),[core,products,reasons]=report.sheets;
     assert.equal(a.getCell('C8').value,50390.37);assert.equal(a.getCell('C8').numFmt,'"¥"#,##0.00');
     assert.equal(a.getCell('B8').value,1);assert.equal(a.getCell('B8').numFmt,'0.00%');
     assert.equal(a.getCell('E8').value,193);assert.equal(typeof b.getCell('C8').value,'string');
-    assert.equal(a.views[0].ySplit,7);assert.equal(a.autoFilter,'A7:J11');
+    assert.equal(a.views[0].ySplit,7);assert.equal(a.autoFilter,'A7:J12');
     assert.equal(b.rowCount,7+products.rows.length);
   });
   console.log(`\n${passed}/${passed} XLSX export checks passed`);

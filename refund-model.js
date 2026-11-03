@@ -7,7 +7,8 @@
   const DAY = '2026-11-02', CUTOFF = '2026-11-02 14:30:00';
   const REFUND_WINDOW_MS = 30 * 24 * 60 * 60 * 1000;
   const SELECTABLE_START = '2026-01-01', DATA_START = '2025-01-01';
-  const REFUND_TYPES = ['mid', 'return', 'only'];
+  const REFUND_TYPES = ['mid', 'transit', 'only', 'return'];
+  const REFUND_TYPE_LABELS = {all:'全部退款',mid:'发货前退款',transit:'发货后收货前退款',only:'收货后退款',return:'收货后退货退款'};
   const SKUS = ['灰色 / M', '灰色 / L', '黑色 / L'];
   // Display taxonomy observed in the Douyin refund-analysis page on 2026-11-03.
   // Names and parent/child mapping are demo parameters, not Dewu production rules.
@@ -28,6 +29,7 @@
     only:['商品质量待优化','商品与描述信息不符','缺少用户权益','物流慢','商家/物流发错包裹','售后解决方案用户不满意','用户诉求无法满足','不再需要','其他'],
     return:['收到不合适','选错SKU','购买多单类似品对比','退后购买同质化商品','商品质量待优化','商品与描述信息不符','缺少用户权益','商家/物流发错包裹','买贵','图文问题','其他']
   };
+  MOCK_REASON_POOLS.transit = MOCK_REASON_POOLS.only;
   const catalog = [
     {id:'p0',spu:'1000398261',name:'FAESSLIN 秋冬宽松弯刀卫裤 男女同款',code:'K83736-服饰',category:'休闲裤',channel:'品牌直发',color:'#6d6c6c',unitCents:28120},
     {id:'p1',spu:'1000398278',name:'FAESSLIN 高腰灯芯绒直筒休闲裤 女款',code:'K1057-服饰',category:'休闲裤',channel:'品牌直发',color:'#8a847b',unitCents:28900},
@@ -98,14 +100,16 @@
           const paid={subOrderId,product:p.id,sku,skuId:p.skus[j%3].id,payDate:date,payTime,amount:p.unitCents};payments.push(paid);
           const seed=dayIndex*17+j*11+pi*5;
           if(seed%100>=32)continue;
-          const type=seed%10<3?'mid':seed%10<8?'return':'only';
+          // Split the previous refund-only mock cohort by receipt stage without changing amounts or order IDs.
+          // These deterministic stage tags demonstrate the prototype, not production logistics-field mapping.
+          const type=seed%10<3?'mid':seed%10<8?'return':seed%10===8?'transit':'only';
           const lag=type==='mid'?(seed%3):2+seed%11;
           let refundDate=dayOffset(date,lag),refundHour=8+seed%15;
           let refundTime=`${refundDate} ${String(refundHour).padStart(2,'0')}:${String((minute+7)%60).padStart(2,'0')}:00`;
           if(lag===0){refundTime=new Date(Date.parse(payTime.replace(' ','T')+'Z')+67*60000).toISOString().slice(0,19).replace('T',' ');refundDate=refundTime.slice(0,10);refundHour=Number(refundTime.slice(11,13));}
           if(refundTime>CUTOFF)continue;
           const pool=MOCK_REASON_POOLS[type],reason=pool[(dayIndex*13+j*7+pi*11)%pool.length],reasonGroup=reasonParents.get(reason).id;
-          const amount=type==='only'?Math.round(p.unitCents*(.25+(seed%5)*.1)):p.unitCents;
+          const amount=type==='only'||type==='transit'?Math.round(p.unitCents*(.25+(seed%5)*.1)):p.unitCents;
           const base={...paid,type,reason,reasonGroup,status:'success',refundDate,refundHour,refundTime};
           if(seed%19===0) { const first=Math.floor(amount*.4);refunds.push({...base,refundId:'RF'+serial+'A',afterSale:'RE'+serial+'A',amount:first});refunds.push({...base,refundId:'RF'+serial+'B',afterSale:'RE'+serial+'B',amount:amount-first}); }
           else refunds.push({...base,refundId:'RF'+serial,afterSale:'RE'+serial,amount});
@@ -221,5 +225,5 @@
     }
     return {...period,labels,current,previous,currentDates,previousDates,currentReasons,previousReasons,currentLabel:period.realtime?'今日截至当前':'本期',previousLabel:period.realtime?'昨日全天':period.partial?'上期同进度':'上周期'};
   }
-  return {DAY,CUTOFF,SELECTABLE_START,DATA_START,REFUND_TYPES,SKUS,REASON_GROUPS,catalog,dayOffset,dayCount,dateList,monthBounds,weekBounds,isoWeek,defaults,getPeriod,validateSelection,createData,uniqueRecords,total,count,typeRows,matches,query,summarize,summarizeReasons,summarizeReasonHierarchy,summarizeProducts,change,buildTrend};
+  return {DAY,CUTOFF,SELECTABLE_START,DATA_START,REFUND_TYPES,REFUND_TYPE_LABELS,SKUS,REASON_GROUPS,catalog,dayOffset,dayCount,dateList,monthBounds,weekBounds,isoWeek,defaults,getPeriod,validateSelection,createData,uniqueRecords,total,count,typeRows,matches,query,summarize,summarizeReasons,summarizeReasonHierarchy,summarizeProducts,change,buildTrend};
 });

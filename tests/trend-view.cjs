@@ -48,7 +48,7 @@ function render(series, metric = 'amount') {
   const context = vm.createContext({
     state: { metric, type: 'all' },
     data: {},
-    M: { buildTrend: () => series },
+    M: { REFUND_TYPE_LABELS: require('../refund-model.js').REFUND_TYPE_LABELS, buildTrend: () => series },
     $: selector => {
       if (selector === '#trend') return host;
       if (selector === '#trendTooltip') return tip;

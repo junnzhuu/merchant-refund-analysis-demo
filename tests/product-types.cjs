@@ -50,7 +50,7 @@ test('generated SKU identities are unique and stable across product ranking chan
   assert.equal(new Set(ids).size,18);
   assert(ids.every(id=>/^\d+$/.test(id)));
   const generated = M.createData(), result = M.query(generated,{basis:'pay',period:'seven'});
-  for (const type of ['all','mid','only','return']) for (const product of M.summarizeProducts(result,type)) {
+  for (const type of ['all',...M.REFUND_TYPES]) for (const product of M.summarizeProducts(result,type)) {
     const item = M.catalog.find(row=>row.id===product.product);
     for (const sku of product.skus) assert.equal(sku.skuId,item.skus.find(row=>row.label===sku.sku).id);
   }

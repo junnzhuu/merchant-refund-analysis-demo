@@ -5,7 +5,7 @@ const {DAY,CUTOFF,catalog,uniqueRecords,total,count} = M;
 const data=M.createData(),records=data.refunds,payments=data.payments;
 const state={basis:'pay',period:'seven',type:'all',metric:'amount',productSearch:'',productType:'all',brand:'全部品牌',category:'全部类目',channel:'全部出价渠道',sort:'amount',productDirection:'desc',productPage:1,reasonType:'all',reasonExpanded:new Set(),reasonSort:'amount',reasonDirection:'desc',expanded:new Set(),customStart:'2026-10-21',customEnd:'2026-10-27',...M.defaults()};
 const money=c=> (c/100).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
-const typeName=t=>({all:'全部退款',mid:'发货前退款',return:'发货后退货退款',only:'发货后仅退款'}[t]);
+const typeName=t=>M.REFUND_TYPE_LABELS[t];
 const metricName=()=>({amount:'退款金额',count:'退款订单数',rate:'订单退款率',amountRate:'金额退款率'}[state.metric]);
 const amountShare=(amount,allAmount)=>allAmount?(amount/allAmount*100).toFixed(2)+'%':'—';
 const percentage=n=>n===null?'—':(n*100).toFixed(2)+'%';
@@ -19,14 +19,15 @@ function rowsFor(start,end){return queryFor(start,end).refunds}
 function currentRows(){return rowsFor(...range())}
 function byGroup(rows,fn){const map=new Map();for(const r of uniqueRecords(rows)){const key=fn(r);if(!map.has(key))map.set(key,[]);map.get(key).push(r)}return[...map].map(([key,items])=>({key,items,amount:total(items),count:count(items)}))}
 function changeText(value,previous,complete=true){const c=M.change(value,previous,complete);return `<span class="change ${c.value>0?'rise':c.value<0?'fall':''}" title="${c.reason||'（本期值－上周期值）÷上周期值'}">较上周期 <b>${c.value===null?'—':(c.value>0?'+':'')+(c.value*100).toFixed(2)+'%'}</b></span>`}
-const CARD_TYPES=['all','mid','only','return'];
+const CARD_TYPES=['all',...M.REFUND_TYPES];
 const isRateMetric=metric=>metric==='rate'||metric==='amountRate';
 const metricLabel=metric=>({amount:'退款金额',count:'退款订单数',rate:'订单退款率',amountRate:'金额退款率'}[metric]);
 const infoIcon='<svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="6.1"/><path d="M6.3 5.9a1.75 1.75 0 0 1 3.4.6c0 1.2-1.7 1.5-1.7 2.7M8 11.4h.01"/></svg>';
 const refundTypeDefinitions={
- mid:'订单在所选时间口径下（支付时间/退款时间），所选时间范围内，商家还未发货，买家就产生了退款；或买家退款时间早于商家发货时间产生的退款金额。',
- only:'订单在所选时间口径下（支付时间/退款时间），所选时间范围内，商家已发货，买家无需退货就完成退款所产生的退款金额。',
- return:'订单在所选时间口径下（支付时间/退款时间），所选时间范围内，商家已发货，买家退回商品并完成退款所产生的退款金额。'
+ mid:'按所选时间口径和范围，统计买家支付成功后、商家发货前取消订单并成功退款的数据。',
+ transit:'按所选时间口径和范围，统计商家已发货、买家尚未收货时发生的成功退款，包含拦截、拒收等场景。',
+ only:'按所选时间口径和范围，统计买家已收货、无需退回商品即成功退款的数据，与“收货后退货退款”分开统计。',
+ return:'按所选时间口径和范围，统计买家已收货，随后退回商品并成功退款的数据。'
 };
 function definitionButton(type,metric,label){return `<span class="metric-definition-label">${label}<button type="button" class="metric-definition" data-definition="${type}|${metric}" aria-label="${label}指标释义" aria-describedby="metricTooltip">${infoIcon}</button></span>`}
 function metricCard(current,previous,type,allAmount,realtime) {
