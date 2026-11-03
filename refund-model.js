@@ -9,6 +9,25 @@
   const SELECTABLE_START = '2026-01-01', DATA_START = '2025-01-01';
   const REFUND_TYPES = ['mid', 'return', 'only'];
   const SKUS = ['灰色 / M', '灰色 / L', '黑色 / L'];
+  // Display taxonomy observed in the Douyin refund-analysis page on 2026-11-03.
+  // Names and parent/child mapping are demo parameters, not Dewu production rules.
+  const REASON_GROUPS = [
+    {id:'user_problem',name:'用户问题',reasons:['收到不合适','选错SKU','购买多单类似品对比','退后购买同质化商品','订单信息存疑重拍','凑满减','不再需要','买多了']},
+    {id:'product_problem',name:'商品问题',reasons:['缺少用户权益','商品质量待优化','商品与描述信息不符']},
+    {id:'delivert_time_problem',name:'交付时效',reasons:['发货慢','物流慢']},
+    {id:'other',name:'其他',reasons:['其他']},
+    {id:'customer_service_problem',name:'服务问题',reasons:['售后解决方案用户不满意','用户诉求无法满足']},
+    {id:'price_problem',name:'价格问题',reasons:['少参加活动','买贵','少用优惠券']},
+    {id:'delivery_quality_problem',name:'交付质量',reasons:['商家/物流发错包裹']},
+    {id:'shop_problem',name:'店铺问题',reasons:['商品下架']},
+    {id:'content_problem',name:'内容问题',reasons:['图文问题']}
+  ];
+  const reasonParents = new Map(REASON_GROUPS.flatMap(group=>group.reasons.map(reason=>[reason,group])));
+  const MOCK_REASON_POOLS = {
+    mid:['选错SKU','购买多单类似品对比','订单信息存疑重拍','凑满减','不再需要','买多了','缺少用户权益','发货慢','售后解决方案用户不满意','用户诉求无法满足','少参加活动','买贵','少用优惠券','商品下架','图文问题','其他'],
+    only:['商品质量待优化','商品与描述信息不符','缺少用户权益','物流慢','商家/物流发错包裹','售后解决方案用户不满意','用户诉求无法满足','不再需要','其他'],
+    return:['收到不合适','选错SKU','购买多单类似品对比','退后购买同质化商品','商品质量待优化','商品与描述信息不符','缺少用户权益','商家/物流发错包裹','买贵','图文问题','其他']
+  };
   const catalog = [
     {id:'p0',spu:'1000398261',name:'FAESSLIN 秋冬宽松弯刀卫裤 男女同款',code:'K83736-服饰',category:'休闲裤',channel:'品牌直发',color:'#6d6c6c',unitCents:28120},
     {id:'p1',spu:'1000398278',name:'FAESSLIN 高腰灯芯绒直筒休闲裤 女款',code:'K1057-服饰',category:'休闲裤',channel:'品牌直发',color:'#8a847b',unitCents:28900},
@@ -83,9 +102,9 @@
           let refundTime=`${refundDate} ${String(refundHour).padStart(2,'0')}:${String((minute+7)%60).padStart(2,'0')}:00`;
           if(lag===0){refundTime=new Date(Date.parse(payTime.replace(' ','T')+'Z')+67*60000).toISOString().slice(0,19).replace('T',' ');refundDate=refundTime.slice(0,10);refundHour=Number(refundTime.slice(11,13));}
           if(refundTime>CUTOFF)continue;
-          const reason=type==='mid'?['不喜欢或不想要','暂时不想要了','发货等待时间长'][seed%3]:type==='only'?['货品质量问题','商品瑕疵协商退款'][seed%2]:['尺码不合适','不喜欢或不想要','穿着效果不符','尺码不合适','货品质量问题'][seed%5];
+          const pool=MOCK_REASON_POOLS[type],reason=pool[(dayIndex*13+j*7+pi*11)%pool.length],reasonGroup=reasonParents.get(reason).id;
           const amount=type==='only'?Math.round(p.unitCents*(.25+(seed%5)*.1)):p.unitCents;
-          const base={...paid,type,reason,status:'success',refundDate,refundHour,refundTime};
+          const base={...paid,type,reason,reasonGroup,status:'success',refundDate,refundHour,refundTime};
           if(seed%19===0) { const first=Math.floor(amount*.4);refunds.push({...base,refundId:'RF'+serial+'A',afterSale:'RE'+serial+'A',amount:first});refunds.push({...base,refundId:'RF'+serial+'B',afterSale:'RE'+serial+'B',amount:amount-first}); }
           else refunds.push({...base,refundId:'RF'+serial,afterSale:'RE'+serial,amount});
         }
@@ -136,6 +155,21 @@
       return {reason,amount,count,amountRate,rate};
     }).sort((a,b)=>b.amount-a.amount);
   }
+  function summarizeReasonHierarchy(result) {
+    const groups=new Map(),other=REASON_GROUPS.find(group=>group.id==='other');
+    for(const row of uniqueRecords(result.refunds,result.cutoff)) {
+      const parent=reasonParents.get(row.reason)||REASON_GROUPS.find(group=>group.id===row.reasonGroup)||other;
+      if(!groups.has(parent.id))groups.set(parent.id,{parent,refunds:[]});
+      groups.get(parent.id).refunds.push(row);
+    }
+    return [...groups].map(([id,{parent,refunds}])=>{
+      const scoped={...result,refunds},summary=summarize(scoped);
+      const {amount,count,amountRate,rate}=summary;
+      const children=summarizeReasons(scoped).map(child=>({...child,parentId:id,parentReason:parent.name}));
+      // Deduplicate the parent orders from its records, never by summing child counts.
+      return {id,reason:parent.name,amount,count,amountRate,rate,children};
+    }).sort((a,b)=>b.amount-a.amount);
+  }
   function summarizeProducts(result) {
     const products=new Map();
     for(const row of uniqueRecords(result.refunds,result.cutoff)) {
@@ -182,5 +216,5 @@
     }
     return {...period,labels,current,previous,currentDates,previousDates,currentReasons,previousReasons,currentLabel:period.realtime?'今日截至当前':'本期',previousLabel:period.realtime?'昨日全天':period.partial?'上期同进度':'上周期'};
   }
-  return {DAY,CUTOFF,SELECTABLE_START,DATA_START,REFUND_TYPES,SKUS,catalog,dayOffset,dayCount,dateList,monthBounds,weekBounds,isoWeek,defaults,getPeriod,validateSelection,createData,uniqueRecords,total,count,typeRows,matches,query,summarize,summarizeReasons,summarizeProducts,change,buildTrend};
+  return {DAY,CUTOFF,SELECTABLE_START,DATA_START,REFUND_TYPES,SKUS,REASON_GROUPS,catalog,dayOffset,dayCount,dateList,monthBounds,weekBounds,isoWeek,defaults,getPeriod,validateSelection,createData,uniqueRecords,total,count,typeRows,matches,query,summarize,summarizeReasons,summarizeReasonHierarchy,summarizeProducts,change,buildTrend};
 });

@@ -387,6 +387,42 @@ main {
   min-width: 900px;
 }
 
+.reason-level-tabs { margin-top: var(--dw-space-16); }
+.reason-expand {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0;
+  color: var(--dw-color-text);
+  font: inherit;
+  font-weight: 600;
+  line-height: 22px;
+  text-align: left;
+}
+.reason-expand:hover { color: var(--dw-color-text-brand); }
+.reason-expand svg {
+  flex: none;
+  width: 14px;
+  height: 14px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.reason-expand[aria-expanded="true"] svg { transform: rotate(90deg); }
+.reason-analysis-table tbody .reason-child-row th { padding-left: 46px; }
+.reason-analysis-table tbody .reason-child-row th,
+.reason-analysis-table tbody .reason-child-row td { background: var(--dw-color-page); }
+.reason-detail-name { display: block; }
+.reason-parent-name {
+  display: block;
+  margin-top: 2px;
+  color: var(--dw-color-text-tertiary);
+  font-size: 12px;
+  line-height: 20px;
+}
+
 .reason-analysis-table thead th,
 .products .top-products-table thead th,
 .products .top-products-table th[aria-sort] {
