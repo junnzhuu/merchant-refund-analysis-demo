@@ -168,7 +168,7 @@ button:focus-visible, input:focus-visible, select:focus-visible {
 #help .dialog-head { border-color: var(--dw-color-divider); }
 #help .definition-text { font-size: 14px; line-height: 22px; color: var(--dw-color-text-secondary); }
 #help .definition-text b { color: var(--dw-color-text); }
-.toast { background: var(--dw-color-tooltip-background); border-radius: 4px; }
+.toast { color: var(--dw-color-text-inverse); background: var(--dw-color-tooltip-background); border-radius: 4px; }
 @media (max-width: 1600px) {
   .metric-card { padding: 20px 16px; }
   .metric-card.with-rate { min-height: 280px; }

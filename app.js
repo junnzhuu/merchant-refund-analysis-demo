@@ -3,7 +3,7 @@ const $$ = s => [...document.querySelectorAll(s)];
 const M = RefundModel;
 const {DAY,CUTOFF,catalog,uniqueRecords,total,count} = M;
 const data=M.createData(),records=data.refunds,payments=data.payments;
-const state={basis:'pay',period:'seven',type:'all',metric:'amount',productSearch:'',brand:'全部品牌',category:'全部类目',channel:'全部出价渠道',sort:'amount',productDirection:'desc',productPage:1,reasonType:'all',reasonLevel:'primary',reasonExpanded:new Set(),reasonSort:'amount',reasonDirection:'desc',expanded:new Set(),customStart:'2026-10-21',customEnd:'2026-10-27',...M.defaults()};
+const state={basis:'pay',period:'seven',type:'all',metric:'amount',productSearch:'',productType:'all',brand:'全部品牌',category:'全部类目',channel:'全部出价渠道',sort:'amount',productDirection:'desc',productPage:1,reasonType:'all',reasonLevel:'primary',reasonExpanded:new Set(),reasonSort:'amount',reasonDirection:'desc',expanded:new Set(),customStart:'2026-10-21',customEnd:'2026-10-27',...M.defaults()};
 const money=c=> (c/100).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
 const typeName=t=>({all:'全部退款',mid:'发货前退款',return:'发货后退货退款',only:'发货后仅退款'}[t]);
 const metricName=()=>({amount:'退款金额',count:'退款订单数',rate:'订单退款率',amountRate:'金额退款率'}[state.metric]);
@@ -96,15 +96,23 @@ function renderReasons(result){
 function pants(color){return `<svg viewBox="0 0 40 60" aria-hidden="true"><path d="M9 3L31 3 34 56 23 57 20 25 16 57 5 56Z" fill="${color}"/><path d="M9 5H31M20 5V25M12 9L10 16M28 9L30 16" fill="none" stroke="white" stroke-opacity=".23" stroke-width="1"/><path d="M10 20L9 53M29 20L30 53" stroke="black" stroke-opacity=".09" fill="none"/></svg>`}
 const productMetricLabels={amountRate:'金额退款率',rate:'订单退款率',amount:'退款金额',paidAmount:'用户支付金额',count:'退款订单数',paid:'支付订单数',reasons:'退款原因'};
 const PRODUCT_PAGE_SIZE=5;
+const copyIcon='<svg viewBox="0 0 16 16" aria-hidden="true"><rect x="6" y="2" width="8" height="10" rx=".7"/><path d="M10 12v3H2V5h4"/></svg>';
+function productIdentifier(label,value){return `<span class="product-identifier"><span class="identifier-label">${label}</span><span class="identifier-value" title="${escapeHTML(value||'—')}">${escapeHTML(value||'—')}</span>${value?`<button type="button" class="copy-identifier" data-copy-value="${escapeHTML(value)}" data-copy-label="${label}" aria-label="复制${label} ${escapeHTML(value)}" title="复制${label}">${copyIcon}</button>`:''}</span>`}
+function bindProductCopyButtons(){
+ $$('[data-copy-value]').forEach(button=>button.onclick=async event=>{
+  event.stopPropagation();
+  try{await navigator.clipboard.writeText(button.dataset.copyValue);toast(`${button.dataset.copyLabel}已复制`)}catch{toast('复制失败，请重试')}
+ });
+}
 let productScopeSignature='',productReasonData=new Map();
 function renderProducts(result){
  hideProductReasonTooltip();
- const scope=JSON.stringify([state.basis,result.range,state.brand,state.category,state.channel,state.productSearch]);
+ const scope=JSON.stringify([state.basis,result.range,state.brand,state.category,state.channel,state.productSearch,state.productType]);
  if(scope!==productScopeSignature){state.productPage=1;productScopeSignature=scope}
  const pay=state.basis==='pay',columns=pay?['amountRate','rate','amount','paidAmount','count','paid']:['amount','paidAmount','count','paid'];
  if(!columns.includes(state.sort)){state.sort='amount';state.productDirection='desc'}
  const productResult=state.productSearch?{...result,refunds:result.refunds.filter(row=>M.matches(row,{search:state.productSearch},catalog)),payments:result.payments.filter(row=>M.matches(row,{search:state.productSearch},catalog))}:result;
- const ranking=M.summarizeProducts(productResult).slice(0,20),direction=state.productDirection==='asc'?1:-1;
+ const ranking=M.summarizeProducts(productResult,state.productType).slice(0,20),direction=state.productDirection==='asc'?1:-1;
  ranking.sort((a,b)=>a[state.sort]===null?(b[state.sort]===null?0:1):b[state.sort]===null?-1:(a[state.sort]-b[state.sort])*direction);
  const pageCount=Math.max(1,Math.ceil(ranking.length/PRODUCT_PAGE_SIZE));state.productPage=Math.min(Math.max(1,state.productPage),pageCount);
  const visible=ranking.slice((state.productPage-1)*PRODUCT_PAGE_SIZE,state.productPage*PRODUCT_PAGE_SIZE),table=$('.top-products-table');
@@ -114,18 +122,27 @@ function renderProducts(result){
  $('#productHeaders').innerHTML=`<tr><th scope="col">商品信息</th>${columns.map(metric=>{const active=state.sort===metric,sort=active?state.productDirection:null;return `<th scope="col" aria-sort="${sort==='asc'?'ascending':sort==='desc'?'descending':'none'}"><div class="product-column-head"><button type="button" class="product-sort ${active?'is-active':''}" data-product-sort="${metric}" aria-label="按${productMetricLabels[metric]}${sort==='desc'?'升序':'降序'}排列">${productMetricLabels[metric]}<span class="reason-sort-icon ${sort||''}" aria-hidden="true"><i></i><i></i></span></button>${info(metric)}</div></th>`}).join('')}<th scope="col"><div class="product-column-head product-reason-head">退款原因${info('reasons')}</div></th></tr>`;
  const metricCells=row=>columns.map(metric=>`<td data-product-value="${metric}">${metric==='amount'||metric==='paidAmount'?'¥'+money(row[metric]):isRateMetric(metric)?percentage(row[metric]):row[metric].toLocaleString()}</td>`).join('');
  const reasonsCell=(row,key,p,sku='')=>{productReasonData.set(key,{reasons:row.reasons,product:p,sku});return `<td class="product-reason-cell"><button type="button" class="product-reasons" data-product-reasons="${escapeHTML(key)}" aria-label="查看${sku?'该规格':'该商品'}全部退款原因" aria-describedby="productReasonsTooltip"><span>${escapeHTML(row.reasons.map(reason=>`${reason.reason}（${percentage(reason.amountShare)}）`).join(' ｜ '))||'—'}</span></button></td>`};
- $('#productRows').innerHTML=visible.map(row=>{const p=catalog.find(item=>item.id===row.product),expanded=state.expanded.has(p.id),skuRows=expanded?row.skus.map(sku=>`<tr class="sku-row" data-product-sku="${p.id}"><td>└ ${escapeHTML(sku.sku)}</td>${metricCells(sku)}${reasonsCell(sku,p.id+'|'+sku.sku,p,sku.sku)}</tr>`).join(''):'';return `<tr class="top-product-row" data-product-id="${p.id}"><td><div class="product-info"><div class="thumb">${pants(p.color)}</div><div class="top-product-description"><div class="product-name" title="${escapeHTML(p.name)}">${escapeHTML(p.name)}</div><div class="product-code">货号：${escapeHTML(p.code)}</div><div class="product-meta"><span>SPU ${p.spu}</span><button type="button" class="sku-toggle" data-expand="${p.id}" aria-expanded="${expanded}">${expanded?'收起':'展开'} SKU ${expanded?'⌃':'⌄'}</button></div></div></div></td>${metricCells(row)}${reasonsCell(row,p.id,p)}</tr>${skuRows}`}).join('')||`<tr><td colspan="${columns.length+2}" class="product-empty">暂无符合条件的退款商品</td></tr>`;
+ $('#productRows').innerHTML=visible.map(row=>{
+  const p=catalog.find(item=>item.id===row.product),expanded=state.expanded.has(p.id);
+  const skuRows=expanded?row.skus.map(sku=>{
+   const variant=p.skus.find(item=>item.label===sku.sku),skuId=sku.skuId||variant?.id;
+   return `<tr class="sku-row" data-product-sku="${p.id}" data-sku-id="${escapeHTML(skuId||'')}"><td><div class="product-info sku-product-info"><div class="thumb">${pants(variant?.color||p.color)}</div><div class="top-product-description"><div class="sku-name">${escapeHTML(sku.sku)}</div><div class="sku-identifier">${productIdentifier('SKUID',skuId)}</div></div></div></td>${metricCells(sku)}${reasonsCell(sku,p.id+'|'+sku.sku,p,sku.sku)}</tr>`;
+  }).join(''):'';
+  return `<tr class="top-product-row" data-product-id="${p.id}"><td><div class="product-info"><div class="thumb">${pants(p.color)}</div><div class="top-product-description"><div class="product-name" title="${escapeHTML(p.name)}">${escapeHTML(p.name)}</div><div class="product-code">${productIdentifier('货号',p.code)}</div><div class="product-meta">${productIdentifier('SPUID',p.spu)}<button type="button" class="sku-toggle" data-expand="${p.id}" aria-expanded="${expanded}">${expanded?'收起':'展开'} SKU ${expanded?'⌃':'⌄'}</button></div></div></div></td>${metricCells(row)}${reasonsCell(row,p.id,p)}</tr>${skuRows}`;
+ }).join('')||`<tr><td colspan="${columns.length+2}" class="product-empty">暂无符合条件的退款商品</td></tr>`;
  $('#totalProducts').textContent=ranking.length?`共 ${ranking.length} 个商品，展示第 ${(state.productPage-1)*PRODUCT_PAGE_SIZE+1}–${Math.min(state.productPage*PRODUCT_PAGE_SIZE,ranking.length)} 个`:'共 0 个商品';
  $('#productPagination').innerHTML=`<button type="button" data-product-page="${state.productPage-1}" aria-label="上一页" ${state.productPage===1?'disabled':''}>‹</button>${Array.from({length:pageCount},(_,i)=>`<button type="button" class="${state.productPage===i+1?'current':''}" data-product-page="${i+1}" ${state.productPage===i+1?'aria-current="page"':''}>${i+1}</button>`).join('')}<button type="button" data-product-page="${state.productPage+1}" aria-label="下一页" ${state.productPage===pageCount?'disabled':''}>›</button><span class="product-page-size">${PRODUCT_PAGE_SIZE} 条/页</span>`;
  $$('[data-product-sort]').forEach(button=>button.onclick=()=>{const key=button.dataset.productSort;state.productDirection=state.sort===key&&state.productDirection==='desc'?'asc':'desc';state.sort=key;state.productPage=1;hideMetricTooltip();renderProducts(queryFor(...range()));bindMetricTooltips();$(`[data-product-sort="${key}"]`).focus({preventScroll:true})});
  $$('[data-expand]').forEach(button=>button.onclick=()=>{const key=button.dataset.expand;state.expanded.has(key)?state.expanded.delete(key):state.expanded.add(key);renderProducts(queryFor(...range()));bindMetricTooltips();$(`[data-expand="${key}"]`).focus({preventScroll:true})});
  $$('[data-product-page]').forEach(button=>button.onclick=()=>{state.productPage=Number(button.dataset.productPage);renderProducts(queryFor(...range()));bindMetricTooltips();$(`[data-product-page="${state.productPage}"].current`)?.focus({preventScroll:true})});
  bindProductReasonTips();
+ bindProductCopyButtons();
 }
 function toast(text){$('#toast').textContent=text;$('#toast').classList.add('show');setTimeout(()=>$('#toast').classList.remove('show'),2200)}
 function download(name,rows){const text='\uFEFF'+rows.map(row=>row.map(v=>'"'+String(v).replaceAll('"','""')+'"').join(',')).join('\r\n');const url=URL.createObjectURL(new Blob([text],{type:'text/csv;charset=utf-8;'}));const a=document.createElement('a');a.href=url;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(url),1000)}
 $('#basis').onchange=e=>{state.basis=e.target.value;if(state.basis==='refund'&&isRateMetric(state.metric))state.metric='amount';render()};
 $('#reasonType').onchange=e=>{state.reasonType=e.target.value;hideMetricTooltip();renderReasons(queryFor(...range()));bindMetricTooltips()};
+$('#productType').onchange=e=>{state.productType=e.target.value;state.productPage=1;hideMetricTooltip();renderProducts(queryFor(...range()));bindMetricTooltips()};
  const selectReasonLevel=level=>{state.reasonLevel=level;hideMetricTooltip();renderReasons(queryFor(...range()));bindMetricTooltips()};
  $$('[data-reason-level-tab]').forEach(button=>{
   button.onclick=()=>selectReasonLevel(button.dataset.reasonLevelTab);
@@ -216,8 +233,8 @@ if (typeof ResizeObserver === 'function') {
 window.RefundAnalysisDemo = {
  getData:()=>data,
  applyScope(scope){
-  Object.assign(state,scope,{type:'all',metric:'amount',productSearch:'',sort:'amount',productDirection:'desc',productPage:1,reasonType:'all',reasonLevel:'primary',reasonExpanded:new Set(),reasonSort:'amount',reasonDirection:'desc',expanded:new Set()});
-  for(const [id,key] of [['basis','basis'],['brandSelect','brand'],['categorySelect','category'],['channelSelect','channel'],['reasonType','reasonType']])$('#'+id).value=state[key];
+  Object.assign(state,scope,{type:'all',metric:'amount',productSearch:'',productType:'all',sort:'amount',productDirection:'desc',productPage:1,reasonType:'all',reasonLevel:'primary',reasonExpanded:new Set(),reasonSort:'amount',reasonDirection:'desc',expanded:new Set()});
+  for(const [id,key] of [['basis','basis'],['brandSelect','brand'],['categorySelect','category'],['channelSelect','channel'],['reasonType','reasonType'],['productType','productType']])$('#'+id).value=state[key];
   $('#productSearch').value='';
   render();
  },

@@ -571,14 +571,14 @@ main {
 .top-products-table .col-count,
 .top-products-table .col-paid { width: 10%; }
 .top-products-table .col-reasons { width: 24%; }
-.top-products-table.has-rates .col-product { width: 21%; }
+.top-products-table.has-rates .col-product { width: 22%; }
 .top-products-table.has-rates .col-amountRate,
 .top-products-table.has-rates .col-rate { width: 9%; }
 .top-products-table.has-rates .col-amount { width: 11%; }
 .top-products-table.has-rates .col-paidAmount { width: 12%; }
 .top-products-table.has-rates .col-count,
 .top-products-table.has-rates .col-paid { width: 9%; }
-.top-products-table.has-rates .col-reasons { width: 20%; }
+.top-products-table.has-rates .col-reasons { width: 19%; }
 
 .products .top-products-table th:first-child,
 .products .top-products-table th:last-child,
@@ -684,8 +684,52 @@ main {
   color: var(--dw-color-link-hover);
 }
 
+.product-identifier {
+  display: inline-flex;
+  align-items: center;
+  min-width: 0;
+  max-width: 100%;
+  gap: 4px;
+  vertical-align: middle;
+}
+.identifier-label { flex: none; }
+.identifier-value {
+  min-width: 0;
+  overflow: hidden;
+  color: var(--dw-color-text-secondary);
+  font-family: var(--dw-font-en);
+  font-weight: 500;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.copy-identifier {
+  display: inline-grid;
+  place-items: center;
+  flex: none;
+  width: 16px;
+  height: 18px;
+  padding: 0;
+  color: var(--dw-color-border-strong);
+  background: transparent;
+  border-radius: 2px;
+}
+.copy-identifier svg {
+  width: 14px;
+  height: 14px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.3;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.copy-identifier:hover { color: var(--dw-color-text-brand); }
+.sku-name { color: var(--dw-color-text); font-size: 14px; line-height: 22px; }
+.sku-identifier { margin-top: 4px; color: var(--dw-color-text-tertiary); font-size: 12px; line-height: 20px; }
+.top-products-table .sku-product-info .thumb { width: 36px; height: 48px; }
+.top-products-table .sku-product-info .thumb svg { width: 28px; height: 42px; }
+
 .products .top-products-table .sku-row td {
-  height: 48px;
+  height: 80px;
   padding: var(--dw-space-12);
   background: var(--dw-color-canvas);
   font-size: var(--dw-font-body-md-size);

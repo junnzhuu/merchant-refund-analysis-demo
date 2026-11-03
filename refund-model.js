@@ -35,7 +35,9 @@
     {id:'p3',spu:'1000398302',name:'FAESSLIN 美拉德直筒休闲裤 女款',code:'K1015R-服饰',category:'休闲裤',channel:'品牌直发',color:'#706151',unitCents:28000},
     {id:'p4',spu:'1000398355',name:'FAESSLIN 宽松垂感羊毛阔腿裤 男女同款',code:'K2730-服饰',category:'休闲裤',channel:'品牌直发',color:'#b3afa6',unitCents:29088},
     {id:'p5',spu:'1000398390',name:'FAESSLIN 复古水洗高腰微喇牛仔裤 女款',code:'K2925Q-服饰',category:'牛仔裤',channel:'现货',color:'#46546b',unitCents:32500}
-  ];
+  ].map(product=>({...product,skus:SKUS.map((label,index)=>({
+    id:product.spu+String(index+1).padStart(2,'0'),label,color:label.startsWith('黑色')?'#34363b':'#85878c'
+  }))}));
   function dayOffset(date, n) { const d=new Date(date+'T00:00:00Z');d.setUTCDate(d.getUTCDate()+n);return d.toISOString().slice(0,10); }
   function dayCount(start,end) { return Math.round((Date.parse(end+'T00:00:00Z')-Date.parse(start+'T00:00:00Z'))/86400000)+1; }
   function dateList(start,end) { const out=[];for(let d=start;d<=end;d=dayOffset(d,1))out.push(d);return out; }
@@ -93,7 +95,7 @@
           const payTime=`${date} ${String(hour).padStart(2,'0')}:${String(minute).padStart(2,'0')}:00`;
           if(payTime>CUTOFF)continue;
           const subOrderId='DE'+date.replaceAll('-','')+String(++serial).padStart(7,'0'),sku=SKUS[j%3];
-          const paid={subOrderId,product:p.id,sku,payDate:date,payTime,amount:p.unitCents};payments.push(paid);
+          const paid={subOrderId,product:p.id,sku,skuId:p.skus[j%3].id,payDate:date,payTime,amount:p.unitCents};payments.push(paid);
           const seed=dayIndex*17+j*11+pi*5;
           if(seed%100>=32)continue;
           const type=seed%10<3?'mid':seed%10<8?'return':'only';
@@ -170,9 +172,9 @@
       return {id,reason:parent.name,amount,count,amountRate,rate,children};
     }).sort((a,b)=>b.amount-a.amount);
   }
-  function summarizeProducts(result) {
+  function summarizeProducts(result,refundType='all') {
     const products=new Map();
-    for(const row of uniqueRecords(result.refunds,result.cutoff)) {
+    for(const row of typeRows(uniqueRecords(result.refunds,result.cutoff),refundType)) {
       if(!products.has(row.product))products.set(row.product,[]);
       products.get(row.product).push(row);
     }
@@ -188,7 +190,10 @@
         if(!groups.has(row.sku))groups.set(row.sku,[]);
         groups.get(row.sku).push(row);
       }
-      const skus=[...groups].map(([sku,items])=>({sku,...details(items,payments.filter(p=>p.sku===sku))})).sort((a,b)=>b.amount-a.amount);
+      const skus=[...groups].map(([sku,items])=>{
+        const skuPayments=payments.filter(p=>p.sku===sku),skuId=items.find(row=>row.skuId)?.skuId||skuPayments.find(row=>row.skuId)?.skuId||null;
+        return {sku,skuId,...details(items,skuPayments)};
+      }).sort((a,b)=>b.amount-a.amount);
       return {product,...details(refunds,payments),skus};
     }).sort((a,b)=>b.amount-a.amount);
   }

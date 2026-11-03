@@ -95,7 +95,8 @@
 
 .filter-line select,
 .date-trigger,
-.reason-controls #reasonType {
+.reason-controls #reasonType,
+.product-controls #productType {
   box-sizing: border-box;
   height: var(--dw-control-height);
   border: 1px solid var(--dw-color-border);
@@ -110,7 +111,8 @@
 }
 
 .filter-line select,
-.reason-controls #reasonType {
+.reason-controls #reasonType,
+.product-controls #productType {
   appearance: none;
   min-width: 0;
   padding: 0 32px 0 var(--dw-input-padding-x);
@@ -209,13 +211,15 @@
 .filter-line > select:hover,
 .filter-field:hover,
 .date-trigger:hover,
-.reason-controls #reasonType:hover {
+.reason-controls #reasonType:hover,
+.product-controls #productType:hover {
   border-color: var(--dw-color-input-border-hover);
 }
 
 .filter-line > select:focus-visible,
 .date-trigger:focus-visible,
-.reason-controls #reasonType:focus-visible {
+.reason-controls #reasonType:focus-visible,
+.product-controls #productType:focus-visible {
   border-color: var(--dw-color-border-focus);
   outline: 2px solid var(--dw-color-focus-ring-subtle);
   outline-offset: 1px;
@@ -380,7 +384,8 @@
   outline-offset: 2px;
 }
 
-.reason-controls #reasonType {
+.reason-controls #reasonType,
+.product-controls #productType {
   width: 160px;
   min-width: 160px;
 }
