@@ -387,7 +387,6 @@ main {
   min-width: 900px;
 }
 
-.reason-level-tabs { margin-top: var(--dw-space-16); }
 .reason-expand {
   display: inline-flex;
   align-items: center;
@@ -415,13 +414,7 @@ main {
 .reason-analysis-table tbody .reason-child-row th,
 .reason-analysis-table tbody .reason-child-row td { background: var(--dw-color-page); }
 .reason-detail-name { display: block; }
-.reason-parent-name {
-  display: block;
-  margin-top: 2px;
-  color: var(--dw-color-text-tertiary);
-  font-size: 12px;
-  line-height: 20px;
-}
+
 
 .reason-analysis-table thead th,
 .products .top-products-table thead th,

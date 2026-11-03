@@ -3,7 +3,7 @@ const $$ = s => [...document.querySelectorAll(s)];
 const M = RefundModel;
 const {DAY,CUTOFF,catalog,uniqueRecords,total,count} = M;
 const data=M.createData(),records=data.refunds,payments=data.payments;
-const state={basis:'pay',period:'seven',type:'all',metric:'amount',productSearch:'',productType:'all',brand:'全部品牌',category:'全部类目',channel:'全部出价渠道',sort:'amount',productDirection:'desc',productPage:1,reasonType:'all',reasonLevel:'primary',reasonExpanded:new Set(),reasonSort:'amount',reasonDirection:'desc',expanded:new Set(),customStart:'2026-10-21',customEnd:'2026-10-27',...M.defaults()};
+const state={basis:'pay',period:'seven',type:'all',metric:'amount',productSearch:'',productType:'all',brand:'全部品牌',category:'全部类目',channel:'全部出价渠道',sort:'amount',productDirection:'desc',productPage:1,reasonType:'all',reasonExpanded:new Set(),reasonSort:'amount',reasonDirection:'desc',expanded:new Set(),customStart:'2026-10-21',customEnd:'2026-10-27',...M.defaults()};
 const money=c=> (c/100).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
 const typeName=t=>({all:'全部退款',mid:'发货前退款',return:'发货后退货退款',only:'发货后仅退款'}[t]);
 const metricName=()=>({amount:'退款金额',count:'退款订单数',rate:'订单退款率',amountRate:'金额退款率'}[state.metric]);
@@ -75,20 +75,17 @@ function renderReasons(result){
  if(!columns.includes(state.reasonSort)){state.reasonSort='amount';state.reasonDirection='desc'}
  const direction=state.reasonDirection==='asc'?1:-1,hierarchy=M.summarizeReasonHierarchy({...result,refunds:M.typeRows(result.refunds,state.reasonType)});
  const sortRows=rows=>rows.sort((a,b)=>a[state.reasonSort]===null?(b[state.reasonSort]===null?0:1):b[state.reasonSort]===null?-1:(a[state.reasonSort]-b[state.reasonSort])*direction);
- const primary=state.reasonLevel==='primary',rows=sortRows(primary?hierarchy:hierarchy.flatMap(row=>row.children));
+ const rows=sortRows(hierarchy);
  const header=metric=>{const label=reasonMetricLabels[metric],active=state.reasonSort===metric,sort=active?state.reasonDirection:null;return `<th scope="col" class="reason-numeric" aria-sort="${sort==='asc'?'ascending':sort==='desc'?'descending':'none'}"><div class="reason-column-head"><button type="button" class="reason-sort ${active?'is-active':''}" data-reason-sort="${metric}" aria-label="按${label}${sort==='desc'?'升序':'降序'}排列">${label}<span class="reason-sort-icon ${sort||''}" aria-hidden="true"><i></i><i></i></span></button><button type="button" class="metric-definition reason-info" data-definition="reason|${metric}" aria-label="${label}指标释义" aria-describedby="metricTooltip">${infoIcon}</button></div></th>`};
  $('#reasons').classList.toggle('has-rates',pay);
  const cells=row=>columns.map(metric=>`<td data-reason-value="${metric}">${metric==='amount'?'¥'+money(row.amount):metric==='count'?row.count.toLocaleString():percentage(row[metric])}</td>`).join('');
- const childRow=(row,nested=false)=>`<tr class="${nested?'reason-child-row':'reason-detail-row'}" data-reason-level="2" data-parent-id="${row.parentId}"><th scope="row"><span class="reason-detail-name">${escapeHTML(row.reason)}</span>${nested?'':`<span class="reason-parent-name">${escapeHTML(row.parentReason)}</span>`}</th>${cells(row)}</tr>`;
+ const childRow=row=>`<tr class="reason-child-row" data-reason-level="2" data-parent-id="${row.parentId}"><th scope="row"><span class="reason-detail-name">${escapeHTML(row.reason)}</span></th>${cells(row)}</tr>`;
  const body=rows.map(row=>{
-  if(!primary)return childRow(row);
   const expanded=state.reasonExpanded.has(row.id);
-  return `<tr class="reason-parent-row" data-reason-level="1"><th scope="row"><button type="button" class="reason-expand" data-reason-toggle="${row.id}" aria-expanded="${expanded}" aria-label="${expanded?'收起':'展开'}${escapeHTML(row.reason)}二级原因"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="m6 3 5 5-5 5"/></svg><span>${escapeHTML(row.reason)}</span></button></th>${cells(row)}</tr>${expanded?sortRows(row.children).map(child=>childRow(child,true)).join(''):''}`;
+  return `<tr class="reason-parent-row" data-reason-level="1"><th scope="row"><button type="button" class="reason-expand" data-reason-toggle="${row.id}" aria-expanded="${expanded}" aria-label="${expanded?'收起':'展开'}${escapeHTML(row.reason)}二级原因"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="m6 3 5 5-5 5"/></svg><span>${escapeHTML(row.reason)}</span></button></th>${cells(row)}</tr>${expanded?sortRows(row.children).map(child=>childRow(child)).join(''):''}`;
  }).join('');
  $('#reasons').innerHTML=`<thead><tr><th scope="col">退款原因</th>${columns.map(header).join('')}</tr></thead><tbody>${body||`<tr><td colspan="${columns.length+1}" class="reason-empty">暂无符合条件的退款数据</td></tr>`}</tbody>`;
- $('#reasonTotal').textContent=`共 ${rows.length} 个${primary?'一级':'二级'}原因`;
- $$('[data-reason-level-tab]').forEach(button=>{const selected=button.dataset.reasonLevelTab===state.reasonLevel;button.classList.toggle('on',selected);button.setAttribute('aria-selected',String(selected));button.tabIndex=selected?0:-1});
- $('#reasonPanel').setAttribute('aria-labelledby',primary?'reasonPrimaryTab':'reasonSecondaryTab');
+ $('#reasonTotal').textContent=`共 ${rows.length} 个一级原因`;
  $('#reasonNote').textContent=pay?'退款率以同批全部成交金额、成交订单数为分母':'按退款完成日期统计成功退款数据';
  $$('[data-reason-sort]').forEach(button=>button.onclick=()=>{const key=button.dataset.reasonSort;state.reasonDirection=state.reasonSort===key&&state.reasonDirection==='desc'?'asc':'desc';state.reasonSort=key;hideMetricTooltip();renderReasons(queryFor(...range()));bindMetricTooltips();$(`[data-reason-sort="${key}"]`).focus({preventScroll:true})});
  $$('[data-reason-toggle]').forEach(button=>button.onclick=()=>{const key=button.dataset.reasonToggle;state.reasonExpanded.has(key)?state.reasonExpanded.delete(key):state.reasonExpanded.add(key);hideMetricTooltip();renderReasons(queryFor(...range()));bindMetricTooltips();$(`[data-reason-toggle="${key}"]`).focus({preventScroll:true})});
@@ -143,11 +140,6 @@ function download(name,rows){const text='\uFEFF'+rows.map(row=>row.map(v=>'"'+St
 $('#basis').onchange=e=>{state.basis=e.target.value;if(state.basis==='refund'&&isRateMetric(state.metric))state.metric='amount';render()};
 $('#reasonType').onchange=e=>{state.reasonType=e.target.value;hideMetricTooltip();renderReasons(queryFor(...range()));bindMetricTooltips()};
 $('#productType').onchange=e=>{state.productType=e.target.value;state.productPage=1;hideMetricTooltip();renderProducts(queryFor(...range()));bindMetricTooltips()};
- const selectReasonLevel=level=>{state.reasonLevel=level;hideMetricTooltip();renderReasons(queryFor(...range()));bindMetricTooltips()};
- $$('[data-reason-level-tab]').forEach(button=>{
-  button.onclick=()=>selectReasonLevel(button.dataset.reasonLevelTab);
-  button.onkeydown=event=>{if(!['ArrowLeft','ArrowRight','Home','End'].includes(event.key))return;event.preventDefault();const level=event.key==='Home'?'primary':event.key==='End'?'secondary':state.reasonLevel==='primary'?'secondary':'primary';selectReasonLevel(level);$(`[data-reason-level-tab="${level}"]`).focus({preventScroll:true})};
- });
 $$('#metric button').forEach(b=>b.onclick=()=>{state.metric=b.dataset.metric;render()});
 for(const [id,key] of [['brandSelect','brand'],['categorySelect','category'],['channelSelect','channel']]){
  const select=$('#'+id),clear=select.parentElement.querySelector('.filter-clear');
@@ -233,7 +225,7 @@ if (typeof ResizeObserver === 'function') {
 window.RefundAnalysisDemo = {
  getData:()=>data,
  applyScope(scope){
-  Object.assign(state,scope,{type:'all',metric:'amount',productSearch:'',productType:'all',sort:'amount',productDirection:'desc',productPage:1,reasonType:'all',reasonLevel:'primary',reasonExpanded:new Set(),reasonSort:'amount',reasonDirection:'desc',expanded:new Set()});
+  Object.assign(state,scope,{type:'all',metric:'amount',productSearch:'',productType:'all',sort:'amount',productDirection:'desc',productPage:1,reasonType:'all',reasonExpanded:new Set(),reasonSort:'amount',reasonDirection:'desc',expanded:new Set()});
   for(const [id,key] of [['basis','basis'],['brandSelect','brand'],['categorySelect','category'],['channelSelect','channel'],['reasonType','reasonType'],['productType','productType']])$('#'+id).value=state[key];
   $('#productSearch').value='';
   render();
