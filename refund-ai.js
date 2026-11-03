@@ -65,7 +65,7 @@
       <section class="rai-scope" aria-label="分析范围">
         <div><span class="rai-scope-label">分析范围</span><strong>全店 · 近7天</strong></div>
         <p>${escape(report.period.current.start)} 至 ${escape(report.period.current.end)}<span>按支付时间口径</span></p>
-        <small>独立分析全店数据，不受售后列表筛选影响</small>
+        <small>独立分析全店数据，不受当前页面筛选影响</small>
       </section>
       <section class="rai-section" aria-labelledby="raiMetricsTitle">
         <h3 id="raiMetricsTitle">退款概况</h3>

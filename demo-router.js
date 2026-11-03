@@ -26,6 +26,10 @@
       navigate('analysis');
     }
   });
+  document.getElementById('refundAiSummary').addEventListener('click', event => {
+    bridge.suspend();
+    ai.open({sourceLabel: LABELS.analysis, opener: event.currentTarget});
+  });
   const sales = window.AfterSalesDemo.mount({
     root: salesRoot,
     notify: text => toast(text),

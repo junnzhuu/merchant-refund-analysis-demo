@@ -21,6 +21,37 @@ button:focus-visible, input:focus-visible, select:focus-visible {
 
 /* Four selectable metric groups retain the equation and the shared trend. */
 .overview { padding: 20px; }
+.overview .overview-head { flex-wrap: nowrap; align-items: center; }
+.overview-head h2 { flex: none; }
+.refund-ai-summary {
+  display: flex;
+  align-items: center;
+  flex: 1 1 0;
+  min-width: 0;
+  height: 40px;
+  padding: 0 14px;
+  gap: 8px;
+  border: 1px solid var(--dw-color-brand-disabled);
+  border-radius: var(--dw-radius-xs);
+  background: linear-gradient(100deg, #e6fbfb 0%, #f4fdfd 34%, var(--dw-color-surface) 78%);
+  color: var(--dw-color-text);
+  font-size: 14px;
+  line-height: 22px;
+  text-align: left;
+  white-space: nowrap;
+  cursor: pointer;
+}
+.refund-ai-summary-label { flex: none; color: #07565b; font-weight: var(--dw-font-weight-semibold); }
+.refund-ai-summary-copy { flex: 1 1 0; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.refund-ai-summary-icon { flex: none; width: 18px; height: 18px; color: var(--dw-color-brand-active); }
+.refund-ai-summary-arrow { flex: none; width: 16px; height: 16px; margin-left: 4px; color: var(--dw-color-text-tertiary); }
+.refund-ai-summary:hover { border-color: var(--dw-color-brand); }
+.refund-ai-summary:hover .refund-ai-summary-arrow { color: var(--dw-color-text-brand); }
+.refund-ai-summary:focus-visible { outline: 2px solid var(--dw-color-focus-ring); outline-offset: 2px; }
+@media (max-width: 760px) {
+  .overview .overview-head { gap: 12px; }
+  .refund-ai-summary { padding: 0 10px; gap: 6px; }
+}
 .metric-scroll { width: 100%; overflow-x: auto; scrollbar-width: thin; }
 .metric-grid {
   min-width: 1068px;
