@@ -26,7 +26,7 @@ const infoIcon='<svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8
 const refundTypeDefinitions={
  mid:'按所选时间口径和范围，统计买家支付成功后、商家发货前取消订单并成功退款的数据。',
  transit:'按所选时间口径和范围，统计商家已发货、买家尚未收货时发生的成功退款，包含拦截、拒收等场景。',
- only:'按所选时间口径和范围，统计买家已收货、无需退回商品即成功退款的数据，与“收货后退货退款”分开统计。',
+ only:'按所选时间口径和范围，统计买家已收货、无需退回商品即成功退款的数据，与“已收货 退货退款”分开统计。',
  return:'按所选时间口径和范围，统计买家已收货，随后退回商品并成功退款的数据。'
 };
 function definitionButton(type,metric,label){return `<span class="metric-definition-label">${label}<button type="button" class="metric-definition" data-definition="${type}|${metric}" aria-label="${label}指标释义" aria-describedby="metricTooltip">${infoIcon}</button></span>`}

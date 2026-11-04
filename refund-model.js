@@ -8,7 +8,7 @@
   const REFUND_WINDOW_MS = 30 * 24 * 60 * 60 * 1000;
   const SELECTABLE_START = '2026-01-01', DATA_START = '2025-01-01';
   const REFUND_TYPES = ['mid', 'transit', 'only', 'return'];
-  const REFUND_TYPE_LABELS = {all:'全部退款',mid:'发货前退款',transit:'发货后收货前退款',only:'收货后退款',return:'收货后退货退款'};
+  const REFUND_TYPE_LABELS = {all:'全部 退款',mid:'发货前 退款',transit:'未收货 退款',only:'已收货 退款',return:'已收货 退货退款'};
   const SKUS = ['灰色 / M', '灰色 / L', '黑色 / L'];
   // Display taxonomy observed in the Douyin refund-analysis page on 2026-11-03.
   // Names and parent/child mapping are demo parameters, not Dewu production rules.

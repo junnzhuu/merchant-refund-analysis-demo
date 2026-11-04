@@ -8,7 +8,7 @@ const E=require('../refund-export.js');
 const data=M.createData();
 let passed=0;
 function test(name,fn){fn();passed++;console.log('PASS '+name);}
-const labels=['全部退款','发货前退款','发货后收货前退款','收货后退款','收货后退货退款'];
+const labels=['全部 退款','发货前 退款','未收货 退款','已收货 退款','已收货 退货退款'];
 test('four stages have the requested order and every mock child order belongs to exactly one stage',()=>{
   assert.deepEqual(['all',...M.REFUND_TYPES].map(type=>M.REFUND_TYPE_LABELS[type]),labels);
   const orders=new Map();
@@ -42,8 +42,8 @@ test('transit filters isolate product and reason numerators while keeping paid p
 test('XLSX includes five core rows and carries new stage names into trend and local scopes',()=>{
   for(const basis of ['pay','refund']){
     const state={basis,period:'seven',type:'transit',metric:'amount',productType:'transit',reasonType:'only'},report=E.buildReport(data,state),[core,products,reasons]=report.sheets;
-    assert.deepEqual(core.rows.map(row=>row.type),labels);assert(core.trend.title.includes('发货后收货前退款'));
-    assert(products.metadata.some(text=>text.includes('发货后收货前退款')));assert(reasons.metadata.some(text=>text.includes('收货后退款')));
+    assert.deepEqual(core.rows.map(row=>row.type),labels);assert(core.trend.title.includes('未收货 退款'));
+    assert(products.metadata.some(text=>text.includes('未收货 退款')));assert(reasons.metadata.some(text=>text.includes('已收货 退款')));
     assert.equal(Math.round(core.rows[0].amount*100),core.rows.slice(1).reduce((sum,row)=>sum+Math.round(row.amount*100),0));
     assert.equal(core.rows[0].count,core.rows.slice(1).reduce((sum,row)=>sum+row.count,0));
   }

@@ -42,7 +42,7 @@
     const trendState = {...state,metric:trendMetric}, series = M.buildTrend(data,trendState,{current,previous});
     const core = {
       name:'核心数据', columns:coreColumns, rows:coreRows,
-      metadata:metadata('退款范围：全部退款及四类退款分别汇总；收货后退款指无需退货的退款',`卡片对比：${period.previous.start} 至 ${period.previous.end}${period.realtime?'（昨日全天）':''}；金额单位：元；示例数据`),
+      metadata:metadata('退款范围：全部 退款及四类退款分别汇总；已收货 退款指无需退货的退款',`卡片对比：${period.previous.start} 至 ${period.previous.end}${period.realtime?'（昨日全天）':''}；金额单位：元；示例数据`),
       trend:{title:`数据趋势 · ${typeName(state.type || 'all')} · ${labels[trendMetric]}`, columns:[column('date',period.realtime?'日期 / 小时':'日期','text',25),metricColumn(trendMetric)], rows:series.currentDates.map((date,i)=>({date,[trendMetric]:series.current[i]}))}
     };
 
