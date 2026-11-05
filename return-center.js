@@ -74,6 +74,7 @@
     if (!root || typeof root.querySelector !== 'function') throw new TypeError('ReturnCenterDemo.mount requires root');
     root.classList.add('rc-root');
     root.innerHTML = layout();
+    const variants = global.ReturnCenterVariants.mount({ root });
     const form = root.querySelector('.rc-filter-form');
     const batchDialog = root.querySelector('.rc-batch-dialog');
     const state = { page: 1, sort: 'recent', quick: '', collapsed: false, filters: { start: DEFAULT_START, end: DEFAULT_END } };
@@ -149,7 +150,7 @@
     render();
     return {
       show() { root.hidden = false; const scroller = root.querySelector('.rc-orders-scroll'); scroller.scrollLeft = savedScroll.left; scroller.scrollTop = savedScroll.top; },
-      hide() { const scroller = root.querySelector('.rc-orders-scroll'); if (!root.hidden) savedScroll = { left: scroller.scrollLeft, top: scroller.scrollTop }; if (batchDialog.open) batchDialog.close(); root.hidden = true; }
+      hide() { const scroller = root.querySelector('.rc-orders-scroll'); if (!root.hidden) savedScroll = { left: scroller.scrollLeft, top: scroller.scrollTop }; variants.close(); if (batchDialog.open) batchDialog.close(); root.hidden = true; }
     };
   }
   global.ReturnCenterDemo = { mount };
