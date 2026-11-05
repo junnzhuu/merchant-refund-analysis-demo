@@ -1,0 +1,153 @@
+/* The return-center surface follows the actual merchant portal shell. */
+body[data-demo-page="return-center"] {
+  background: #f1f1f5 url("https://cdn.dewu.com/node-common/f05ed90b-195e-3eac-995e-f9d0ec1d6f0d-2220-400.png") no-repeat 84px 0 / 100% auto;
+  background-attachment: fixed;
+  color: #505050;
+}
+
+body[data-demo-page="return-center"] .brand {
+  border-bottom: 0;
+  background: #f1f1f5;
+  border-right-color: #dddde7;
+}
+body[data-demo-page="return-center"] .brand::before {
+  content: "";
+  position: absolute;
+  left: 16px;
+  top: 15px;
+  width: 126px;
+  height: 30px;
+  background: url("https://cdn.dewu.com/node-common/451317c9-db2a-f0e7-4354-9b0a2c1112dc-378-90.png") center / contain no-repeat;
+}
+body[data-demo-page="return-center"] .brand .logo,
+body[data-demo-page="return-center"] .brand strong { visibility: hidden; }
+body[data-demo-page="return-center"] .topbar,
+body[data-demo-page="return-center"] .service { display: none; }
+
+body[data-demo-page="return-center"] .rail {
+  width: 84px;
+  padding: 0;
+  border-right-color: #dddde7;
+  background: #f1f1f5;
+  overflow-x: hidden;
+}
+body[data-demo-page="return-center"] .rail > :not(.rail-line) {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  width: 70px;
+  height: 36px;
+  margin: 0 9px 8px 5px;
+  padding: 0 0 0 8px;
+  gap: 8px;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: #3d404d;
+  font-weight: 400;
+}
+body[data-demo-page="return-center"] .rail > :not(.rail-line):hover,
+body[data-demo-page="return-center"] .rail > .selected { background: #dddde7; }
+body[data-demo-page="return-center"] .rail span { font-size: 16px; line-height: 24px; }
+body[data-demo-page="return-center"] .rail .selected span { color: #14151a; font-weight: 600; }
+body[data-demo-page="return-center"] .rail .rail-line {
+  width: 54px;
+  height: 1px;
+  margin: 0 15px 18px;
+  background: #dddde7;
+  border: 0;
+}
+body[data-demo-page="return-center"] .rail .nav-icon {
+  width: 16px;
+  height: 16px;
+  flex: none;
+  background: var(--rc-nav-icon) center / contain no-repeat;
+}
+body[data-demo-page="return-center"] .rail .nav-icon > * { opacity: 0; }
+body[data-demo-page="return-center"] .rail > :nth-child(1) { --rc-nav-icon: url("https://cdn.dewu.com/node-common/45461944-fe95-b137-d009-4f0d53ce48dd-48-48.png"); }
+body[data-demo-page="return-center"] .rail > :nth-child(2) { --rc-nav-icon: url("https://cdn.dewu.com/node-common/812cbd51-e284-2649-8c75-140da5de6183-48-48.png"); }
+body[data-demo-page="return-center"] .rail > :nth-child(3) { --rc-nav-icon: url("https://cdn.dewu.com/node-common/ad34eca2-99c8-54b6-edf4-4ac77c2ab785-48-48.png"); }
+body[data-demo-page="return-center"] .rail > :nth-child(4) { --rc-nav-icon: url("https://cdn.dewu.com/node-common/27ac8531-e649-57cf-9eb8-cee953fd5b08-48-48.png"); }
+body[data-demo-page="return-center"] .rail > :nth-child(5) { --rc-nav-icon: url("https://cdn.dewu.com/node-common/7512f260-0366-012e-2ac8-8cc554d325ef-48-48.png"); }
+body[data-demo-page="return-center"] .rail > :nth-child(6) { --rc-nav-icon: url("https://cdn.dewu.com/node-common/73738dfd-2003-13c5-3495-39df3c07635f-48-48.png"); }
+body[data-demo-page="return-center"] .rail > :nth-child(7) { --rc-nav-icon: url("https://cdn.dewu.com/node-common/5d1ca193-fe7c-f84e-f824-bb8845111d08-48-48.png"); }
+body[data-demo-page="return-center"] .rail > :nth-child(8) { --rc-nav-icon: url("https://cdn.dewu.com/node-common/888b9539-06de-cb6e-5aa3-ed1df9d8ebfb-48-48.png"); }
+body[data-demo-page="return-center"] .rail > :nth-child(9) { --rc-nav-icon: url("https://cdn.dewu.com/node-common/22461047-38b0-de55-63a0-89abf992dc61-48-48.png"); }
+body[data-demo-page="return-center"] .rail > :nth-child(10) { --rc-nav-icon: url("https://cdn.dewu.com/node-common/0d8758a7-b08c-9251-6bde-3ac75a1ba1a7-48-48.png"); }
+body[data-demo-page="return-center"] .rail > :nth-child(12) { --rc-nav-icon: url("https://h5static.dewucdn.com/node-common/c1997c3c-711a-c2d6-b497-b6d487c91bb7-48-48.png"); }
+
+body[data-demo-page="return-center"] #afterSalesSidebar {
+  left: 84px;
+  width: 116px;
+  padding: 6px 0 24px;
+  background: #f1f1f5;
+  border-right-color: #dddde7;
+}
+body[data-demo-page="return-center"] #afterSalesSidebar .nav-child {
+  display: block;
+  width: 105px;
+  height: 36px;
+  min-height: 36px;
+  margin: 0 5px 4px;
+  padding: 8px 11px;
+  border: 0;
+  border-radius: 0;
+  color: #14151a;
+  background: transparent;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 20px;
+  white-space: nowrap;
+}
+body[data-demo-page="return-center"] #afterSalesSidebar .nav-child.active,
+body[data-demo-page="return-center"] #afterSalesSidebar .nav-child:hover { background: #dddde7; }
+body[data-demo-page="return-center"] #afterSalesSidebar .nav-child.active::before { display: none; }
+body[data-demo-page="return-center"] #afterSalesRoot {
+  margin-left: 200px;
+  padding: 60px 24px 24px;
+  min-width: 0;
+  max-width: none;
+}
+
+.rc-portal-topbar {
+  position: absolute;
+  top: 0;
+  left: 200px;
+  right: 0;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0;
+  height: 60px;
+  padding: 0 20px;
+  color: #505050;
+}
+.rc-portal-topbar > button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 0 16px;
+  height: 16px;
+  border: 0;
+  border-right: 1px solid #dddde7;
+  border-radius: 0;
+  background: transparent;
+  color: #505050;
+  font: 14px/22px var(--dw-font-cn);
+  white-space: nowrap;
+}
+.rc-portal-topbar > button:last-of-type { border: 0; }
+.rc-portal-topbar > button img { width: 15px; height: 15px; object-fit: contain; }
+.rc-portal-topbar > button:hover { color: #01bfc3; }
+.rc-portal-avatar { width: 36px; height: 36px; margin-left: 4px; border: 1px solid #dddde7; border-radius: 50%; object-fit: cover; }
+.rc-portal-floats { position: fixed; z-index: 31; right: 4px; top: 45%; display: flex; flex-direction: column; align-items: center; width: 45px; background: #fff; }
+.rc-float-mascot { width: 45px; height: 45px; object-fit: contain; }
+.rc-portal-floats button { display: flex; flex-direction: column; align-items: center; justify-content: center; width: 45px; min-height: 48px; padding: 6px 0; border: 0; border-radius: 0; color: #505050; background: #fff; font-size: 12px; line-height: 18px; }
+.rc-portal-floats button img { width: 16px; height: 16px; object-fit: contain; margin-bottom: 4px; }
+.rc-portal-floats [data-return-ai] img { width: 26px; height: 30px; margin: 0; }
+.rc-portal-floats button:hover { background: #f2fcfc; }
+
+@media (max-width: 1350px) {
+  .rc-portal-topbar > button { padding: 0 12px; }
+}
