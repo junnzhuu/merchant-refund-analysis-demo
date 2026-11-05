@@ -21,14 +21,14 @@
   const statusCount = key => key === 'all' ? fixtures.length : fixtures.filter(row => row.status === key).length;
   const escape = value => String(value).replace(/[&<>"']/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[char]));
   const money = value => value.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-  const spark = '<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="m12 3 2.6 6.4L21 12l-6.4 2.6L12 21l-2.6-6.4L3 12l6.4-2.6L12 3Z"/><path d="m20 2 .6 1.4L22 4l-1.4.6L20 6l-.6-1.4L18 4l1.4-.6L20 2Z"/></svg>';
+  const spark = '<svg class="as-spark" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 5 2.3 6.7L18 14l-6.7 2.3L9 23l-2.3-6.7L0 14l6.7-2.3L9 5Z"/><path d="m19 0 1.3 3.7L24 5l-3.7 1.3L19 10l-1.3-3.7L14 5l3.7-1.3L19 0Z"/></svg>';
   const boxIcon = '<svg viewBox="0 0 40 48" fill="none" aria-hidden="true"><path d="m9 10 11-4 11 4-3 8-5-2v25H12V16l-5 2-3-8 5-2Z"/><path d="M15 8c0 6 10 6 10 0M13 34h10"/></svg>';
 
   function pageHeader(page, title, actions) {
     return '<header class="as-page-header"><div><div class="as-breadcrumb">售后 <span>/</span> ' + title + '</div><h1>' + title + '</h1></div><div class="as-header-actions">' + actions + '</div></header>';
   }
   function analyzeButton(page, copy, primary) {
-    return '<button type="button" class="as-button ' + (primary ? 'as-primary' : '') + '" data-as-action="analyze" data-as-source="' + page + '">' + spark + copy + '</button>';
+    return '<button type="button" class="as-button as-ai-entry ' + (primary ? 'as-ai-emphasis' : '') + '" data-as-action="analyze" data-as-source="' + page + '">' + spark + copy + '</button>';
   }
 
   function returnCenterMarkup() {
@@ -42,9 +42,42 @@
       '<div class="as-results-toolbar"><span class="as-result-count" aria-live="polite"></span><button type="button" class="as-link" data-as-action="export">导出售后订单</button></div><div class="as-order-scroll" tabindex="0" aria-label="售后订单列表，可横向和纵向滚动"><table class="as-order-table"><colgroup><col class="as-col-product"><col class="as-col-order"><col class="as-col-amount"><col class="as-col-reason"><col class="as-col-time"><col class="as-col-status"><col class="as-col-action"></colgroup><thead><tr><th scope="col">商品信息</th><th scope="col">订单信息</th><th scope="col">申请退款金额</th><th scope="col">售后类型 / 原因</th><th scope="col">申请时间</th><th scope="col">售后状态</th><th scope="col">操作</th></tr></thead><tbody></tbody></table></div><div class="as-order-footer"><span>订单、金额及售后进度均为演示数据</span><span class="as-pagination"><button type="button" disabled aria-label="上一页">‹</button><button type="button" class="is-current" aria-current="page">1</button><button type="button" disabled aria-label="下一页">›</button><span>20 条/页</span></span></div></section>';
   }
 
-  function assistantMarkup() {
+  function summaryChangeMarkup(change) {
+    if (!Number.isFinite(change?.value)) return '<span class="as-ai-change" title="' + escape(change?.reason || '上周期数据不足') + '">较上周期 —</span>';
+    const value = change.value;
+    const direction = value > 0 ? 'rise' : value < 0 ? 'fall' : 'flat';
+    const arrow = value > 0 ? '↑' : value < 0 ? '↓' : '';
+    const label = value > 0 ? '增加' : value < 0 ? '减少' : '持平';
+    const percentage = (Math.abs(value) * 100).toFixed(2) + '%';
+    return '<span class="as-ai-change" aria-label="较上周期' + label + percentage + '">较上周期 <b class="as-ai-' + direction + '"><span aria-hidden="true">' + arrow + '</span>' + percentage + '</b></span>';
+  }
+
+  function assistantSummaryMarkup(report) {
+    const title = '<div class="as-ai-heading-row"><h2 class="as-ai-heading">' + spark + '<span>AI近7日退款分析</span></h2>' + analyzeButton('assistant', '查看完整分析', true) + '</div>';
+    if (!report) return '<section class="as-card as-ai-overview" aria-label="AI近7日退款分析">' + title + '<p class="as-ai-unavailable">暂无可用的退款分析摘要，可点击查看完整分析继续查看。</p></section>';
+    const rate = value => Number.isFinite(value) ? (value * 100).toFixed(2) + '%' : '—';
+    const { current, changes, reasons, period } = report;
+    const leadingReason = reasons[0];
+    const amountChange = changes.amount.value;
+    const comparison = !Number.isFinite(amountChange) ? '上周期数据不足，暂不作变化判断；' : amountChange === 0 ? '退款金额与上周期持平；' : '退款金额较上周期' + (amountChange > 0 ? '增加 ' : '减少 ') + '<strong>' + rate(Math.abs(amountChange)) + '</strong>；';
+    const fallbackCopy = current.count ? '本期累计退款 <strong>¥' + money(current.amount / 100) + '</strong>，涉及 <strong>' + current.count.toLocaleString('en-US') + ' 个子订单</strong>，' + comparison + (leadingReason ? '退款金额最多的原因为「<strong>' + escape(leadingReason.reason) + '</strong>」，占本期退款金额 <strong>' + rate(leadingReason.amountShare) + '</strong>，可优先查看对应商品及售后记录。' : '可进入完整退款分析继续查看。') : '所选周期内暂无成功退款记录，可进入完整退款分析调整时间或筛选范围后查看。';
+    const summaryCopy = typeof global.RefundAiDemo?.summaryMarkup === 'function' ? global.RefundAiDemo.summaryMarkup(report) : fallbackCopy;
+    const metrics = [
+      ['amount', '退款金额', '¥' + money(current.amount / 100)],
+      ['count', '退款订单数', current.count.toLocaleString('en-US')],
+      ['amountRate', '金额退款率', rate(current.amountRate)],
+      ['rate', '订单退款率', rate(current.rate)]
+    ];
+    return '<section class="as-card as-ai-overview" aria-label="AI近7日退款分析">' + title +
+      '<div class="as-ai-meta"><span class="as-ai-shop">全店</span><span>' + escape(period.current.start) + ' 至 ' + escape(period.current.end) + '</span><span>按支付时间口径 <span class="as-ai-info" title="统计所选日期支付的订单，在各自支付后30天内成功退款的结果。" aria-label="按支付时间口径：统计所选日期支付的订单，在各自支付后30天内成功退款的结果。" tabindex="0">?</span></span></div>' +
+      '<p class="as-ai-scope-note">统计所选日期支付订单的退款结果；近7日支付订单尚在30天退款观察期，后续成功退款会继续计入。</p>' +
+      '<div class="as-ai-summary"><h3>' + spark + '总结概述</h3><p class="as-ai-summary-copy">' + summaryCopy + '</p><div class="as-ai-metrics-panel"><h4>退款概况</h4><div class="as-ai-metrics">' + metrics.map(([key, label, value]) => '<div class="as-ai-metric" data-as-ai-metric="' + key + '"><span class="as-ai-metric-label">' + label + '</span><strong class="as-ai-metric-value">' + value + '</strong>' + summaryChangeMarkup(changes[key]) + '</div>').join('') + '</div></div></div></section>';
+  }
+
+  function assistantMarkup(report) {
     return pageHeader('assistant', '售后小助手', '<span class="as-demo-label">交互演示 · 示例数据</span>') +
-      '<section class="as-card as-tools"><div class="as-section-heading"><h2>售后经营工具</h2><span class="as-subtle">让售后处理更省心</span></div><div class="as-tool-grid"><article class="as-tool-card as-retention-tool"><div class="as-tool-icon" aria-hidden="true">↺</div><div class="as-tool-copy"><div class="as-tool-heading"><h3>退款挽留</h3><span class="as-tag">经营工具</span></div><p>提供协商方案，争取挽留退款订单</p><button type="button" class="as-button" data-as-action="retention">查看退款挽留</button></div></article><article class="as-tool-card as-ai-tool"><div class="as-tool-icon">' + spark + '</div><div class="as-tool-copy"><div class="as-tool-heading"><h3>AI退款分析</h3><span class="as-tag">AI</span></div><p>查看退款金额、退款率及变化趋势</p>' + analyzeButton('assistant', '开始分析', true) + '</div></article></div></section>' +
+      assistantSummaryMarkup(report) +
+      '<section class="as-card as-retention-strip" aria-label="退款挽留"><div class="as-tool-icon" aria-hidden="true">↺</div><div class="as-retention-copy"><h2>退款挽留</h2><p>提供协商方案，争取挽留退款订单</p></div><button type="button" class="as-button" data-as-action="retention">查看退款挽留</button></section>' +
       '<section class="as-card as-daily-report"><div class="as-section-heading"><h2>售后日报</h2><div class="as-daily-date">2026年11月2日 <span>今日待办</span></div></div><div class="as-daily-grid">' + [
         ['pending-audit', '待审核', '及时审核买家申请'],
         ['pending-receipt', '待收货', '关注买家寄回进度'],
@@ -55,7 +88,7 @@
   }
 
   function mount(options) {
-    const { root, onAnalyze, notify } = options || {};
+    const { root, onAnalyze, notify, getReport } = options || {};
     if (!root || typeof root.appendChild !== 'function') throw new TypeError('AfterSalesDemo.mount requires a root element');
     const say = message => { if (typeof notify === 'function') notify(message); };
     const pages = {};
@@ -65,7 +98,7 @@
       element.dataset.afterSalesPage = page;
       element.hidden = true;
       element.setAttribute('aria-label', page === 'return-center' ? '退货中心' : '售后小助手');
-      element.innerHTML = page === 'return-center' ? returnCenterMarkup() : assistantMarkup();
+      element.innerHTML = page === 'return-center' ? returnCenterMarkup() : assistantMarkup(typeof getReport === 'function' ? getReport() : null);
       root.appendChild(element);
       pages[page] = element;
     });

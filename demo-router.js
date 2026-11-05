@@ -32,6 +32,7 @@
   });
   const sales = window.AfterSalesDemo.mount({
     root: salesRoot,
+    getReport: () => window.RefundAiDemo.createReport(window.RefundModel, bridge.getData()),
     notify: text => toast(text),
     onAnalyze({ source, opener }) {
       bridge.suspend();
