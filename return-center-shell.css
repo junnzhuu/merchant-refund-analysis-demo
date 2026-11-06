@@ -1,16 +1,16 @@
-/* The return-center surface follows the actual merchant portal shell. */
-body[data-demo-page="return-center"] {
+/* Shared after-sales surfaces follow the actual merchant portal shell. */
+body:is([data-demo-page="return-center"],[data-demo-page="assistant"]) {
   background: #f1f1f5 url("https://cdn.dewu.com/node-common/f05ed90b-195e-3eac-995e-f9d0ec1d6f0d-2220-400.png") no-repeat 84px 0 / 100% auto;
   background-attachment: fixed;
   color: #505050;
 }
 
-body[data-demo-page="return-center"] .brand {
+body:is([data-demo-page="return-center"],[data-demo-page="assistant"]) .brand {
   border-bottom: 0;
   background: #f1f1f5;
   border-right-color: #dddde7;
 }
-body[data-demo-page="return-center"] .brand::before {
+body:is([data-demo-page="return-center"],[data-demo-page="assistant"]) .brand::before {
   content: "";
   position: absolute;
   left: 16px;
@@ -19,19 +19,19 @@ body[data-demo-page="return-center"] .brand::before {
   height: 30px;
   background: url("https://cdn.dewu.com/node-common/451317c9-db2a-f0e7-4354-9b0a2c1112dc-378-90.png") center / contain no-repeat;
 }
-body[data-demo-page="return-center"] .brand .logo,
-body[data-demo-page="return-center"] .brand strong { visibility: hidden; }
-body[data-demo-page="return-center"] .topbar,
-body[data-demo-page="return-center"] .service { display: none; }
+body:is([data-demo-page="return-center"],[data-demo-page="assistant"]) .brand .logo,
+body:is([data-demo-page="return-center"],[data-demo-page="assistant"]) .brand strong { visibility: hidden; }
+body:is([data-demo-page="return-center"],[data-demo-page="assistant"]) .topbar,
+body:is([data-demo-page="return-center"],[data-demo-page="assistant"]) .service { display: none; }
 
-body[data-demo-page="return-center"] .rail {
+body:is([data-demo-page="return-center"],[data-demo-page="assistant"]) .rail {
   width: 84px;
   padding: 0;
   border-right-color: #dddde7;
   background: #f1f1f5;
   overflow-x: hidden;
 }
-body[data-demo-page="return-center"] .rail > :not(.rail-line) {
+body:is([data-demo-page="return-center"],[data-demo-page="assistant"]) .rail > :not(.rail-line) {
   display: flex;
   align-items: center;
   justify-content: flex-start;
@@ -46,44 +46,44 @@ body[data-demo-page="return-center"] .rail > :not(.rail-line) {
   color: #3d404d;
   font-weight: 400;
 }
-body[data-demo-page="return-center"] .rail > :not(.rail-line):hover,
-body[data-demo-page="return-center"] .rail > .selected { background: #dddde7; }
-body[data-demo-page="return-center"] .rail span { font-size: 16px; line-height: 24px; }
-body[data-demo-page="return-center"] .rail .selected span { color: #14151a; font-weight: 600; }
-body[data-demo-page="return-center"] .rail .rail-line {
+body:is([data-demo-page="return-center"],[data-demo-page="assistant"]) .rail > :not(.rail-line):hover,
+body:is([data-demo-page="return-center"],[data-demo-page="assistant"]) .rail > .selected { background: #dddde7; }
+body:is([data-demo-page="return-center"],[data-demo-page="assistant"]) .rail span { font-size: 16px; line-height: 24px; }
+body:is([data-demo-page="return-center"],[data-demo-page="assistant"]) .rail .selected span { color: #14151a; font-weight: 600; }
+body:is([data-demo-page="return-center"],[data-demo-page="assistant"]) .rail .rail-line {
   width: 54px;
   height: 1px;
   margin: 0 15px 18px;
   background: #dddde7;
   border: 0;
 }
-body[data-demo-page="return-center"] .rail .nav-icon {
+body:is([data-demo-page="return-center"],[data-demo-page="assistant"]) .rail .nav-icon {
   width: 16px;
   height: 16px;
   flex: none;
   background: var(--rc-nav-icon) center / contain no-repeat;
 }
-body[data-demo-page="return-center"] .rail .nav-icon > * { opacity: 0; }
-body[data-demo-page="return-center"] .rail > :nth-child(1) { --rc-nav-icon: url("https://cdn.dewu.com/node-common/45461944-fe95-b137-d009-4f0d53ce48dd-48-48.png"); }
-body[data-demo-page="return-center"] .rail > :nth-child(2) { --rc-nav-icon: url("https://cdn.dewu.com/node-common/812cbd51-e284-2649-8c75-140da5de6183-48-48.png"); }
-body[data-demo-page="return-center"] .rail > :nth-child(3) { --rc-nav-icon: url("https://cdn.dewu.com/node-common/ad34eca2-99c8-54b6-edf4-4ac77c2ab785-48-48.png"); }
-body[data-demo-page="return-center"] .rail > :nth-child(4) { --rc-nav-icon: url("https://cdn.dewu.com/node-common/27ac8531-e649-57cf-9eb8-cee953fd5b08-48-48.png"); }
-body[data-demo-page="return-center"] .rail > :nth-child(5) { --rc-nav-icon: url("https://cdn.dewu.com/node-common/7512f260-0366-012e-2ac8-8cc554d325ef-48-48.png"); }
-body[data-demo-page="return-center"] .rail > :nth-child(6) { --rc-nav-icon: url("https://cdn.dewu.com/node-common/73738dfd-2003-13c5-3495-39df3c07635f-48-48.png"); }
-body[data-demo-page="return-center"] .rail > :nth-child(7) { --rc-nav-icon: url("https://cdn.dewu.com/node-common/5d1ca193-fe7c-f84e-f824-bb8845111d08-48-48.png"); }
-body[data-demo-page="return-center"] .rail > :nth-child(8) { --rc-nav-icon: url("https://cdn.dewu.com/node-common/888b9539-06de-cb6e-5aa3-ed1df9d8ebfb-48-48.png"); }
-body[data-demo-page="return-center"] .rail > :nth-child(9) { --rc-nav-icon: url("https://cdn.dewu.com/node-common/22461047-38b0-de55-63a0-89abf992dc61-48-48.png"); }
-body[data-demo-page="return-center"] .rail > :nth-child(10) { --rc-nav-icon: url("https://cdn.dewu.com/node-common/0d8758a7-b08c-9251-6bde-3ac75a1ba1a7-48-48.png"); }
-body[data-demo-page="return-center"] .rail > :nth-child(12) { --rc-nav-icon: url("https://h5static.dewucdn.com/node-common/c1997c3c-711a-c2d6-b497-b6d487c91bb7-48-48.png"); }
+body:is([data-demo-page="return-center"],[data-demo-page="assistant"]) .rail .nav-icon > * { opacity: 0; }
+body:is([data-demo-page="return-center"],[data-demo-page="assistant"]) .rail > :nth-child(1) { --rc-nav-icon: url("https://cdn.dewu.com/node-common/45461944-fe95-b137-d009-4f0d53ce48dd-48-48.png"); }
+body:is([data-demo-page="return-center"],[data-demo-page="assistant"]) .rail > :nth-child(2) { --rc-nav-icon: url("https://cdn.dewu.com/node-common/812cbd51-e284-2649-8c75-140da5de6183-48-48.png"); }
+body:is([data-demo-page="return-center"],[data-demo-page="assistant"]) .rail > :nth-child(3) { --rc-nav-icon: url("https://cdn.dewu.com/node-common/ad34eca2-99c8-54b6-edf4-4ac77c2ab785-48-48.png"); }
+body:is([data-demo-page="return-center"],[data-demo-page="assistant"]) .rail > :nth-child(4) { --rc-nav-icon: url("https://cdn.dewu.com/node-common/27ac8531-e649-57cf-9eb8-cee953fd5b08-48-48.png"); }
+body:is([data-demo-page="return-center"],[data-demo-page="assistant"]) .rail > :nth-child(5) { --rc-nav-icon: url("https://cdn.dewu.com/node-common/7512f260-0366-012e-2ac8-8cc554d325ef-48-48.png"); }
+body:is([data-demo-page="return-center"],[data-demo-page="assistant"]) .rail > :nth-child(6) { --rc-nav-icon: url("https://cdn.dewu.com/node-common/73738dfd-2003-13c5-3495-39df3c07635f-48-48.png"); }
+body:is([data-demo-page="return-center"],[data-demo-page="assistant"]) .rail > :nth-child(7) { --rc-nav-icon: url("https://cdn.dewu.com/node-common/5d1ca193-fe7c-f84e-f824-bb8845111d08-48-48.png"); }
+body:is([data-demo-page="return-center"],[data-demo-page="assistant"]) .rail > :nth-child(8) { --rc-nav-icon: url("https://cdn.dewu.com/node-common/888b9539-06de-cb6e-5aa3-ed1df9d8ebfb-48-48.png"); }
+body:is([data-demo-page="return-center"],[data-demo-page="assistant"]) .rail > :nth-child(9) { --rc-nav-icon: url("https://cdn.dewu.com/node-common/22461047-38b0-de55-63a0-89abf992dc61-48-48.png"); }
+body:is([data-demo-page="return-center"],[data-demo-page="assistant"]) .rail > :nth-child(10) { --rc-nav-icon: url("https://cdn.dewu.com/node-common/0d8758a7-b08c-9251-6bde-3ac75a1ba1a7-48-48.png"); }
+body:is([data-demo-page="return-center"],[data-demo-page="assistant"]) .rail > :nth-child(12) { --rc-nav-icon: url("https://h5static.dewucdn.com/node-common/c1997c3c-711a-c2d6-b497-b6d487c91bb7-48-48.png"); }
 
-body[data-demo-page="return-center"] #afterSalesSidebar {
+body:is([data-demo-page="return-center"],[data-demo-page="assistant"]) #afterSalesSidebar {
   left: 84px;
   width: 116px;
   padding: 6px 0 24px;
   background: #f1f1f5;
   border-right-color: #dddde7;
 }
-body[data-demo-page="return-center"] #afterSalesSidebar .nav-child {
+body:is([data-demo-page="return-center"],[data-demo-page="assistant"]) #afterSalesSidebar .nav-child {
   display: block;
   width: 105px;
   height: 36px;
@@ -99,10 +99,10 @@ body[data-demo-page="return-center"] #afterSalesSidebar .nav-child {
   line-height: 20px;
   white-space: nowrap;
 }
-body[data-demo-page="return-center"] #afterSalesSidebar .nav-child.active,
-body[data-demo-page="return-center"] #afterSalesSidebar .nav-child:hover { background: #dddde7; }
-body[data-demo-page="return-center"] #afterSalesSidebar .nav-child.active::before { display: none; }
-body[data-demo-page="return-center"] #afterSalesRoot {
+body:is([data-demo-page="return-center"],[data-demo-page="assistant"]) #afterSalesSidebar .nav-child.active,
+body:is([data-demo-page="return-center"],[data-demo-page="assistant"]) #afterSalesSidebar .nav-child:hover { background: #dddde7; }
+body:is([data-demo-page="return-center"],[data-demo-page="assistant"]) #afterSalesSidebar .nav-child.active::before { display: none; }
+body:is([data-demo-page="return-center"],[data-demo-page="assistant"]) #afterSalesRoot {
   margin-left: 200px;
   padding: 60px 24px 24px;
   min-width: 0;
@@ -150,4 +150,18 @@ body[data-demo-page="return-center"] #afterSalesRoot {
 
 @media (max-width: 1350px) {
   .rc-portal-topbar > button { padding: 0 12px; }
+}
+
+body[data-demo-page="assistant"] .rc-portal-topbar > button:first-child::after {
+  content: "1";
+  display: inline-grid;
+  place-items: center;
+  flex: none;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #ff2638;
+  color: #fff;
+  font-size: 12px;
+  line-height: 18px;
 }

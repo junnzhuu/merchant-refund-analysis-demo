@@ -60,8 +60,8 @@
     ai.close();
     bridge.suspend();
     document.body.dataset.demoPage = page;
-    returnTopbar.hidden = page !== 'return-center';
-    returnFloats.hidden = page !== 'return-center';
+    returnTopbar.hidden = page === 'analysis';
+    returnFloats.hidden = page === 'analysis';
     const isAnalysis = page === 'analysis';
     analysisPage.hidden = !isAnalysis;
     salesRoot.hidden = isAnalysis;
@@ -96,7 +96,7 @@
     button.addEventListener('click', () => toast(button.dataset.demoAction + '仅展示入口，当前为售后分析 Demo'));
   });
   returnTopbar.querySelectorAll('button').forEach(button => button.addEventListener('click', () => toast(button.textContent.trim() + '为演示入口')));
-  returnFloats.querySelector('[data-return-ai]').addEventListener('click', event => ai.open({sourceLabel: '退货中心', opener: event.currentTarget}));
+  returnFloats.querySelector('[data-return-ai]').addEventListener('click', event => ai.open({sourceLabel: LABELS[currentPage] || '退货中心', opener: event.currentTarget}));
   returnFloats.querySelector('[data-return-support]').addEventListener('click', () => toast('客服为页面演示入口'));
   window.addEventListener('hashchange', () => showPage(pageFromHash()));
   if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
