@@ -11,7 +11,7 @@ const app = fs.readFileSync(path.join(__dirname, '../app.js'), 'utf8');
 const start = app.indexOf('function trendValue(');
 const end = app.indexOf('const reasonMetricLabels', start);
 assert(start >= 0 && end > start, 'Actual trend functions must be present');
-const helpers = ['money', 'typeName', 'metricName', 'percentage', 'escapeHTML', 'isRateMetric'].map(name => {
+const helpers = ['money', 'typeName', 'metricName', 'percentage', 'escapeHTML', 'isRateMetric', 'isReviewView'].map(name => {
   const match = app.match(new RegExp('^const\\s+' + name + '\\s*=.*$', 'm'));
   assert(match, 'Actual chart helper must exist: ' + name);
   return match[0];
@@ -34,7 +34,7 @@ function fixture(current, overrides = {}) {
   };
 }
 
-function render(series, metric = 'amount') {
+function render(series, metric = 'amount', review = false) {
   let html = '', hits = [], tip;
   const host = {
     getBoundingClientRect: () => ({ left: 0, width: 1000 }),
@@ -45,13 +45,21 @@ function render(series, metric = 'amount') {
       tip = { innerHTML: '', hidden: true, style: {} };
     }
   };
+  const heading = {textContent:''}, legend = {hidden:true,innerHTML:''};
+  const floating = () => ({attrs:{hidden:''},setAttribute(k,v){this.attrs[k]=String(v)},removeAttribute(k){delete this.attrs[k]},toggleAttribute(k,on){if(on)this.attrs[k]='';else delete this.attrs[k]}});
+  const hoverLine=floating(),hoverDot=floating();
   const context = vm.createContext({
+    document:{body:{dataset:{refundView:review?'review':'v0'}}},
     state: { metric, type: 'all' },
     data: {},
     M: { REFUND_TYPE_LABELS: require('../refund-model.js').REFUND_TYPE_LABELS, buildTrend: () => series },
     $: selector => {
       if (selector === '#trend') return host;
       if (selector === '#trendTooltip') return tip;
+      if (selector === '#trendHeading') return heading;
+      if (selector === '#trendLegend') return legend;
+      if (selector === '#trendHoverLine') return hoverLine;
+      if (selector === '#trendHoverDot') return hoverDot;
       throw new Error('Unexpected DOM selector: ' + selector);
     },
     $$: selector => {
@@ -63,6 +71,7 @@ function render(series, metric = 'amount') {
   vm.runInContext('renderTrend({}, {});', context);
   return {
     svg: html.match(/<svg\b[\s\S]*?<\/svg>/)[0],
+    heading,legend,hoverLine,hoverDot,
     hover(index) {
       assert(hits[index], 'Hover target must exist at index ' + index);
       hits[index].onpointermove({ clientX: 150 });
@@ -79,8 +88,9 @@ function render(series, metric = 'amount') {
 const tags = (svg, tag) => [...svg.matchAll(new RegExp('<' + tag + '\\b[^>]*>', 'g'))].map(match => match[0]);
 const attribute = (tag, name) => tag.match(new RegExp('(?:^|\\s)' + name + '="([^"]*)"'))?.[1];
 function noPrevious(view, hoverIndex = 0) {
-  assert.equal(tags(view.svg, 'path').length, 1, 'There must be one current-series path');
-  assert.doesNotMatch(tags(view.svg, 'path')[0], /stroke-dasharray/, 'The series path must not be the previous dashed trace');
+  const curves=tags(view.svg,'path').filter(tag=>attribute(tag,'data-series')==='current');
+  assert.equal(curves.length, 1, 'There must be one current-series curve');
+  assert.doesNotMatch(curves[0], /stroke-dasharray/, 'The series path must not be the previous dashed trace');
   assert.doesNotMatch(view.svg, /旧期|2019-01|#9aaebe/, 'SVG, titles and accessible label must contain only current data');
   assert.doesNotMatch(view.hover(hoverIndex), /旧期|2019-01|class="previous"/, 'Hover content must contain only current data');
 }
@@ -177,6 +187,46 @@ test('realtime retains hourly dates and cutoff marker while future hours stay em
   assert.match(view.hover(15), /2026-11-02 15:00/);
   assert.match(view.hover(15), /尚未到达该时段/);
   assert.equal(tags(view.svg, 'circle').length, 0);
+});
+
+test('review adds current-period area and context without adding a second data series', () => {
+  const view=render(fixture([10,20,15]),'amount',true);
+  noPrevious(view,1);
+  assert.equal(tags(view.svg,'path').length,2);
+  assert.match(view.svg,/class="trend-area"/);
+  assert.match(view.hover(1),/¥20\.00/);
+  assert.match(view.heading.textContent,/数据趋势.*全部 退款.*退款金额/);
+  assert.equal(view.legend.hidden,false);
+  assert.match(view.legend.innerHTML,/全部 退款/);
+  assert.equal(view.hoverLine.attrs.x1,view.hoverLine.attrs.x2);
+  assert.equal('hidden' in view.hoverLine.attrs,false);
+  assert.equal('hidden' in view.hoverDot.attrs,false);
+  assert.equal(view.svg,render({...fixture([10,20,15]),previous:[null,null,null]},'amount',true).svg);
+  view.leave(1);assert.equal('hidden' in view.hoverLine.attrs,true);
+});
+
+test('review area closes each available segment and leaves missing samples empty', () => {
+  const view=render(fixture([1,2,null,3,4]),'count',true);
+  noPrevious(view,1);
+  const area=attribute(tags(view.svg,'path').find(tag=>attribute(tag,'class')==='trend-area'),'d');
+  assert.equal((area.match(/M/g)||[]).length,2);
+  assert.equal((area.match(/Z/g)||[]).length,2);
+  view.hover(2);assert.equal('hidden' in view.hoverDot.attrs,true);
+  const single=render(fixture([null,5,null]),'count',true);
+  assert.equal(attribute(tags(single.svg,'path').find(tag=>attribute(tag,'class')==='trend-area'),'d'),'');
+  const zero=render(fixture([0,0]),'amountRate',true);noPrevious(zero);assert.match(zero.hover(0),/0\.00%/);
+  const missing=render(fixture([null,null]),'rate',true);noPrevious(missing);
+  assert.equal(attribute(tags(missing.svg,'path').find(tag=>attribute(tag,'class')==='trend-area'),'d'),'');
+});
+
+test('review realtime shading stops at the last available hour', () => {
+  const cur=Array.from({length:24},(_,i)=>i<=14?i+1:null);
+  const view=render(fixture(cur,{realtime:true}),'count',true);
+  const cutoff=tags(view.svg,'line').find(tag=>attribute(tag,'class')==='trend-cutoff');
+  const area=attribute(tags(view.svg,'path').find(tag=>attribute(tag,'class')==='trend-area'),'d');
+  const largestX=Math.max(...[...area.matchAll(/[ML]([\d.]+),/g)].map(match=>Number(match[1])));
+  assert(largestX<=Number(attribute(cutoff,'x1'))+.1);
+  noPrevious(view,14);
 });
 
 console.log(`\n${checks.filter(Boolean).length}/${checks.length} trend-view checks passed`);

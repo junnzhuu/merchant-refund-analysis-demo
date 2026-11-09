@@ -101,4 +101,5 @@
   window.addEventListener('hashchange', () => showPage(pageFromHash()));
   if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
   showPage(pageFromHash());
+  window.RefundViewDemo.mount({bridge});
 })();

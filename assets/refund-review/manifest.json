@@ -1,0 +1,109 @@
+{
+  "fileKey": "w12FwTF7RcjbeqmBR7zAM8",
+  "assets": [
+    {
+      "file": "question.svg",
+      "figmaNodeId": "9007:2114",
+      "width": "14",
+      "height": "14",
+      "viewBox": "0 0 14 14"
+    },
+    {
+      "file": "down.svg",
+      "figmaNodeId": "9087:2324",
+      "width": "10",
+      "height": "10",
+      "viewBox": "0 0 10 10"
+    },
+    {
+      "file": "search.svg",
+      "figmaNodeId": "I9027:2591;49725:12118;49633:1093",
+      "width": "14",
+      "height": "14",
+      "viewBox": "0 0 14 14"
+    },
+    {
+      "file": "calendar.svg",
+      "figmaNodeId": "9044:2713",
+      "width": "16",
+      "height": "16",
+      "viewBox": "0 0 16 16"
+    },
+    {
+      "file": "download.svg",
+      "figmaNodeId": "9044:2721",
+      "width": "14",
+      "height": "14",
+      "viewBox": "0 0 14 14"
+    },
+    {
+      "file": "select-arrow.svg",
+      "figmaNodeId": "I9044:2678;1720:3700",
+      "width": "16",
+      "height": "16",
+      "viewBox": "0 0 16 16"
+    },
+    {
+      "file": "small-select-arrow.svg",
+      "figmaNodeId": "I9027:2600;49021:1234",
+      "width": "14",
+      "height": "14",
+      "viewBox": "0 0 14 14"
+    },
+    {
+      "file": "tooltip-arrow.svg",
+      "figmaNodeId": "I9174:4825;49925:110",
+      "width": "8",
+      "height": "12",
+      "viewBox": "0 0 8 12"
+    },
+    {
+      "file": "up.svg",
+      "figmaNodeId": "9098:2587",
+      "width": "10",
+      "height": "10",
+      "viewBox": "0 0 10 10"
+    },
+    {
+      "file": "ai.svg",
+      "figmaNodeId": "9290:7942",
+      "width": "16",
+      "height": "16",
+      "viewBox": "0 0 16 16"
+    },
+    {
+      "file": "copy-mask.svg",
+      "figmaNodeId": "9027:2663",
+      "width": "14",
+      "height": "14",
+      "viewBox": "0 0 14 14"
+    },
+    {
+      "file": "copy-shape.svg",
+      "figmaNodeId": "9027:2663",
+      "width": "10.5",
+      "height": "11.6667",
+      "viewBox": "0 0 10.5 11.6667"
+    },
+    {
+      "file": "plus.svg",
+      "figmaNodeId": "9098:2560",
+      "width": "20",
+      "height": "20",
+      "viewBox": "0 0 20 20"
+    },
+    {
+      "file": "reason-expand.svg",
+      "figmaNodeId": "9033:2581",
+      "width": "14",
+      "height": "14",
+      "viewBox": "0 0 14 14"
+    }
+  ],
+  "nativeShapes": [
+    {
+      "figmaNodeId": "9098:2557",
+      "implementation": "Two native line rectangles in 20px slot; original inset 45.83% 12.5%, radius 1px; offset -2.5px/+2.5px. Figma context returns CSS, not SVG."
+    }
+  ]
+}

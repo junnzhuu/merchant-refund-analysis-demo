@@ -5,7 +5,7 @@
   <title>得物商家后台 · 退款分析</title>
   <link rel="stylesheet" href="design-tokens.css?v=20261104-labels-1">
   <link rel="stylesheet" href="styles.css?v=20261104-labels-1">
-  <link rel="stylesheet" href="design-layout.css?v=20261104-labels-1">
+  <link rel="stylesheet" href="design-layout.css?v=20261109-review-1">
   <link rel="stylesheet" href="design-system.css?v=20261104-labels-1">
   <link rel="stylesheet" href="design-controls.css?v=20261104-labels-1">
   <link rel="stylesheet" href="after-sales.css?v=20261105-ai-experience-4">
@@ -15,6 +15,8 @@
   <link rel="stylesheet" href="return-center-shell.css?v=20261109-shared-shell-1">
   <link rel="stylesheet" href="return-center-variants.css?v=20261105-entry-options-2">
   <link rel="stylesheet" href="assistant-replica.css?v=20261109-card-heading-1">
+  <link rel="stylesheet" href="refund-review.css?v=20261109-review-1">
+  <link rel="stylesheet" href="refund-view.css?v=20261109-review-1">
 </head>
 <body>
   <div class="wash" aria-hidden="true"></div>
@@ -47,7 +49,7 @@
   <header class="rc-portal-topbar" id="returnCenterTopbar" aria-label="商家后台工具栏" hidden><button type="button"><img src="https://h5static.dewucdn.com/node-common/bcc87b56-03dc-13ee-27d2-a4a32c540af8-46-46.png" alt="">消息</button><button type="button"><img src="https://h5static.dewucdn.com/node-common/f025bc87-8497-a014-f740-018b173d2f43-45-46.png" alt="">规则</button><button type="button"><img src="https://h5static.dewucdn.com/node-common/0ef0b7c7-a967-f895-ecf7-b9e6ab1515d6-46-46.png" alt="">课堂</button><button type="button"><img src="https://cdn.poizon.com/node-common/abb2dc55-5038-939a-9cd6-8aba3d3f58c7-10-14.png" alt="">APP下载</button><button type="button"><img src="https://cdn.poizon.com/node-common/6db7ed6c-d3fd-3c3f-39e0-030f1fbaf8fc-16-16.png" alt="">服务市场</button><button type="button"><img src="https://cdn.dewu.com/node-common/d5ab8585-0586-6293-770f-742506e78265-60-60.png" alt="">反馈</button><img class="rc-portal-avatar" src="https://qiniu.dewucdn.com/Fs804MkOcMxLzc0SNLcOXqviW7ii" alt="商家头像"></header>
   <div class="rc-portal-floats" id="returnCenterFloats" hidden><img class="rc-float-mascot" src="https://cdn.poizon.com/node-common/15032c3c-92f8-c4d6-56fa-7347a1847a56-1024-1024.png" alt=""><button type="button" data-return-ai aria-label="AI退款分析助手"><img src="https://cdn.dewu.com/node-common/a24219e1-0186-bdaf-ed63-520d2c4a6855-80-80.png" alt="AI"></button><button type="button" data-return-support><img src="https://cdn.dewu.com/node-common/6f2606cb-fc3b-a481-da9b-813ff5e6265d-60-60.png" alt="">客服</button></div>
   <main id="refundAnalysisPage">
-    <div class="page-title"><div><div class="breadcrumb">数据中心 <b>/</b> 交易分析 <b>/</b> <span aria-current="page">退款分析</span></div><h1>退款分析</h1></div><button type="button" class="btn" id="returnToAfterSales" hidden>返回售后</button></div>
+    <div class="page-title"><div><div class="breadcrumb">数据中心 <b>/</b> 交易分析 <b>/</b> <span aria-current="page">退款分析</span></div><h1>退款分析</h1></div><div id="refundHeadingActions"><button type="button" class="btn" id="returnToAfterSales" hidden>返回售后</button></div></div>
     <section class="panel filters" aria-label="筛选条件">
       <div class="filter-scroll"><div class="filter-line">
         <label class="sr-only" for="basis">统计口径</label><select id="basis"><option value="pay" selected>按支付时间口径</option><option value="refund">按退款时间口径</option></select>
@@ -62,19 +64,20 @@
     <section class="panel overview">
       <div class="section-head overview-head"><h2>核心数据</h2><button type="button" class="refund-ai-summary" id="refundAiSummary" aria-label="查看全店近7日退款分析（支付时间口径）" aria-haspopup="dialog"><svg class="refund-ai-summary-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 6 2.2 5.8L17 14l-5.8 2.2L9 22l-2.2-5.8L1 14l5.8-2.2Z" fill="currentColor" opacity=".72"/><path d="m18.5 1 1.5 4 4 1.5-4 1.5-1.5 4-1.5-4-4-1.5L17 5Z" fill="currentColor"/></svg><strong class="refund-ai-summary-label">AI 近7日退款分析：</strong><span class="refund-ai-summary-copy">全店近7日退款金额5.04万元，较上周期下降44.68%；发货前退款占69.09%，建议优先完善规格与尺码说明，优化高退款商品的下单提示。</span><svg class="refund-ai-summary-arrow" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="m6 3 5 5-5 5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg></button></div>
       <div class="metric-scroll"><div class="metric-grid" id="metrics"></div></div>
-      <div class="chart-head"><h3>数据趋势</h3><div class="chart-controls"><div class="seg small" id="metric"><button class="on" data-metric="amount">退款金额</button><button data-metric="count">退款订单数</button><button data-metric="amountRate" id="amountRateMetric" hidden>金额退款率</button><button data-metric="rate" id="rateMetric" hidden>订单退款率</button></div></div></div>
+      <div class="chart-head"><h3 id="trendHeading">数据趋势</h3><div class="chart-controls"><div class="seg small" id="metric"><button class="on" data-metric="amount">退款金额</button><button data-metric="count">退款订单数</button><button data-metric="amountRate" id="amountRateMetric" hidden>金额退款率</button><button data-metric="rate" id="rateMetric" hidden>订单退款率</button></div></div></div>
       <div class="trend" id="trend"></div>
+      <div id="trendLegend" class="trend-review-legend" hidden></div>
     </section>
 
     <section class="panel products" aria-labelledby="topProductsTitle">
-      <div class="section-head"><div class="head-left"><h2 id="topProductsTitle">TOP退款商品</h2><span class="subtle">展示退款金额 TOP20 商品</span></div><div class="product-controls"><form class="product-search-form" id="productSearchForm" role="search" aria-label="TOP退款商品搜索"><div class="product-search-input"><svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="7" cy="7" r="4.5"/><path d="m10.5 10.5 3 3"/></svg><input type="search" id="productSearch" aria-label="可搜索商品名称/ID" placeholder="可搜索商品名称/ID"></div><button type="submit" class="btn" id="productQuery">查询</button></form><label class="sr-only" for="productType">商品退款类型</label><select id="productType"><option value="all">全部 退款</option><option value="mid">发货前 退款</option><option value="transit">未收货 退款</option><option value="only">已收货 退款</option><option value="return">已收货 退货退款</option></select></div></div>
+      <div class="section-head"><div class="head-left"><h2 id="topProductsTitle">TOP退款商品</h2><span class="subtle">展示退款金额 TOP20 商品</span></div><div class="product-controls"><form class="product-search-form" id="productSearchForm" role="search" aria-label="TOP退款商品搜索"><div class="product-search-input"><svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="7" cy="7" r="4.5"/><path d="m10.5 10.5 3 3"/></svg><button type="submit" class="review-search-submit" aria-label="搜索退款商品"><img src="assets/refund-review/search.svg" width="14" height="14" alt=""></button><input type="search" id="productSearch" aria-label="可搜索商品名称/ID" placeholder="可搜索商品名称/ID"></div><button type="submit" class="btn" id="productQuery">查询</button></form><label class="sr-only" for="productType">商品退款类型</label><select id="productType"><option value="all">全部 退款</option><option value="mid">发货前 退款</option><option value="transit">未收货 退款</option><option value="only">已收货 退款</option><option value="return">已收货 退货退款</option></select></div></div>
       <div class="table-scroll"><table class="top-products-table" aria-label="TOP退款商品明细"><colgroup id="productColumns"></colgroup><thead id="productHeaders"></thead><tbody id="productRows"></tbody></table></div>
       <div class="table-footer"><span id="totalProducts"></span><nav class="pagination" id="productPagination" aria-label="商品榜单分页"></nav></div>
     </section>
     <section class="panel analysis-panel" aria-labelledby="reasonTitle">
       <div class="section-head"><div class="head-left"><h2 id="reasonTitle">退款原因</h2></div><div class="reason-controls"><label class="sr-only" for="reasonType">退款原因类型</label><select id="reasonType"><option value="all">全部 退款</option><option value="mid">发货前 退款</option><option value="transit">未收货 退款</option><option value="only">已收货 退款</option><option value="return">已收货 退货退款</option></select></div></div>
       <div class="reason-table-scroll" id="reasonPanel"><table class="reason-analysis-table" id="reasons" aria-label="退款原因明细"></table></div>
-      <div class="reason-table-footer"><span id="reasonTotal"></span><span id="reasonNote"></span></div>
+      <div class="reason-table-footer"><span id="reasonTotal"></span><span id="reasonNote"></span><nav class="pagination" id="reasonPagination" aria-label="退款原因分页" hidden></nav></div>
     </section>
 
     <div class="bottom-note">退款金额按成功退款记录累计，部分退款仅计实际退款金额；退款订单数按子订单去重，四类退款互斥且完整覆盖全部退款。<button class="text-btn" id="definitions">查看指标说明</button></div>
@@ -86,14 +89,15 @@
   <div class="toast" id="toast" role="status"></div>
   <script src="refund-model.js?v=20261104-labels-1"></script>
   <script src="metric-definitions.js?v=20261104-labels-1"></script>
-  <script src="date-picker.js?v=20261104-labels-1"></script>
+  <script src="date-picker.js?v=20261109-review-1"></script>
   <script src="refund-export.js?v=20261104-labels-1"></script>
-  <script src="app.js?v=20261104-labels-1"></script>
+  <script src="app.js?v=20261109-review-1"></script>
+  <script src="refund-view.js?v=20261109-review-1"></script>
   <script src="return-center-variants.js?v=20261105-entry-options-2"></script>
   <script src="return-center.js?v=20261105-entry-options-2"></script>
   <script src="assistant-replica.js?v=20261109-card-heading-1"></script>
   <script src="after-sales.js?v=20261106-assistant-replica-3"></script>
   <script src="refund-ai.js?v=20261105-ai-experience-4"></script>
-  <script src="demo-router.js?v=20261109-shared-shell-1"></script>
+  <script src="demo-router.js?v=20261109-review-1"></script>
 </body>
 </html>

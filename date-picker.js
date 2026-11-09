@@ -95,11 +95,32 @@
       if (opened) place();
     }
 
+    function triggerVisible(anchor, width, height) {
+      let left = Math.max(0, anchor.left), right = Math.min(width, anchor.right);
+      let top = Math.max(0, anchor.top), bottom = Math.min(height, anchor.bottom);
+      if (left >= right || top >= bottom) return false;
+      const clips = value => /^(auto|scroll|hidden|clip|overlay)$/.test(value);
+      for (let parent = trigger.parentElement; parent; parent = parent.parentElement) {
+        const style = getComputedStyle(parent), clipX = clips(style.overflowX), clipY = clips(style.overflowY);
+        if (!clipX && !clipY) continue;
+        const bounds = parent.getBoundingClientRect();
+        const scaleX = parent.offsetWidth ? bounds.width / parent.offsetWidth : 1;
+        const scaleY = parent.offsetHeight ? bounds.height / parent.offsetHeight : 1;
+        const clipLeft = bounds.left + parent.clientLeft * scaleX;
+        const clipTop = bounds.top + parent.clientTop * scaleY;
+        if (clipX) { left = Math.max(left, clipLeft); right = Math.min(right, clipLeft + parent.clientWidth * scaleX); }
+        if (clipY) { top = Math.max(top, clipTop); bottom = Math.min(bottom, clipTop + parent.clientHeight * scaleY); }
+        if (left >= right || top >= bottom) return false;
+      }
+      return true;
+    }
+
     function place() {
       if (!opened) return;
       const anchor = trigger.getBoundingClientRect();
       const width = document.documentElement.clientWidth || window.innerWidth;
       const height = window.innerHeight;
+      if (!triggerVisible(anchor, width, height)) { close(); return; }
       const margin = 12, gap = 8;
       popup.style.maxWidth = Math.max(0, width - margin * 2) + 'px';
       popup.style.maxHeight = Math.max(0, height - margin * 2) + 'px';
@@ -122,6 +143,8 @@
       popup.hidden = true;
       popup.style.display = 'none';
       trigger.setAttribute('aria-expanded', 'false');
+      draft = null;
+      validationMessage = '';
       pickingEnd = false;
       hoverDate = '';
       trigger.focus({ preventScroll: true });
@@ -148,7 +171,7 @@
       popup.style.display = '';
       trigger.setAttribute('aria-expanded', 'true');
       render();
-      popup.querySelector('[data-preset="' + draft.period + '"]')?.focus();
+      if (opened) popup.querySelector('[data-preset="' + draft.period + '"]')?.focus();
     }
 
     function dayAvailable(date) {
@@ -250,6 +273,7 @@
         (validationMessage ? '' : ' hidden') + '>' + escape(validationMessage) + '</div><footer class="rdp-footer"><button type="button" class="rdp-cancel" data-action="cancel">取消</button>' +
         '<button type="button" class="rdp-apply" data-action="apply"' + (error ? ' disabled' : '') + '>确定</button></footer></section></div>';
       place();
+      if (!opened) return;
       if (focus?.date) focusDate(focus.date);
       else if (focus) {
         const selector = focus.preset ? '[data-preset="' + focus.preset + '"]' :

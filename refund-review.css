@@ -1,0 +1,723 @@
+/* Design review variant. The merchant portal shell and AI dialog are shared unchanged. */
+.review-search-submit { display: none; }
+body[data-demo-page="analysis"][data-refund-view="review"] #refundAnalysisPage {
+  padding-top: 80px;
+  color: #14151a;
+  font-family: "PingFang SC", "Microsoft YaHei", sans-serif;
+}
+body[data-demo-page="analysis"][data-refund-view="review"] #refundAnalysisPage .page-title {
+  margin-bottom: 16px;
+  align-items: flex-end;
+  min-height: 60px;
+}
+body[data-demo-page="analysis"][data-refund-view="review"] .page-title h1 {
+  margin-top: 8px;
+  font: 600 24px/32px "PingFang SC", "Microsoft YaHei", sans-serif;
+}
+body[data-demo-page="analysis"][data-refund-view="review"] #refundHeadingActions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+body[data-demo-page="analysis"][data-refund-view="review"] #refundHeadingActions #definitions {
+  height: 32px;
+  padding: 0 12px;
+  border: 1px solid #dcdce6;
+  border-radius: 2px;
+  background: #fff;
+  color: #2b2c3c;
+  font-size: 14px;
+  line-height: 30px;
+  text-decoration: none;
+}
+body[data-demo-page="analysis"][data-refund-view="review"] #refundAnalysisPage .panel {
+  border: 0;
+  outline: 0;
+  border-radius: 0;
+  background: #fff;
+}
+body[data-demo-page="analysis"][data-refund-view="review"] #refundAnalysisPage .filters {
+  min-height: 80px;
+  padding: 24px;
+  gap: 16px;
+  border-radius: 4px;
+}
+body[data-demo-page="analysis"][data-refund-view="review"] .filters .filter-scroll { padding: 0; }
+body[data-demo-page="analysis"][data-refund-view="review"] .filter-line {
+  gap: 12px;
+  min-width: 929px;
+  width: max-content;
+}
+body[data-demo-page="analysis"][data-refund-view="review"] .filter-line #basis {
+  order: 0;
+  flex: 0 0 174px;
+  width: 174px;
+}
+body[data-demo-page="analysis"][data-refund-view="review"] .filter-line #dateTrigger {
+  order: 1;
+  flex: 0 0 301px;
+  width: 301px;
+  gap: 4px;
+  padding: 0 8px;
+}
+body[data-demo-page="analysis"][data-refund-view="review"] .filter-line .brand-field {
+  order: 2;
+  flex: 0 0 127px;
+  width: 127px;
+}
+body[data-demo-page="analysis"][data-refund-view="review"] .filter-line .category-field {
+  order: 3;
+  flex: 0 0 127px;
+  width: 127px;
+}
+body[data-demo-page="analysis"][data-refund-view="review"] .filter-line .channel-field {
+  order: 4;
+  flex: 0 0 152px;
+  width: 152px;
+}
+body[data-demo-page="analysis"][data-refund-view="review"] .filter-field {
+  padding-left: 12px;
+  border-color: #dcdce6;
+}
+body[data-demo-page="analysis"][data-refund-view="review"] .filter-field > label {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+body[data-demo-page="analysis"][data-refund-view="review"] .filter-line select,
+body[data-demo-page="analysis"][data-refund-view="review"] #productType,
+body[data-demo-page="analysis"][data-refund-view="review"] #reasonType {
+  background-image: url("assets/refund-review/select-arrow.svg");
+  background-size: 16px 16px;
+  border-color: #dcdce6;
+  font-size: 14px;
+  letter-spacing: .5px;
+  color: #2b2c3c;
+}
+body[data-demo-page="analysis"][data-refund-view="review"] .filter-field.has-value select { background-image: none; }
+body[data-demo-page="analysis"][data-refund-view="review"] .date-trigger .rdp-trigger-label,
+body[data-demo-page="analysis"][data-refund-view="review"] .date-trigger .rdp-trigger-range {
+  font-size: 14px;
+  letter-spacing: .1px;
+}
+body[data-demo-page="analysis"][data-refund-view="review"] .date-trigger > .rdp-icon {
+  width: 16px;
+  height: 16px;
+  background: url("assets/refund-review/calendar.svg") center no-repeat;
+}
+body[data-demo-page="analysis"][data-refund-view="review"] .date-trigger > .rdp-icon > * { opacity: 0; }
+body[data-demo-page="analysis"][data-refund-view="review"] #downloadDetails {
+  flex: 0 0 110px;
+  width: 110px;
+  padding: 0 16px;
+  gap: 4px;
+  font-size: 14px;
+  border-color: #dcdce6;
+  color: #14151a;
+}
+body[data-demo-page="analysis"][data-refund-view="review"] #downloadDetails::before {
+  content: "";
+  display: block;
+  width: 14px;
+  height: 14px;
+  flex: none;
+  background: url("assets/refund-review/download.svg") center no-repeat;
+}
+body[data-demo-page="analysis"][data-refund-view="review"] #downloadDetails > svg { display: none; }
+body[data-demo-page="analysis"][data-refund-view="review"] #refundAnalysisPage h2,
+body[data-demo-page="analysis"][data-refund-view="review"] #trendHeading {
+  font-size: 16px;
+  line-height: 24px;
+  font-weight: 600;
+}
+body[data-demo-page="analysis"][data-refund-view="review"] .overview { padding: 20px 20px 24px; }
+body[data-demo-page="analysis"][data-refund-view="review"] .overview .overview-head {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 16px;
+}
+body[data-demo-page="analysis"][data-refund-view="review"] .overview-head h2 { height: 24px; }
+body[data-demo-page="analysis"][data-refund-view="review"] .refund-ai-summary {
+  flex: none;
+  width: 100%;
+  height: 44px;
+  padding: 0 20px;
+  gap: 12px;
+  border: 0;
+  border-radius: 0;
+  background: linear-gradient(100deg, #eafafa 0%, #f8f8fa 40%, #f8f8fa 100%);
+  font-size: 12px;
+  line-height: 18px;
+}
+body[data-demo-page="analysis"][data-refund-view="review"] .refund-ai-summary-icon {
+  display: none;
+}
+body[data-demo-page="analysis"][data-refund-view="review"] .refund-ai-summary::before {
+  content: "";
+  display: block;
+  width: 16px;
+  height: 16px;
+  margin-right: -11px;
+  flex: none;
+  background: url("assets/refund-review/ai.svg") center no-repeat;
+}
+body[data-demo-page="analysis"][data-refund-view="review"] .refund-ai-summary-label {
+  color: #01bfc3;
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 500;
+}
+body[data-demo-page="analysis"][data-refund-view="review"] .refund-ai-summary-copy { color: #14151a; }
+body[data-demo-page="analysis"][data-refund-view="review"] .refund-ai-summary-arrow { width: 12px; height: 12px; }
+body[data-demo-page="analysis"][data-refund-view="review"] .metric-grid {
+  min-width: 1632px;
+  margin-top: 16px;
+  grid-template-columns: repeat(4, minmax(0,1fr) 20px) minmax(0,1fr);
+  gap: 4px;
+  padding: 1px;
+}
+body[data-demo-page="analysis"][data-refund-view="review"] .metric-operator {
+  align-self: center;
+  width: 20px;
+  height: 20px;
+  color: #a9a9b9;
+  position: relative;
+  font-size: 0;
+  background: url("assets/refund-review/plus.svg") center no-repeat;
+}
+
+body[data-demo-page="analysis"][data-refund-view="review"] #metrics > .metric-operator:nth-child(2) { background: none; }
+body[data-demo-page="analysis"][data-refund-view="review"] #metrics > .metric-operator:nth-child(2)::before,
+body[data-demo-page="analysis"][data-refund-view="review"] #metrics > .metric-operator:nth-child(2)::after {
+  content: "";
+  position: absolute;
+  left: 2.5px;
+  width: 15px;
+  height: 1.668px;
+  border-radius: 1px;
+  background: #a9a9b9;
+}
+body[data-demo-page="analysis"][data-refund-view="review"] #metrics > .metric-operator:nth-child(2)::before { top: 6.666px; }
+body[data-demo-page="analysis"][data-refund-view="review"] #metrics > .metric-operator:nth-child(2)::after { top: 11.666px; }
+
+body[data-demo-page="analysis"][data-refund-view="review"] .metric-card,
+body[data-demo-page="analysis"][data-refund-view="review"] .metric-card.selected {
+  min-height: 160px;
+  padding: 12px;
+  border: 1px solid #f1f1f5;
+  border-radius: 2px;
+  background: #fff;
+  box-shadow: none;
+}
+body[data-demo-page="analysis"][data-refund-view="review"] .metric-card.with-rate { min-height: 274px; }
+body[data-demo-page="analysis"][data-refund-view="review"] .metric-card-head {
+  height: 20px;
+  min-height: 20px;
+  align-items: center;
+}
+body[data-demo-page="analysis"][data-refund-view="review"] .card-select {
+  font: 600 14px/20px "PingFang SC", "Microsoft YaHei", sans-serif;
+  color: #14151a;
+}
+body[data-demo-page="analysis"][data-refund-view="review"] .amount-share { gap: 0; font-size: 12px; line-height: 20px; }
+body[data-demo-page="analysis"][data-refund-view="review"] .metric-card .amount-share b {
+  color: #14151a;
+  font: 400 12px/20px "PingFang SC", "Microsoft YaHei", sans-serif;
+}
+body[data-demo-page="analysis"][data-refund-view="review"] .metric-content,
+body[data-demo-page="analysis"][data-refund-view="review"] .metric-rates {
+  display: grid;
+  grid-template-columns: minmax(0,1fr) minmax(0,1fr);
+  gap: 8px;
+  margin-top: 16px;
+  padding: 0;
+  border: 0;
+}
+body[data-demo-page="analysis"][data-refund-view="review"] .metric-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+  height: 98px;
+  padding: 12px 8px;
+  border: 1px solid #f8f8fa;
+  border-radius: 2px;
+  background: #f8f8fa;
+}
+body[data-demo-page="analysis"][data-refund-view="review"] .metric-cell.is-active { border-color: #01c2c3; }
+body[data-demo-page="analysis"][data-refund-view="review"] .metric-definition-label {
+  height: 20px;
+  gap: 3px;
+  color: #4c4c59;
+  font: 400 14px/20px "PingFang SC", "Microsoft YaHei", sans-serif;
+  letter-spacing: .5px;
+  white-space: nowrap;
+}
+body[data-demo-page="analysis"][data-refund-view="review"] .metric-definition {
+  width: 14px;
+  height: 14px;
+  flex: none;
+  background: url("assets/refund-review/question.svg") center no-repeat;
+}
+body[data-demo-page="analysis"][data-refund-view="review"] .metric-definition > svg { visibility: hidden; }
+body[data-demo-page="analysis"][data-refund-view="review"] .metric-value,
+body[data-demo-page="analysis"][data-refund-view="review"] .metric-cell.is-active .metric-value {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  flex: none;
+  width: 100%;
+  height: 48px;
+  min-height: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  color: #14151a;
+  text-align: left;
+}
+body[data-demo-page="analysis"][data-refund-view="review"] .metric-value strong,
+body[data-demo-page="analysis"][data-refund-view="review"] .metric-cell.is-active .metric-value strong {
+  color: #14151a;
+  font: 600 20px/28px "PingFang SC", "Microsoft YaHei", sans-serif;
+  letter-spacing: -.5px;
+}
+body[data-demo-page="analysis"][data-refund-view="review"] .metric-cell.is-active .metric-definition-label { color: #4c4c59; }
+body[data-demo-page="analysis"][data-refund-view="review"] .metric-value .change {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  margin: 0;
+  color: #7f7f8e;
+  font: 400 12px/16px "PingFang SC", "Microsoft YaHei", sans-serif;
+  white-space: nowrap;
+}
+body[data-demo-page="analysis"][data-refund-view="review"] .change b {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  color: #14151a;
+  font-weight: 400;
+}
+body[data-demo-page="analysis"][data-refund-view="review"] .change-arrow,
+body[data-demo-page="analysis"][data-refund-view="review"] .change-arrow img {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  flex: none;
+}
+body[data-demo-page="analysis"][data-refund-view="review"] .chart-head {
+  min-height: 40px;
+  margin-top: 20px;
+  gap: 16px;
+}
+body[data-demo-page="analysis"][data-refund-view="review"] #metric {
+  height: 40px;
+  border: 0;
+  border-radius: 0;
+  background: #f8f8fa;
+}
+body[data-demo-page="analysis"][data-refund-view="review"] #metric button {
+  height: 40px;
+  min-height: 40px;
+  padding: 0 24px;
+  border: 1px solid transparent;
+  border-radius: 0;
+  color: #7f7f8e;
+  background: #f8f8fa;
+  font: 500 14px/20px "PingFang SC", "Microsoft YaHei", sans-serif;
+  letter-spacing: .5px;
+}
+body[data-demo-page="analysis"][data-refund-view="review"] #metric button.on {
+  color: #2b2c3c;
+  background: #fff;
+  border-color: #f1f1f5;
+  font-weight: 600;
+}
+body[data-demo-page="analysis"][data-refund-view="review"] .trend {
+  height: 264px;
+  margin-top: 16px;
+}
+body[data-demo-page="analysis"][data-refund-view="review"] .trend-tooltip {
+  min-width: 220px;
+  padding: 16px 12px;
+  border: 0;
+  border-radius: 4px;
+  background: rgb(255 255 255 / 96%);
+  color: #4c4c59;
+  font-size: 12px;
+  line-height: 20px;
+  box-shadow: 0 3px 10px rgb(0 0 0 / 12%);
+}
+body[data-demo-page="analysis"][data-refund-view="review"] .trend-tooltip b,
+body[data-demo-page="analysis"][data-refund-view="review"] .trend-tooltip h4 {
+  display: block;
+  margin: 0 0 8px;
+  color: #14151a;
+  font-size: 12px;
+  font-weight: 500;
+}
+body[data-demo-page="analysis"][data-refund-view="review"] #trendLegend {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 16px;
+  margin-top: 8px;
+  color: #4c4c59;
+  font-size: 12px;
+  line-height: 16px;
+}
+body[data-demo-page="analysis"][data-refund-view="review"] #trendLegend i {
+  display: inline-block;
+  flex: none;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #01c2c3;
+}
+body[data-demo-page="analysis"][data-refund-view="review"] .product-controls { gap: 16px; }
+body[data-demo-page="analysis"][data-refund-view="review"] .product-search-form { gap: 0; }
+body[data-demo-page="analysis"][data-refund-view="review"] .product-search-input {
+  flex: 0 0 216px;
+  width: 216px;
+  max-width: 216px;
+  padding: 0 12px;
+  gap: 4px;
+  border-color: #dcdce6;
+}
+body[data-demo-page="analysis"][data-refund-view="review"] .product-search-input > svg { display: none; }
+body[data-demo-page="analysis"][data-refund-view="review"] .review-search-submit {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex: none;
+  width: 14px;
+  height: 14px;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+}
+body[data-demo-page="analysis"][data-refund-view="review"] .review-search-submit img { display: block; width: 14px; height: 14px; }
+body[data-demo-page="analysis"][data-refund-view="review"] #productSearch { font-size: 14px; }
+body[data-demo-page="analysis"][data-refund-view="review"] #productQuery { display: none; }
+body[data-demo-page="analysis"][data-refund-view="review"] #productType {
+  width: 176px;
+  min-width: 176px;
+  background-image: url("assets/refund-review/small-select-arrow.svg");
+  background-size: 14px 14px;
+}
+body[data-demo-page="analysis"][data-refund-view="review"] #reasonType {
+  width: 136px;
+  min-width: 136px;
+  background-image: url("assets/refund-review/small-select-arrow.svg");
+  background-size: 14px 14px;
+}
+body[data-demo-page="analysis"][data-refund-view="review"] .products .top-products-table {
+  min-width: 1480px;
+  font-family: "PingFang SC", "Microsoft YaHei", sans-serif;
+  font-size: 14px;
+  line-height: 22px;
+}
+body[data-demo-page="analysis"][data-refund-view="review"] .products .top-products-table.has-rates { min-width: 1632px; }
+body[data-demo-page="analysis"][data-refund-view="review"] .top-products-table .col-product { width: 360px; }
+body[data-demo-page="analysis"][data-refund-view="review"] .top-products-table.has-rates .col-product { width: 316px; }
+body[data-demo-page="analysis"][data-refund-view="review"] .top-products-table.has-rates .col-amountRate,
+body[data-demo-page="analysis"][data-refund-view="review"] .top-products-table.has-rates .col-rate { width: 132px; }
+body[data-demo-page="analysis"][data-refund-view="review"] .top-products-table .col-amount { width: 132px; }
+body[data-demo-page="analysis"][data-refund-view="review"] .top-products-table .col-paidAmount { width: 144px; }
+body[data-demo-page="analysis"][data-refund-view="review"] .top-products-table .col-count,
+body[data-demo-page="analysis"][data-refund-view="review"] .top-products-table .col-paid { width: 132px; }
+body[data-demo-page="analysis"][data-refund-view="review"] .top-products-table .col-reasons { width: 512px; }
+body[data-demo-page="analysis"][data-refund-view="review"] .products .top-products-table thead th,
+body[data-demo-page="analysis"][data-refund-view="review"] .reason-analysis-table thead th {
+  height: 48.5px;
+  padding: 12px 16px;
+  border-bottom-color: #f1f1f5;
+  background: #f5f5f9;
+  color: #4c4c59;
+  font-weight: 400;
+  text-align: left;
+}
+body[data-demo-page="analysis"][data-refund-view="review"] .product-column-head,
+body[data-demo-page="analysis"][data-refund-view="review"] .reason-column-head { justify-content: flex-start; gap: 4px; }
+body[data-demo-page="analysis"][data-refund-view="review"] .product-sort,
+body[data-demo-page="analysis"][data-refund-view="review"] .reason-sort {
+  font-weight: 400;
+  color: #4c4c59;
+}
+body[data-demo-page="analysis"][data-refund-view="review"] .product-sort.is-active,
+body[data-demo-page="analysis"][data-refund-view="review"] .reason-sort.is-active { color: #4c4c59; }
+body[data-demo-page="analysis"][data-refund-view="review"] .products .top-products-table td {
+  height: 107.5px;
+  padding: 12px 16px;
+  color: #14151a;
+  font-family: "PingFang SC", "Microsoft YaHei", sans-serif;
+  font-size: 14px;
+  text-align: left;
+  border-color: #f1f1f5;
+}
+body[data-demo-page="analysis"][data-refund-view="review"] .products .top-products-table th:first-child,
+body[data-demo-page="analysis"][data-refund-view="review"] .products .top-products-table td:first-child {
+  box-shadow: none;
+}
+body[data-demo-page="analysis"][data-refund-view="review"] .top-products-table .thumb {
+  width: 48px;
+  height: 64px;
+  border: 0;
+  border-radius: 0;
+  background: #f8f8fa;
+}
+body[data-demo-page="analysis"][data-refund-view="review"] .top-products-table .product-info { gap: 12px; }
+body[data-demo-page="analysis"][data-refund-view="review"] .product-name { color: #14151a; font-size: 14px; line-height: 22px; }
+body[data-demo-page="analysis"][data-refund-view="review"] .product-code,
+body[data-demo-page="analysis"][data-refund-view="review"] .product-meta {
+  margin-top: 0;
+  color: #7f7f8e;
+  font-size: 12px;
+  line-height: 20px;
+}
+body[data-demo-page="analysis"][data-refund-view="review"] .product-meta {
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0;
+}
+body[data-demo-page="analysis"][data-refund-view="review"] .identifier-value { color: #7f7f8e; font-family: inherit; font-weight: 400; }
+body[data-demo-page="analysis"][data-refund-view="review"] .copy-identifier {
+  position: relative;
+  width: 14px;
+  height: 14px;
+}
+body[data-demo-page="analysis"][data-refund-view="review"] .copy-identifier > svg { visibility: hidden; }
+body[data-demo-page="analysis"][data-refund-view="review"] .copy-identifier::before {
+  content: "";
+  position: absolute;
+  left: 1.75px;
+  top: 1.1667px;
+  width: 10.5px;
+  height: 11.6667px;
+  background: url("assets/refund-review/copy-shape.svg") center no-repeat;
+  mask: url("assets/refund-review/copy-mask.svg") -1.75px -1.1667px / 14px 14px no-repeat;
+}
+body[data-demo-page="analysis"][data-refund-view="review"] .products .top-products-table .sku-row td {
+  height: 96px;
+  background: #f8f8fa;
+}
+body[data-demo-page="analysis"][data-refund-view="review"] .products .top-products-table .sku-row td:first-child { padding-left: 32px; }
+body[data-demo-page="analysis"][data-refund-view="review"] .top-products-table .sku-product-info .thumb { width: 48px; height: 64px; }
+body[data-demo-page="analysis"][data-refund-view="review"] .product-reasons { padding: 0; font-size: 12px; line-height: 20px; color: #4c4c59; }
+body[data-demo-page="analysis"][data-refund-view="review"] .product-reasons > span {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+  line-height: 20px;
+  white-space: normal;
+}
+body[data-demo-page="analysis"][data-refund-view="review"] .reason-analysis-table tbody th,
+body[data-demo-page="analysis"][data-refund-view="review"] .reason-analysis-table tbody td {
+  height: 49.5px;
+  padding: 13px 16px;
+  font-size: 14px;
+  line-height: 22px;
+  text-align: left;
+  color: #14151a;
+  border-color: #f1f1f5;
+}
+body[data-demo-page="analysis"][data-refund-view="review"] .reason-analysis-table tbody .reason-child-row th { padding-left: 46px; }
+body[data-demo-page="analysis"][data-refund-view="review"] .reason-analysis-table tbody .reason-child-row th,
+body[data-demo-page="analysis"][data-refund-view="review"] .reason-analysis-table tbody .reason-child-row td { background: #f8f8fa; }
+body[data-demo-page="analysis"][data-refund-view="review"] .reason-expand {
+  display: flex;
+  color: #14151a;
+  font-weight: 400;
+  gap: 8px;
+}
+body[data-demo-page="analysis"][data-refund-view="review"] .reason-expand svg {
+  width: 14px;
+  height: 14px;
+  background: url("assets/refund-review/reason-expand.svg") center no-repeat;
+}
+body[data-demo-page="analysis"][data-refund-view="review"] .reason-expand svg > * { opacity: 0; }
+body[data-demo-page="analysis"][data-refund-view="review"] .table-footer,
+body[data-demo-page="analysis"][data-refund-view="review"] .reason-table-footer {
+  justify-content: flex-end;
+  gap: 24px;
+  min-height: 46px;
+  padding: 16px 0 0;
+  border: 0;
+  color: #4c4c59;
+  font-size: 14px;
+  line-height: 20px;
+}
+body[data-demo-page="analysis"][data-refund-view="review"] #reasonNote { display: none; }
+body[data-demo-page="analysis"][data-refund-view="review"] #productPagination,
+body[data-demo-page="analysis"][data-refund-view="review"] #reasonPagination {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #4c4c59;
+  font-size: 14px;
+  line-height: 20px;
+}
+body[data-demo-page="analysis"][data-refund-view="review"] #productPagination button,
+body[data-demo-page="analysis"][data-refund-view="review"] #reasonPagination button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  min-width: 30px;
+  height: 30px;
+  min-height: 30px;
+  padding: 0;
+  border: 1px solid #dcdce6;
+  border-radius: 2px;
+  color: #4c4c59;
+  background: #fff;
+}
+body[data-demo-page="analysis"][data-refund-view="review"] #productPagination button.current,
+body[data-demo-page="analysis"][data-refund-view="review"] #reasonPagination button.current {
+  color: #01bfc3;
+  border-color: #01c2c3;
+}
+body[data-demo-page="analysis"][data-refund-view="review"] #productPagination button:disabled,
+body[data-demo-page="analysis"][data-refund-view="review"] #reasonPagination button:disabled { color: #a9a9b9; }
+body[data-demo-page="analysis"][data-refund-view="review"] .product-page-jump,
+body[data-demo-page="analysis"][data-refund-view="review"] .reason-page-jump {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: 4px;
+  white-space: nowrap;
+}
+body[data-demo-page="analysis"][data-refund-view="review"] .product-page-jump input,
+body[data-demo-page="analysis"][data-refund-view="review"] .reason-page-jump input {
+  width: 48px;
+  height: 30px;
+  padding: 0 8px;
+  border: 1px solid #dcdce6;
+  border-radius: 2px;
+  background: #fff;
+  color: #4c4c59;
+  text-align: center;
+  font-size: 14px;
+}
+body[data-demo-page="analysis"][data-refund-view="review"] #productPagination > span,
+body[data-demo-page="analysis"][data-refund-view="review"] #reasonPagination > span {
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+body[data-demo-page="analysis"][data-refund-view="review"] #productPagination > .product-page-size,
+body[data-demo-page="analysis"][data-refund-view="review"] #reasonPagination > .product-page-size {
+  position: relative;
+  flex: none;
+  min-width: 84px;
+  height: 30px;
+  margin-right: 8px;
+  padding: 4px 24px 4px 8px !important;
+  border: 1px solid #dcdce6 !important;
+  border-radius: 2px;
+  color: #4c4c59;
+  line-height: 20px;
+  white-space: nowrap;
+  background: url("assets/refund-review/small-select-arrow.svg") right 8px center no-repeat;
+}
+
+body[data-demo-page="analysis"][data-refund-view="review"] #refundAnalysisPage .bottom-note,
+body[data-demo-page="analysis"][data-refund-view="review"] #refundAnalysisPage > footer { display: none; }
+body[data-demo-page="analysis"][data-refund-view="review"] #productReasonsTooltip {
+  width: 360px;
+  max-width: calc(100vw - 24px);
+  max-height: calc(100vh - 24px);
+  overflow: visible;
+  padding: 12px 16px;
+  border: 0;
+  border-radius: 8px;
+  background: #fff;
+  box-shadow: 0 6px 16px rgb(0 0 0 / 16%);
+  color: #4c4c59;
+  font: 400 14px/22px "PingFang SC", "Microsoft YaHei", sans-serif;
+}
+body[data-demo-page="analysis"][data-refund-view="review"] #productReasonsTooltip h4 {
+  margin: 0 0 4px;
+  color: #14151a;
+  font-size: 14px;
+  line-height: 22px;
+  font-weight: 500;
+}
+body[data-demo-page="analysis"][data-refund-view="review"] #productReasonsTooltip .product-reasons-context,
+body[data-demo-page="analysis"][data-refund-view="review"] #productReasonsTooltip .product-reasons-note { display: none; }
+body[data-demo-page="analysis"][data-refund-view="review"] #productReasonsTooltip .product-reasons-list {
+  max-height: min(418px, calc(100vh - 80px));
+  margin: 0;
+  padding: 0;
+  overflow-y: auto;
+}
+body[data-demo-page="analysis"][data-refund-view="review"] #productReasonsTooltip .product-reasons-list > div {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 0;
+  border: 0;
+  min-height: 22px;
+  font-size: 14px;
+  line-height: 22px;
+}
+body[data-demo-page="analysis"][data-refund-view="review"] #productReasonsTooltip .product-reasons-list span { flex: 1; min-width: 0; }
+body[data-demo-page="analysis"][data-refund-view="review"] #productReasonsTooltip .product-reasons-list strong {
+  flex: 0 0 64px;
+  width: 64px;
+  font-weight: 400;
+  text-align: right;
+  line-height: 22px;
+}
+body[data-demo-page="analysis"][data-refund-view="review"] #productReasonsTooltip::after {
+  content: "";
+  position: absolute;
+  top: var(--reason-arrow-y, calc(50% - 6px));
+  right: -8px;
+  width: 8px;
+  height: 12px;
+  background: url("assets/refund-review/tooltip-arrow.svg") center no-repeat;
+}
+
+body[data-demo-page="analysis"][data-refund-view="review"] #productReasonsTooltip[data-placement="bottom"]::after {
+  top: -10px;
+  right: auto;
+  left: 24px;
+  transform: rotate(-90deg);
+}
+
+@media (min-width: 1920px) {
+  body[data-demo-page="analysis"][data-refund-view="review"] .chart-head { margin-top: 31px; }
+}
+
+@media (max-width: 1919px) {
+  body[data-demo-page="analysis"][data-refund-view="review"] .metric-grid { min-width: 1634px; }
+}
+
+@media (max-width: 1100px) {
+  body[data-demo-page="analysis"][data-refund-view="review"] #refundAnalysisPage { padding-top: 80px; }
+}
+@media (max-width: 760px) {
+  body[data-demo-page="analysis"][data-refund-view="review"] .chart-head,
+  body[data-demo-page="analysis"][data-refund-view="review"] .products .section-head {
+    flex-wrap: wrap;
+    align-items: flex-start;
+  }
+  body[data-demo-page="analysis"][data-refund-view="review"] #metric { max-width: 100%; overflow-x: auto; }
+  body[data-demo-page="analysis"][data-refund-view="review"] #metric button { flex: none; }
+  body[data-demo-page="analysis"][data-refund-view="review"] .product-controls { max-width: 100%; }
+  body[data-demo-page="analysis"][data-refund-view="review"] .products .table-footer,
+  body[data-demo-page="analysis"][data-refund-view="review"] .reason-table-footer { overflow-x: auto; }
+}
