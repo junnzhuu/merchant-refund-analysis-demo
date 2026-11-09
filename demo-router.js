@@ -60,7 +60,7 @@
     ai.close();
     bridge.suspend();
     document.body.dataset.demoPage = page;
-    returnTopbar.hidden = page === 'analysis';
+    returnTopbar.hidden = false;
     returnFloats.hidden = page === 'analysis';
     const isAnalysis = page === 'analysis';
     analysisPage.hidden = !isAnalysis;
