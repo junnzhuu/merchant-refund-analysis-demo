@@ -1,8 +1,8 @@
 const $ = s => document.querySelector(s);
 const $$ = s => [...document.querySelectorAll(s)];
 const M = RefundModel;
-const {DAY,CUTOFF,catalog,uniqueRecords,total,count} = M;
-const data=M.createData(),records=data.refunds,payments=data.payments;
+const {catalog,uniqueRecords,total,count} = M;
+const data=M.createData();
 const state={basis:'pay',period:'seven',type:'all',metric:'amount',productSearch:'',productType:'all',brand:'全部品牌',category:'全部类目',channel:'全部出价渠道',sort:'amount',productDirection:'desc',productPage:1,reasonType:'all',reasonPage:1,reasonExpanded:new Set(),reasonSort:'amount',reasonDirection:'desc',expanded:new Set(),customStart:'2026-10-21',customEnd:'2026-10-27',...M.defaults()};
 const money=c=> (c/100).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
 const typeName=t=>M.REFUND_TYPE_LABELS[t];
@@ -45,8 +45,17 @@ function metricCard(current,previous,type,allAmount,realtime) {
  return `<article class="metric-card ${state.type===type?'selected':''} ${state.basis==='pay'?'with-rate':''}"><div class="metric-card-head"><div class="card-title"><button class="card-select" data-card="${type}" aria-pressed="${state.type===type}">${typeName(type)}</button>${typeHelp}</div><span class="amount-share">金额占比 <b>${share}</b></span></div><div class="metric-content">${cell('amount')}${cell('count')}</div>${state.basis==='pay'?`<div class="metric-rates">${cell('amountRate')}${cell('rate')}</div>`:''}</article>`;
 }
 function selectTrend(type,metric=state.metric){const active=document.activeElement,focusKey=active?.dataset.cardMetric,focusType=active?.dataset.card;state.type=type;state.metric=metric;render();const selector=focusKey?`[data-card-metric="${focusKey}"]`:focusType?`[data-card="${focusType}"]`:null;if(selector)$(selector)?.focus({preventScroll:true})}
-let datePicker,exporting=false,excelLibraryPromise;
+let datePicker,exporting=false,excelLibraryPromise,liveRefreshTimer;
+function refreshToday() {
+ clearTimeout(liveRefreshTimer);
+ if (state.period !== 'today' || $('#refundAnalysisPage').hidden) return;
+ const now = new Date();
+ if (M.refreshData(data, now)) queryCache.clear();
+ const hourMs = 60 * 60 * 1000;
+ liveRefreshTimer = setTimeout(render, hourMs - Date.now() % hourMs);
+}
 function render(){
+ refreshToday();
  hideMetricTooltip();hideProductReasonTooltip();
  $('#refundAiSummary .refund-ai-summary-label').textContent=isReviewView()?'近7日退款分析':'AI 近7日退款分析：';
  const period=M.getPeriod(state),cur=queryFor(period.current.start,period.current.end),prev=queryFor(period.previous.start,period.previous.end),rows=cur.refunds,allAmount=total(rows);
@@ -80,7 +89,11 @@ function renderTrend(current,previous){
  svg+=`<path class="trend-line" data-series="current" d="${path(cur)}" fill="none" stroke="var(--dw-color-chart-1)" stroke-width="${review?1.5:2.3}" stroke-linejoin="round"/>`;
  if(labels.length===1||cur.filter(v=>v!==null).length===1)cur.forEach((v,i)=>{if(v!==null)svg+=`<circle cx="${x(i)}" cy="${y(v)}" r="4" fill="var(--dw-color-chart-1)" stroke="white" stroke-width="1.5"/>`});
  labels.forEach((label,i)=>{if(series.realtime?i%2===0||i===23:labels.length<=8||i%Math.ceil(labels.length/8)===0||i===labels.length-1)svg+=`<text x="${x(i)}" y="${H-8}" text-anchor="middle" fill="var(--dw-color-chart-label)" font-size="12">${escapeHTML(label)}</text>`});
- if(series.realtime){const time=(current.cutoff||data.cutoff||M.CUTOFF).slice(11,16),hour=Number(time.slice(0,2))+Number(time.slice(3))/60,px=x(Math.min(labels.length-1,hour)),right=hour>=20;svg+=`<line class="trend-cutoff" x1="${px}" x2="${px}" y1="${T}" y2="${H-B}" stroke="var(--dw-color-chart-reference)" stroke-dasharray="3 4"/><text x="${px+(right?-8:8)}" ${right?'text-anchor="end"':''} y="17" font-size="12" fill="var(--dw-color-chart-label)">更新至 ${time}</text>`}
+ if (series.realtime) {
+  const hourText = (current.cutoff || data.cutoff || M.CUTOFF).slice(11, 13);
+  const hour = Number(hourText), px = x(hour), right = hour >= 20;
+  svg += `<line class="trend-cutoff" x1="${px}" x2="${px}" y1="${T}" y2="${H-B}" stroke="var(--dw-color-chart-reference)" stroke-dasharray="3 4"/><text x="${px + (right ? -8 : 8)}" ${right ? 'text-anchor="end"' : ''} y="17" font-size="12" fill="var(--dw-color-chart-label)">更新至 ${hourText}:00</text>`;
+ }
  if(review)svg+=`<line id="trendHoverLine" x1="0" x2="0" y1="${T}" y2="${H-B}" stroke="#c8cad5" hidden aria-hidden="true"/><circle id="trendHoverDot" cx="0" cy="0" r="3.5" fill="var(--dw-color-chart-1)" stroke="white" stroke-width="1.5" hidden aria-hidden="true"/>`;
  labels.forEach((_,i)=>{const left=labels.length===1?L:i?((x(i-1)+x(i))/2):L,right=labels.length===1?W-R:i===labels.length-1?W-R:((x(i)+x(i+1))/2);svg+=`<rect class="trend-hit" data-trend-index="${i}" x="${left}" y="${T}" width="${Math.max(1,right-left)}" height="${H-T-B}" fill="transparent"><title>${escapeHTML(`${metricName()}\n${series.currentLabel} ${series.currentDates[i]||'无对应日期'}：${trendValue(cur[i],series.currentReasons[i])}`)}</title></rect>`});
  $('#trend').innerHTML=svg+'</svg><div class="trend-tooltip" id="trendTooltip" hidden></div>';

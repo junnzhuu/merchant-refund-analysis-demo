@@ -5,12 +5,18 @@
 })(typeof globalThis !== 'undefined' ? globalThis : this, function (now) {
   'use strict';
   // The browser demo follows Beijing time; Node fixtures retain their reproducible clock.
-  const clock = now ? Object.fromEntries(new Intl.DateTimeFormat('en-GB', {
+  const beijingClock = new Intl.DateTimeFormat('en-GB', {
     timeZone: 'Asia/Shanghai', year: 'numeric', month: '2-digit', day: '2-digit',
-    hour: '2-digit', minute: '2-digit', second: '2-digit', hourCycle: 'h23'
-  }).formatToParts(now).map(part => [part.type, part.value])) : null;
-  const DAY = clock ? `${clock.year}-${clock.month}-${clock.day}` : '2026-11-02';
-  const CUTOFF = clock ? `${DAY} ${clock.hour}:${clock.minute}:${clock.second}` : '2026-11-02 14:30:00';
+    hour: '2-digit', hourCycle: 'h23'
+  });
+  function hourlyCutoff(time) {
+    const {year, month, day, hour} = Object.fromEntries(
+      beijingClock.formatToParts(time).map(part => [part.type, part.value])
+    );
+    return `${year}-${month}-${day} ${hour}:00:00`;
+  }
+  let CUTOFF = now ? hourlyCutoff(now) : '2026-11-02 14:30:00';
+  let DAY = CUTOFF.slice(0,10);
   const REFUND_WINDOW_MS = 30 * 24 * 60 * 60 * 1000;
   const SELECTABLE_START = '2026-01-01', DATA_START = '2025-01-01';
   const REFUND_TYPES = ['mid', 'transit', 'only', 'return'];
@@ -94,14 +100,15 @@
     if(state.period!=='today'&&start<SELECTABLE_START)return '示例支持选择 2026-01-01 起的日期';
     return '';
   }
-  function createData() {
+  function createData(cutoff = CUTOFF) {
+    const day = cutoff.slice(0,10);
     const payments=[],refunds=[];let serial=0,dayIndex=0;
-    for(let date=DATA_START;date<=DAY;date=dayOffset(date,1),dayIndex++) {
+    for(let date=DATA_START;date<=day;date=dayOffset(date,1),dayIndex++) {
       catalog.forEach((p,pi)=>{ const n=32-pi*3+(dayIndex*7+pi*3)%13;
         for(let j=0;j<n;j++) {
           const hour=(j*7+pi*3+dayIndex)%24,minute=(j*13+pi*7)%60;
           const payTime=`${date} ${String(hour).padStart(2,'0')}:${String(minute).padStart(2,'0')}:00`;
-          if(payTime>CUTOFF)continue;
+          if(payTime>cutoff)continue;
           const subOrderId='DE'+date.replaceAll('-','')+String(++serial).padStart(7,'0'),sku=SKUS[j%3];
           const paid={subOrderId,product:p.id,sku,skuId:p.skus[j%3].id,payDate:date,payTime,amount:p.unitCents};payments.push(paid);
           const seed=dayIndex*17+j*11+pi*5;
@@ -113,7 +120,7 @@
           let refundDate=dayOffset(date,lag),refundHour=8+seed%15;
           let refundTime=`${refundDate} ${String(refundHour).padStart(2,'0')}:${String((minute+7)%60).padStart(2,'0')}:00`;
           if(lag===0){refundTime=new Date(Date.parse(payTime.replace(' ','T')+'Z')+67*60000).toISOString().slice(0,19).replace('T',' ');refundDate=refundTime.slice(0,10);refundHour=Number(refundTime.slice(11,13));}
-          if(refundTime>CUTOFF)continue;
+          if(refundTime>cutoff)continue;
           const pool=MOCK_REASON_POOLS[type],reason=pool[(dayIndex*13+j*7+pi*11)%pool.length],reasonGroup=reasonParents.get(reason).id;
           const amount=type==='only'||type==='transit'?Math.round(p.unitCents*(.25+(seed%5)*.1)):p.unitCents;
           const base={...paid,type,reason,reasonGroup,status:'success',refundDate,refundHour,refundTime};
@@ -122,7 +129,15 @@
         }
       });
     }
-    return {catalog,payments,refunds,coverage:{start:DATA_START,end:DAY},cutoff:CUTOFF};
+    return {catalog,payments,refunds,coverage:{start:DATA_START,end:day},cutoff};
+  }
+  function refreshData(data, time) {
+    const cutoff = hourlyCutoff(time);
+    if (cutoff === data.cutoff) return false;
+    Object.assign(data, createData(cutoff));
+    CUTOFF = cutoff;
+    DAY = data.coverage.end;
+    return true;
   }
   function timestamp(value) {
     if(!value)return NaN;
@@ -231,5 +246,5 @@
     }
     return {...period,labels,current,previous,currentDates,previousDates,currentReasons,previousReasons,currentLabel:period.realtime?'今日截至当前':'本期',previousLabel:period.realtime?'昨日全天':period.partial?'上期同进度':'上周期'};
   }
-  return {DAY,CUTOFF,SELECTABLE_START,DATA_START,REFUND_TYPES,REFUND_TYPE_LABELS,SKUS,REASON_GROUPS,catalog,dayOffset,dayCount,dateList,monthBounds,weekBounds,isoWeek,defaults,getPeriod,validateSelection,createData,uniqueRecords,total,count,typeRows,matches,query,summarize,summarizeReasons,summarizeReasonHierarchy,summarizeProducts,change,buildTrend};
+  return {get DAY(){return DAY},get CUTOFF(){return CUTOFF},SELECTABLE_START,DATA_START,REFUND_TYPES,REFUND_TYPE_LABELS,SKUS,REASON_GROUPS,catalog,dayOffset,dayCount,dateList,monthBounds,weekBounds,isoWeek,defaults,getPeriod,validateSelection,createData,refreshData,uniqueRecords,total,count,typeRows,matches,query,summarize,summarizeReasons,summarizeReasonHierarchy,summarizeProducts,change,buildTrend};
 });

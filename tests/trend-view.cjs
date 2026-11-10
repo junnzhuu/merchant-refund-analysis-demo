@@ -177,7 +177,7 @@ test('realtime retains hourly dates and cutoff marker while future hours stay em
   noPrevious(view, 14);
   assert.match(view.svg, />00:00<\/text>/);
   assert.match(view.svg, />23:00<\/text>/);
-  assert.match(view.svg, /更新至 14:30/);
+  assert.match(view.svg, /更新至 14:00/);
   const cutoff = tags(view.svg, 'line').find(line => attribute(line, 'x1') === attribute(line, 'x2'));
   assert(cutoff, 'A vertical cutoff marker must remain');
   const lastDrawnX = Math.max(...[...attribute(tags(view.svg, 'path')[0], 'd').matchAll(/[ML]([\d.]+),/g)].map(match => Number(match[1])));
@@ -229,15 +229,17 @@ test('review realtime shading stops at the last available hour', () => {
   noPrevious(view,14);
 });
 
-test('realtime cutoff follows the data timestamp and stays inside the plot at day end', () => {
+test('realtime marker rounds down to the latest hour, including at day end', () => {
   const cur=Array.from({length:24},(_,i)=>i<=8?i+1:null);
   const view=render(fixture(cur,{realtime:true}),'count',true,'2026-11-10 08:17:00');
-  assert.match(view.svg,/更新至 08:17/);
-  assert.doesNotMatch(view.svg,/更新至 14:30/);
+  assert.match(view.svg,/更新至 08:00/);
+  assert.doesNotMatch(view.svg,/更新至 08:17/);
+  const markerAtEight=tags(view.svg,'line').find(tag=>attribute(tag,'class')==='trend-cutoff');
+  assert.equal(Number(attribute(markerAtEight,'x1')),56+8*(984-56)/23);
   const late=render(fixture(cur,{realtime:true}),'count',true,'2026-11-10 23:59:00');
   const marker=tags(late.svg,'line').find(tag=>attribute(tag,'class')==='trend-cutoff');
   assert.equal(Number(attribute(marker,'x1')),984);
-  assert.match(late.svg,/text-anchor="end"[^>]*>更新至 23:59/);
+  assert.match(late.svg,/text-anchor="end"[^>]*>更新至 23:00/);
 });
 
 console.log(`\n${checks.filter(Boolean).length}/${checks.length} trend-view checks passed`);
