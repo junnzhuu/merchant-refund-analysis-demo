@@ -195,6 +195,26 @@ button:focus-visible, input:focus-visible, select:focus-visible {
 .rdp-preset-preview, .rdp-preset-range { color: var(--dw-color-text-tertiary); font-size: 14px; }
 .rdp-preset-preview strong { color: var(--dw-color-text-secondary); font-size: 14px; }
 .rdp-preset-preview > .rdp-icon { color: var(--dw-color-brand); }
+/* Quick presets show only the selected date above an empty preview, like the merchant backend. */
+.rdp-popover[data-quick="true"] { width: 420px; }
+.rdp-popover[data-quick="true"] .rdp-body { min-height: 0; }
+.rdp-popover[data-quick="true"] .rdp-presets { flex-basis: 116px; }
+.rdp-popover[data-quick="true"] .rdp-preset.is-selected { background: var(--dw-color-surface-hover); }
+.rdp-popover[data-quick="true"] .rdp-selection { padding: 12px 16px; }
+.rdp-popover[data-quick="true"] .rdp-selection-label { font-size: 14px; }
+.rdp-popover[data-quick="true"] .rdp-date-value { font-size: 18px; line-height: 24px; }
+.rdp-popover[data-quick="true"] .rdp-range { gap: 8px; white-space: nowrap; }
+.rdp-popover[data-quick="true"] .rdp-range-divider { font-size: 18px; }
+.rdp-popover[data-quick="true"] .rdp-view { padding: 0; }
+.rdp-popover[data-quick="true"] .rdp-hint { display: none; }
+@media (max-width: 480px) {
+  .rdp-popover[data-quick="true"] .rdp-presets { flex-basis: 100px; }
+  .rdp-popover[data-quick="true"] .rdp-preset { padding-inline: 12px; }
+  .rdp-popover[data-quick="true"] .rdp-selection { padding-inline: 12px; }
+  .rdp-popover[data-quick="true"] .rdp-date-value { font-size: 14px; }
+  .rdp-popover[data-quick="true"] .rdp-range { gap: 5px; }
+  .rdp-popover[data-quick="true"] .rdp-range-divider { font-size: 14px; }
+}
 #help { border-radius: 4px; box-shadow: var(--dw-shadow-dialog); color: var(--dw-color-text); }
 #help .dialog-head { border-color: var(--dw-color-divider); }
 #help .definition-text { font-size: 14px; line-height: 22px; color: var(--dw-color-text-secondary); }

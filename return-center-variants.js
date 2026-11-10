@@ -18,7 +18,6 @@
     banner.classList.add('rc-entry-banner');
     banner.dataset.rcAction = 'analyze';
     banner.querySelector('.refund-ai-summary-label').textContent = 'AI近7日退款分析';
-    banner.querySelector('.refund-ai-summary-copy').innerHTML = '全店近7日退款金额5.04万元，较上周期<strong>下降44.68%</strong>；发货前退款占69.09%。建议<strong>优先完善规格与尺码说明</strong>，优化高退款商品的下单提示。';
     banner.title = banner.textContent.trim();
 
     const slots = {};

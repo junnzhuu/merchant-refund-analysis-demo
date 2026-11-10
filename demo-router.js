@@ -28,6 +28,7 @@
       navigate('analysis');
     }
   });
+  document.querySelector('#refundAiSummary .refund-ai-summary-copy').innerHTML = window.RefundAiDemo.summaryMarkup(window.RefundAiDemo.createReport(window.RefundModel, bridge.getData()));
   document.getElementById('refundAiSummary').addEventListener('click', event => {
     bridge.suspend();
     ai.open({sourceLabel: LABELS.analysis, opener: event.currentTarget});

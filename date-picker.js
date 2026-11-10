@@ -47,7 +47,7 @@
       date.setUTCMonth(date.getUTCMonth() + count);
       return date.toISOString().slice(0, 7);
     };
-    const readableDate = date => date ? date.replace(/-/g, '/') : '请选择日期';
+    const readableDate = date => date || '请选择日期';
     const monthTitle = month => Number(month.slice(0, 4)) + '年' + Number(month.slice(5)) + '月';
     const presetName = period => (PRESETS.find(item => item[0] === period) || PRESETS[0])[1];
     const isDate = date => /^\d{4}-\d{2}-\d{2}$/.test(date || '');
@@ -86,7 +86,7 @@
     function sync() {
       const current = normalize(getState()), range = getRange(current);
       const rangeText = isDate(range.start) && isDate(range.end)
-        ? range.start + ' 至 ' + range.end : '请选择日期';
+        ? range.start === range.end ? range.start : range.start + ' 至 ' + range.end : '请选择日期';
       trigger.innerHTML = '<span class="rdp-trigger-label">' + escape(presetName(current.period)) +
         '</span><span class="rdp-trigger-separator" aria-hidden="true">|</span><span class="rdp-trigger-range">' +
         escape(rangeText) + '</span>' + CALENDAR_ICON;
@@ -255,23 +255,25 @@
 
     function render(focus) {
       const range = getRange(draft), error = selectionError(draft);
+      const quick = ['today', 'one', 'seven', 'thirty'].includes(draft.period);
+      const single = quick && range.start === range.end;
       let view;
       if (draft.period === 'custom') view = '<div class="rdp-calendars is-dual">' + calendar(monthView, 0, true) + calendar(monthOffset(monthView, 1), 1, true) + '</div>';
       else if (draft.period === 'calendar_week') view = '<div class="rdp-calendars is-week">' + calendar(monthView, 0, false) + '</div>';
       else if (draft.period === 'calendar_month') view = monthGrid();
-      else view = '<div class="rdp-preset-preview">' + CALENDAR_ICON + '<strong>' + escape(presetName(draft.period)) +
-          '</strong><span class="rdp-preset-range">' + escape(readableDate(range.start)) + ' 至 ' + escape(readableDate(range.end)) + '</span></div>';
+      else view = '';
       popup.dataset.period = draft.period;
+      popup.dataset.quick = String(quick);
       popup.innerHTML = '<div class="rdp-body"><nav class="rdp-presets" aria-label="统计时间周期">' +
         PRESETS.map(([period, label]) => '<button type="button" class="rdp-preset' + (period === draft.period ? ' is-selected' : '') +
           '" data-preset="' + period + '" aria-pressed="' + (period === draft.period) + '">' + label + '</button>').join('') +
         '</nav><section class="rdp-main"><header class="rdp-selection"><span class="rdp-selection-label" id="' + id +
         '-title">已选时间</span><div class="rdp-range"><span class="rdp-date-value rdp-range-start">' + escape(readableDate(range.start)) +
-        '</span><span class="rdp-range-divider" aria-hidden="true">至</span><span class="rdp-date-value rdp-range-end">' +
-        escape(readableDate(range.end)) + '</span></div></header><div class="rdp-view">' + view +
+        '</span>' + (single ? '' : '<span class="rdp-range-divider" aria-hidden="true">→</span><span class="rdp-date-value rdp-range-end">' +
+        escape(readableDate(range.end)) + '</span>') + '</div></header><div class="rdp-view">' + view +
         '</div><p class="rdp-hint">' + hint() + '</p><div class="rdp-error" role="alert"' +
-        (validationMessage ? '' : ' hidden') + '>' + escape(validationMessage) + '</div><footer class="rdp-footer"><button type="button" class="rdp-cancel" data-action="cancel">取消</button>' +
-        '<button type="button" class="rdp-apply" data-action="apply"' + (error ? ' disabled' : '') + '>确定</button></footer></section></div>';
+        (validationMessage ? '' : ' hidden') + '>' + escape(validationMessage) + '</div></section></div><footer class="rdp-footer"><button type="button" class="rdp-cancel" data-action="cancel">取消</button>' +
+        '<button type="button" class="rdp-apply" data-action="apply"' + (error ? ' disabled' : '') + '>确定</button></footer>';
       place();
       if (!opened) return;
       if (focus?.date) focusDate(focus.date);

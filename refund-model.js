@@ -1,10 +1,16 @@
 (function (root, factory) {
-  const api = factory();
+  const api = factory(typeof window !== 'undefined' ? new Date() : null);
   if (typeof module === 'object' && module.exports) module.exports = api;
   else root.RefundModel = api;
-})(typeof globalThis !== 'undefined' ? globalThis : this, function () {
+})(typeof globalThis !== 'undefined' ? globalThis : this, function (now) {
   'use strict';
-  const DAY = '2026-11-02', CUTOFF = '2026-11-02 14:30:00';
+  // The browser demo follows Beijing time; Node fixtures retain their reproducible clock.
+  const clock = now ? Object.fromEntries(new Intl.DateTimeFormat('en-GB', {
+    timeZone: 'Asia/Shanghai', year: 'numeric', month: '2-digit', day: '2-digit',
+    hour: '2-digit', minute: '2-digit', second: '2-digit', hourCycle: 'h23'
+  }).formatToParts(now).map(part => [part.type, part.value])) : null;
+  const DAY = clock ? `${clock.year}-${clock.month}-${clock.day}` : '2026-11-02';
+  const CUTOFF = clock ? `${DAY} ${clock.hour}:${clock.minute}:${clock.second}` : '2026-11-02 14:30:00';
   const REFUND_WINDOW_MS = 30 * 24 * 60 * 60 * 1000;
   const SELECTABLE_START = '2026-01-01', DATA_START = '2025-01-01';
   const REFUND_TYPES = ['mid', 'transit', 'only', 'return'];

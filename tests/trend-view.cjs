@@ -34,7 +34,7 @@ function fixture(current, overrides = {}) {
   };
 }
 
-function render(series, metric = 'amount', review = false) {
+function render(series, metric = 'amount', review = false, cutoff = '2026-11-02 14:30:00') {
   let html = '', hits = [], tip;
   const host = {
     getBoundingClientRect: () => ({ left: 0, width: 1000 }),
@@ -51,7 +51,7 @@ function render(series, metric = 'amount', review = false) {
   const context = vm.createContext({
     document:{body:{dataset:{refundView:review?'review':'v0'}}},
     state: { metric, type: 'all' },
-    data: {},
+    data: {cutoff},
     M: { REFUND_TYPE_LABELS: require('../refund-model.js').REFUND_TYPE_LABELS, buildTrend: () => series },
     $: selector => {
       if (selector === '#trend') return host;
@@ -227,6 +227,17 @@ test('review realtime shading stops at the last available hour', () => {
   const largestX=Math.max(...[...area.matchAll(/[ML]([\d.]+),/g)].map(match=>Number(match[1])));
   assert(largestX<=Number(attribute(cutoff,'x1'))+.1);
   noPrevious(view,14);
+});
+
+test('realtime cutoff follows the data timestamp and stays inside the plot at day end', () => {
+  const cur=Array.from({length:24},(_,i)=>i<=8?i+1:null);
+  const view=render(fixture(cur,{realtime:true}),'count',true,'2026-11-10 08:17:00');
+  assert.match(view.svg,/更新至 08:17/);
+  assert.doesNotMatch(view.svg,/更新至 14:30/);
+  const late=render(fixture(cur,{realtime:true}),'count',true,'2026-11-10 23:59:00');
+  const marker=tags(late.svg,'line').find(tag=>attribute(tag,'class')==='trend-cutoff');
+  assert.equal(Number(attribute(marker,'x1')),984);
+  assert.match(late.svg,/text-anchor="end"[^>]*>更新至 23:59/);
 });
 
 console.log(`\n${checks.filter(Boolean).length}/${checks.length} trend-view checks passed`);
