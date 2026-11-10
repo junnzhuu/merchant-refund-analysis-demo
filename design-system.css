@@ -62,6 +62,7 @@ button:focus-visible, input:focus-visible, select:focus-visible {
 }
 .metric-operator { color: var(--dw-color-icon-tertiary); font-size: 24px; font-weight: 400; }
 .metric-card {
+  cursor: pointer;
   min-height: 172px;
   padding: 24px;
   border: 1px solid var(--dw-color-card-border);
@@ -90,6 +91,7 @@ button:focus-visible, input:focus-visible, select:focus-visible {
 .amount-share b { margin: 0; font: 500 12px/20px var(--dw-font-en); color: var(--dw-color-text-secondary); }
 .metric-card.selected .amount-share b { color: var(--dw-color-text-brand); }
 .metric-content, .metric-rates { grid-template-columns: minmax(0,1.25fr) minmax(0,1fr); gap: 12px; margin-top: 20px; }
+.metric-cell { cursor: default; }
 .metric-definition-label {
   gap: 4px;
   color: var(--dw-color-text-secondary);

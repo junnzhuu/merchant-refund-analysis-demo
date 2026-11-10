@@ -42,7 +42,7 @@ function metricCard(current,previous,type,allAmount,realtime) {
  const compare=metric=>realtime?`<span class="change">昨日全天 <b>${previous.complete?format(p[metric],metric):'—'}</b></span>`:changeText(c[metric],p[metric],current.complete&&previous.complete);
  const cell=metric=>`<div class="metric-cell ${isRateMetric(metric)?'rate-cell':''} ${state.type===type&&state.metric===metric?'is-active':''}">${definitionButton(type,metric,metricLabel(metric))}<button class="metric-value ${metric==='amount'&&format(c.amount,metric).length>10?'long-value':''}" data-card-metric="${type}|${metric}" aria-label="查看${typeName(type)}${metricLabel(metric)}趋势" aria-pressed="${state.type===type&&state.metric===metric}"><strong>${format(c[metric],metric)}</strong>${compare(metric)}</button></div>`;
  const typeHelp=type==='all'?'':`<button type="button" class="metric-definition card-type-definition" data-definition="${type}|type" aria-label="${typeName(type)}说明" aria-describedby="metricTooltip">${infoIcon}</button>`;
- return `<article class="metric-card ${state.type===type?'selected':''} ${state.basis==='pay'?'with-rate':''}"><div class="metric-card-head"><div class="card-title"><button class="card-select" data-card="${type}" aria-pressed="${state.type===type}">${typeName(type)}</button>${typeHelp}</div><span class="amount-share">金额占比 <b>${share}</b></span></div><div class="metric-content">${cell('amount')}${cell('count')}</div>${state.basis==='pay'?`<div class="metric-rates">${cell('amountRate')}${cell('rate')}</div>`:''}</article>`;
+ return `<article class="metric-card ${state.type===type?'selected':''} ${state.basis==='pay'?'with-rate':''}" data-card-type="${type}"><div class="metric-card-head"><div class="card-title"><button class="card-select" data-card="${type}" aria-pressed="${state.type===type}">${typeName(type)}</button>${typeHelp}</div><span class="amount-share">金额占比 <b>${share}</b></span></div><div class="metric-content">${cell('amount')}${cell('count')}</div>${state.basis==='pay'?`<div class="metric-rates">${cell('amountRate')}${cell('rate')}</div>`:''}</article>`;
 }
 function selectTrend(type,metric=state.metric){const active=document.activeElement,focusKey=active?.dataset.cardMetric,focusType=active?.dataset.card;state.type=type;state.metric=metric;render();const selector=focusKey?`[data-card-metric="${focusKey}"]`:focusType?`[data-card="${focusType}"]`:null;if(selector)$(selector)?.focus({preventScroll:true})}
 let datePicker,exporting=false,excelLibraryPromise,liveRefreshTimer;
@@ -65,7 +65,6 @@ function render(){
  $$('.filter-field select').forEach(select=>{const active=select.selectedIndex>0;select.parentElement.classList.toggle('has-value',active);select.parentElement.querySelector('.filter-clear').hidden=!active});
  $('#downloadDetails').disabled=exporting;$('#downloadDetails').title='下载当前筛选条件下的核心数据、全部退款商品及退款原因（XLSX）';
  renderTrend(cur,prev);renderReasons(cur);renderProducts(cur);
- $$('[data-card]').forEach(b=>b.onclick=()=>selectTrend(b.dataset.card));
  $$('[data-card-metric]').forEach(b=>b.onclick=()=>{const[type,metric]=b.dataset.cardMetric.split('|');selectTrend(type,metric)});
  bindMetricTooltips();datePicker?.sync();
 }
@@ -193,6 +192,12 @@ function renderProducts(result){
  bindProductCopyButtons();
 }
 function toast(text){$('#toast').textContent=text;$('#toast').classList.add('show');setTimeout(()=>$('#toast').classList.remove('show'),2200)}
+$('#metrics').addEventListener('click', event => {
+ const card = event.target.closest('[data-card-type]');
+ if (card && !event.target.closest('.metric-cell, .metric-definition')) {
+  selectTrend(card.dataset.cardType);
+ }
+});
 $('#basis').onchange=e=>{state.basis=e.target.value;if(state.basis==='refund'&&isRateMetric(state.metric))state.metric='amount';render()};
 $('#reasonType').onchange=e=>{state.reasonType=e.target.value;hideMetricTooltip();renderReasons(queryFor(...range()));bindMetricTooltips()};
 $('#productType').onchange=e=>{state.productType=e.target.value;state.productPage=1;hideMetricTooltip();renderProducts(queryFor(...range()));bindMetricTooltips()};
