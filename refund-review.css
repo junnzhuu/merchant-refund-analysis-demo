@@ -176,9 +176,9 @@ body[data-demo-page="analysis"][data-refund-view="review"] .refund-ai-summary-la
 body[data-demo-page="analysis"][data-refund-view="review"] .refund-ai-summary-copy { color: #14151a; }
 body[data-demo-page="analysis"][data-refund-view="review"] .refund-ai-summary-arrow { width: 12px; height: 12px; }
 body[data-demo-page="analysis"][data-refund-view="review"] .metric-grid {
-  min-width: 1632px;
+  min-width: 1300px;
   margin-top: 16px;
-  grid-template-columns: repeat(4, minmax(0,1fr) 20px) minmax(0,1fr);
+  grid-template-columns: repeat(3, minmax(0,1fr) 20px) minmax(0,1fr);
   gap: 4px;
   padding: 1px;
 }
@@ -703,7 +703,7 @@ body[data-demo-page="analysis"][data-refund-view="review"] #productReasonsToolti
 }
 
 @media (max-width: 1919px) {
-  body[data-demo-page="analysis"][data-refund-view="review"] .metric-grid { min-width: 1634px; }
+  body[data-demo-page="analysis"][data-refund-view="review"] .metric-grid { min-width: 1302px; }
 }
 
 @media (max-width: 1100px) {

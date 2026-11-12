@@ -11,8 +11,12 @@ const report=E.buildReport(data,state),[core,products,reasons]=report.sheets;
   await test('three ordered sheets reconcile with current card totals and comparisons',()=>{
     assert.deepEqual(report.sheets.map(s=>s.name),['核心数据','退款商品','退款原因']);
     const period=M.getPeriod(state),cur=M.query(data,state),prev=M.query(data,state,period.previous),expected=M.summarize(cur),last=M.summarize(prev);
-    assert.equal(core.rows.length,5);assert.equal(core.rows[0].amount,50390.37);assert.equal(core.rows[0].count,193);
+    assert.deepEqual(core.rows.map(row=>[row.type,row.amount,row.count]),[
+      ['全部 退款',50390.37,193],['发货前 退款',34816.56,121],['未收货 退款',3627.89,23],['已收货 退货退款',11945.92,49]
+    ]);
     assert.equal(core.rows[0].amountCompare,M.change(expected.amount,last.amount).value);
+    assert.equal(core.rows[3].amountCompare,(1194592-4204438)/4204438);
+    assert.equal(core.rows[3].countCompare,(49-155)/155);
     assert.equal(products.rows.reduce((s,row)=>s+Math.round(row.amount*100),0),expected.amount);
     assert(reasons.metadata.some(text=>text.includes('不可重复相加')));
   });
@@ -82,7 +86,9 @@ const report=E.buildReport(data,state),[core,products,reasons]=report.sheets;
     assert.equal(a.getCell('C8').value,50390.37);assert.equal(a.getCell('C8').numFmt,'"¥"#,##0.00');
     assert.equal(a.getCell('B8').value,1);assert.equal(a.getCell('B8').numFmt,'0.00%');
     assert.equal(a.getCell('E8').value,193);assert.equal(typeof b.getCell('C8').value,'string');
-    assert.equal(a.views[0].ySplit,7);assert.equal(a.autoFilter,'A7:J12');
+    assert.equal(a.getCell('A11').value,'已收货 退货退款');assert.equal(a.getCell('C11').value,11945.92);assert.equal(a.getCell('E11').value,49);
+    assert.equal(a.views[0].ySplit,7);assert.equal(a.autoFilter,'A7:J11');
+    assert.match(a.getCell('A13').value,/^数据趋势/);
     assert.equal(b.rowCount,7+products.rows.length);
   });
   console.log(`\n${passed}/${passed} XLSX export checks passed`);

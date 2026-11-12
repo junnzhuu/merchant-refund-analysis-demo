@@ -6,7 +6,7 @@
   <link rel="stylesheet" href="design-tokens.css?v=20261104-labels-1">
   <link rel="stylesheet" href="styles.css?v=20261104-labels-1">
   <link rel="stylesheet" href="design-layout.css?v=20261109-review-1">
-  <link rel="stylesheet" href="design-system.css?v=20261110-card-click-1">
+  <link rel="stylesheet" href="design-system.css?v=20261112-refund-stages-1">
   <link rel="stylesheet" href="design-controls.css?v=20261104-labels-1">
   <link rel="stylesheet" href="after-sales.css?v=20261105-ai-experience-4">
   <link rel="stylesheet" href="refund-ai.css?v=20261105-ai-experience-4">
@@ -15,7 +15,7 @@
   <link rel="stylesheet" href="return-center-shell.css?v=20261109-shared-shell-1">
   <link rel="stylesheet" href="return-center-variants.css?v=20261105-entry-options-2">
   <link rel="stylesheet" href="assistant-replica.css?v=20261109-card-heading-1">
-  <link rel="stylesheet" href="refund-review.css?v=20261109-review-1">
+  <link rel="stylesheet" href="refund-review.css?v=20261112-refund-stages-1">
   <link rel="stylesheet" href="refund-view.css?v=20261109-review-1">
 </head>
 <body>
@@ -70,28 +70,28 @@
     </section>
 
     <section class="panel products" aria-labelledby="topProductsTitle">
-      <div class="section-head"><div class="head-left"><h2 id="topProductsTitle">TOP退款商品</h2><span class="subtle">展示退款金额 TOP20 商品</span></div><div class="product-controls"><form class="product-search-form" id="productSearchForm" role="search" aria-label="TOP退款商品搜索"><div class="product-search-input"><svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="7" cy="7" r="4.5"/><path d="m10.5 10.5 3 3"/></svg><button type="submit" class="review-search-submit" aria-label="搜索退款商品"><img src="assets/refund-review/search.svg" width="14" height="14" alt=""></button><input type="search" id="productSearch" aria-label="可搜索商品名称/ID" placeholder="可搜索商品名称/ID"></div><button type="submit" class="btn" id="productQuery">查询</button></form><label class="sr-only" for="productType">商品退款类型</label><select id="productType"><option value="all">全部 退款</option><option value="mid">发货前 退款</option><option value="transit">未收货 退款</option><option value="only">已收货 退款</option><option value="return">已收货 退货退款</option></select></div></div>
+      <div class="section-head"><div class="head-left"><h2 id="topProductsTitle">TOP退款商品</h2><span class="subtle">展示退款金额 TOP20 商品</span></div><div class="product-controls"><form class="product-search-form" id="productSearchForm" role="search" aria-label="TOP退款商品搜索"><div class="product-search-input"><svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="7" cy="7" r="4.5"/><path d="m10.5 10.5 3 3"/></svg><button type="submit" class="review-search-submit" aria-label="搜索退款商品"><img src="assets/refund-review/search.svg" width="14" height="14" alt=""></button><input type="search" id="productSearch" aria-label="可搜索商品名称/ID" placeholder="可搜索商品名称/ID"></div><button type="submit" class="btn" id="productQuery">查询</button></form><label class="sr-only" for="productType">商品退款类型</label><select id="productType"><option value="all">全部 退款</option><option value="mid">发货前 退款</option><option value="transit">未收货 退款</option><option value="return">已收货 退货退款</option></select></div></div>
       <div class="table-scroll"><table class="top-products-table" aria-label="TOP退款商品明细"><colgroup id="productColumns"></colgroup><thead id="productHeaders"></thead><tbody id="productRows"></tbody></table></div>
       <div class="table-footer"><span id="totalProducts"></span><nav class="pagination" id="productPagination" aria-label="商品榜单分页"></nav></div>
     </section>
     <section class="panel analysis-panel" aria-labelledby="reasonTitle">
-      <div class="section-head"><div class="head-left"><h2 id="reasonTitle">退款原因</h2></div><div class="reason-controls"><label class="sr-only" for="reasonType">退款原因类型</label><select id="reasonType"><option value="all">全部 退款</option><option value="mid">发货前 退款</option><option value="transit">未收货 退款</option><option value="only">已收货 退款</option><option value="return">已收货 退货退款</option></select></div></div>
+      <div class="section-head"><div class="head-left"><h2 id="reasonTitle">退款原因</h2></div><div class="reason-controls"><label class="sr-only" for="reasonType">退款原因类型</label><select id="reasonType"><option value="all">全部 退款</option><option value="mid">发货前 退款</option><option value="transit">未收货 退款</option><option value="return">已收货 退货退款</option></select></div></div>
       <div class="reason-table-scroll" id="reasonPanel"><table class="reason-analysis-table" id="reasons" aria-label="退款原因明细"></table></div>
       <div class="reason-table-footer"><span id="reasonTotal"></span><span id="reasonNote"></span><nav class="pagination" id="reasonPagination" aria-label="退款原因分页" hidden></nav></div>
     </section>
 
-    <div class="bottom-note">退款金额按成功退款记录累计，部分退款仅计实际退款金额；退款订单数按子订单去重，四类退款互斥且完整覆盖全部退款。<button class="text-btn" id="definitions">查看指标说明</button></div>
+    <div class="bottom-note">退款金额按成功退款记录累计，部分退款仅计实际退款金额；退款订单数按子订单去重，三类退款互斥且完整覆盖全部退款。<button class="text-btn" id="definitions">查看指标说明</button></div>
     <footer>示例数据仅用于页面方案展示</footer>
   </main>
   <main id="afterSalesRoot" hidden></main>
   <div class="service"><div>◉<small>客服</small></div><div>▤<small>反馈</small></div></div>
-  <dialog id="help"><div class="dialog-head"><h2>指标说明</h2><button class="close" id="closeHelp">×</button></div><div class="definition-text"><b>按退款时间</b><p>以退款成功时间归属日期。所选日期内退款成功的订单均计入，包含此前支付的订单。</p><b>按支付时间</b><p>以支付时间归属日期。统计所选日期支付的订单，在各自支付后30天内成功退款的结果；退款按订单支付日归属。</p><b>退款订单数</b><p>所选口径和时间内发生成功退款的子订单去重计数。每个子订单对应一个卖家的一件商品交易，只属于一种退款类型。全部退款订单数等于四类退款订单数之和。</p><b>退款金额</b><p>按有效成功退款记录去重后累计，部分退款只计实际退款部分。全部退款金额等于四类退款金额之和；金额占比以全部退款金额为分母，为零时显示“—”。图中金额为示例商品退款金额，不含运费。</p><b>退款类型</b><p>分为发货前 退款、未收货 退款、已收货 退款、已收货 退货退款。其中“已收货 退款”指收货后无需退回商品的退款。四类互斥且完整覆盖全部 退款，换货不计入退款。此处使用明确分类的模拟数据，生产分类映射及退款金额范围待业务确认。</p><b>订单退款率（按支付时间）</b><p>该类支付后30天内成功退款子订单数 ÷ 相同筛选范围的全部支付子订单数。分母包含未退款订单，四类共用同一分母；整段退款率按总分子除以总分母计算，不平均每日退款率。无支付订单时显示“—”。</p><b>金额退款率（按支付时间）</b><p>该类订单支付后30天内成功退款金额 ÷ 相同筛选范围的全部支付金额，分母含未退款订单。各类退款共用全部支付金额分母，无支付金额时显示“—”。</p><b>卡片周期对比</b><p>近7天、近30天截至昨天；自定义选择已结束的日期，自然周为周一至周日；当前自然周、自然月统计至昨天，至少有1天已结束才可选。未结束的自然周期对比上一周期相同进度，完整自然月对比前一完整自然月，其余历史范围对比紧邻的等长周期。变化率为（本期值－上周期值）÷上周期值，上期为0或缺失时显示“—”。今日实时展示昨日全天绝对值，不计算变化率。支付时间口径两期退款均在各订单支付后30天内统计；未满30天的支付订单随成功退款继续更新。数据趋势仅展示所选本周期的数据。</p><b>退款原因</b><p>原因按一级分类汇总，可展开查看二级原因。逐项展示退款金额和去重子订单数；一级订单数在该分类内去重，不直接相加二级订单数。支付口径增加两种退款率，分母分别为所选周期内全部成交金额和全部成交订单数，含未退款订单。各原因的金额按有效退款记录累计，订单数在该原因内按子订单去重，同一子订单若对应不同原因可分别计入。卡片选择和趋势指标只影响趋势，退款原因及商品分析保持全局筛选范围。</p></div></dialog>
+  <dialog id="help"><div class="dialog-head"><h2>指标说明</h2><button class="close" id="closeHelp">×</button></div><div class="definition-text"><b>按退款时间</b><p>以退款成功时间归属日期。所选日期内退款成功的订单均计入，包含此前支付的订单。</p><b>按支付时间</b><p>以子订单支付成功时间归属日期。统计所选日期支付成功的订单，在各自支付成功后30天内退款成功的结果。</p><b>退款订单数</b><p>所选口径和时间内发生成功退款的子订单去重计数。每个子订单对应一个卖家的一件商品交易，只属于一种退款类型。全部退款订单数等于三类退款订单数之和。同一子订单发生部分退款，仍按1单计数。</p><b>退款金额</b><p>按有效成功退款记录去重后累计，部分退款按实退金额计入。例如某子订单支付500元、退款成功200元，退款金额计200元，退款订单数计1单。全部退款金额等于三类退款金额之和；金额占比以全部退款金额为分母，为零时显示“—”。图中金额为示例商品退款金额，不含运费。</p><b>退款类型</b><p>分为发货前 退款、未收货 退款、已收货 退货退款。以售后申请发起或平台取消触发时的履约状态归类，发货时间取生成发往买家的正向物流单的时间，收货时间取买家签收时间。已收货 退货退款指买家签收后发生并最终成功的退款，包含部分退款。三类互斥且完整覆盖全部 退款，换货不计入退款。此处使用明确分类的模拟数据，生产分类映射及退款金额范围待业务确认。</p><b>订单退款率（按支付时间）</b><p>该类支付后30天内成功退款子订单数 ÷ 相同筛选范围的全部支付子订单数。分母包含未退款订单，三类共用同一分母；整段退款率按总分子除以总分母计算，不平均每日退款率。无支付订单时显示“—”。</p><b>金额退款率（按支付时间）</b><p>该类订单支付后30天内成功退款金额 ÷ 相同筛选范围的全部支付金额，分母含未退款订单。各类退款共用全部支付金额分母，无支付金额时显示“—”。</p><b>卡片周期对比</b><p>近7天、近30天截至昨天；自定义选择已结束的日期，自然周为周一至周日；当前自然周、自然月统计至昨天，至少有1天已结束才可选。未结束的自然周期对比上一周期相同进度，完整自然月对比前一完整自然月，其余历史范围对比紧邻的等长周期。变化率为（本期值－上周期值）÷上周期值，上期为0或缺失时显示“—”。今日实时展示昨日全天绝对值，不计算变化率。支付时间口径两期退款均在各订单支付后30天内统计；未满30天的支付订单随成功退款继续更新。数据趋势仅展示所选本周期的数据。</p><b>退款原因</b><p>原因按一级分类汇总，可展开查看二级原因。逐项展示退款金额和去重子订单数；一级订单数在该分类内去重，不直接相加二级订单数。支付口径增加两种退款率，分母分别为所选周期内全部成交金额和全部成交订单数，含未退款订单。各原因的金额按有效退款记录累计，订单数在该原因内按子订单去重，同一子订单若对应不同原因可分别计入。卡片选择和趋势指标只影响趋势，退款原因及商品分析保持全局筛选范围。</p></div></dialog>
   <div class="toast" id="toast" role="status"></div>
-  <script src="refund-model.js?v=20261110-hourly-1"></script>
-  <script src="metric-definitions.js?v=20261104-labels-1"></script>
+  <script src="refund-model.js?v=20261112-refund-stages-1"></script>
+  <script src="metric-definitions.js?v=20261112-refund-stages-1"></script>
   <script src="date-picker.js?v=20261110-date-presets-1"></script>
-  <script src="refund-export.js?v=20261104-labels-1"></script>
-  <script src="app.js?v=20261110-card-click-1"></script>
+  <script src="refund-export.js?v=20261112-refund-stages-1"></script>
+  <script src="app.js?v=20261112-refund-stages-1"></script>
   <script src="refund-view.js?v=20261109-review-1"></script>
   <script src="return-center-variants.js?v=20261110-date-presets-1"></script>
   <script src="return-center.js?v=20261105-entry-options-2"></script>

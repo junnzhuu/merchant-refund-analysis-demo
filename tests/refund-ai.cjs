@@ -25,7 +25,7 @@ const payments = [
   pay('TODAY', '2026-11-02', 90000, 'coat')
 ];
 function refund(refundId, id, amount, reason, refundDate = '2026-11-01') {
-  return { ...payments.find(row => row.subOrderId === id), refundId, afterSale: 'AS-' + refundId, amount, reason, type: 'only', status: 'success', refundDate, refundTime: refundDate + ' 12:00:00' };
+  return { ...payments.find(row => row.subOrderId === id), refundId, afterSale: 'AS-' + refundId, amount, reason, type: 'return', status: 'success', refundDate, refundTime: refundDate + ' 12:00:00' };
 }
 const first = refund('A1', 'A', 1000, '尺码不合适');
 const fixture = {

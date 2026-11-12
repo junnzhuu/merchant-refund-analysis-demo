@@ -104,7 +104,7 @@ const refunds = [
   refund('A-before', 'A', '2026-10-01', '09:59:59', 100),
   refund('B-1', 'B', '2026-10-15', '10:00:00', 2000, 'return'),
   refund('B-2', 'B', '2026-10-17', '10:00:00', 3000, 'return'),
-  refund('C-failed', 'C', '2026-10-02', '12:00:00', 2000, 'only', 'failed'),
+  refund('C-failed', 'C', '2026-10-02', '12:00:00', 2000, 'transit', 'failed'),
   refund('D-success', 'D', '2026-11-02', '14:30:00', 500),
   refund('D-future', 'D', '2026-11-02', '14:30:01', 500),
   refund('F-future-payment', 'F', '2026-11-02', '14:31:00', 500)
@@ -133,11 +133,23 @@ test('multiple refunds and duplicate source records produce distinct order and a
   assert.equal(s.amountRate, 0.15);
   assert.notEqual(s.rate, s.amountRate);
 });
+test('a received order paid 500 and partially refunded 200 contributes 200 and one distinct order', () => {
+  const paid = { ...payments[1], amount: 50000 };
+  const first = refund('B-200-1', 'B', '2026-10-15', '10:00:00', 8000, 'return');
+  const second = refund('B-200-2', 'B', '2026-10-15', '11:00:00', 12000, 'return');
+  const fixture = { ...data, payments: [paid], refunds: [first, { ...first }, second] };
+  const byPayment = M.summarize(M.query(fixture, state), 'return');
+  assert.deepEqual([byPayment.amount, byPayment.count, byPayment.paidAmount, byPayment.paid], [20000, 1, 50000, 1]);
+  assert.equal(byPayment.amountRate, 0.4);
+  const refundDate = { ...state, basis: 'refund', customStart: '2026-10-15', customEnd: '2026-10-15' };
+  const byRefund = M.summarize(M.query(fixture, refundDate), 'return');
+  assert.deepEqual([byRefund.amount, byRefund.count], [20000, 1]);
+});
 test('classification rates use the same complete payment cohort and add up', () => {
   const q = M.query(data, state), all = M.summarize(q), parts = M.REFUND_TYPES.map(type => M.summarize(q, type));
   assert(parts.every(p => p.paid === all.paid && p.paidAmount === all.paidAmount));
   for (const key of ['amount', 'count', 'rate', 'amountRate']) assert(Math.abs(parts.reduce((n, p) => n + p[key], 0) - all[key]) < 1e-12);
-  assert.deepEqual(M.query(data, { ...state, type: 'only' }), q);
+  assert.deepEqual(M.query(data, { ...state, type: 'return' }), q);
 });
 test('reason summaries deduplicate records and orders while sharing all paid order and amount denominators', () => {
   const reasonRefunds = [
@@ -286,7 +298,7 @@ test('a longer previous month does not extend the current date axis or shrink it
 });
 test('period amount rate uses total refund amount divided by total paid amount instead of averaging points', () => {
   const extraPayment = payment('E', '2026-10-02', '09:00:00', 100000);
-  const extraRefund = { ...extraPayment, refundId: 'E-1', refundDate: '2026-10-03', refundTime: '2026-10-03 09:00:00', amount: 10000, status: 'success', type: 'only' };
+  const extraRefund = { ...extraPayment, refundId: 'E-1', refundDate: '2026-10-03', refundTime: '2026-10-03 09:00:00', amount: 10000, status: 'success', type: 'return' };
   const expanded = { ...data, payments: [...payments, extraPayment], refunds: [...refunds, extraRefund] };
   const s = { ...state, customEnd: '2026-10-02', metric: 'amountRate' };
   const summary = M.summarize(M.query(expanded, s)), trend = M.buildTrend(expanded, s);

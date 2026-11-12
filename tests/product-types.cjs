@@ -15,7 +15,7 @@ const refund = (refundId, id, type, amount, reason) => ({
 });
 const first = refund('A1','A','return',3000,'收到不合适');
 const data = {payments, refunds:[first, {...first}, refund('A2','A','return',1000,'选错SKU'),
-  refund('B1','B','mid',5000,'发货慢'), refund('D1','D','only',1000,'商品质量待优化')],
+  refund('B1','B','mid',5000,'发货慢'), refund('D1','D','transit',1000,'商品质量待优化')],
   cutoff:M.CUTOFF, coverage:{start:M.DATA_START,end:M.DAY}};
 const query = M.query(data,{basis:'pay',period:'custom',customStart:'2026-10-01',customEnd:'2026-10-01'});
 
@@ -38,7 +38,7 @@ test('SKU denominators and IDs remain tied to their own paid records across type
 
 test('type summaries do not mutate global data or invent products without that refund type', () => {
   const before = M.summarize(query);
-  assert.deepEqual(M.summarizeProducts(query,'only').map(row=>row.product),['p1']);
+  assert.deepEqual(M.summarizeProducts(query,'transit').map(row=>row.product),['p1']);
   assert.deepEqual(M.summarizeProducts(query),M.summarizeProducts(query,'all'));
   assert.deepEqual(M.summarize(query),before);
   assert.deepEqual(M.summarizeProducts({...query,refunds:[]},'return'),[]);

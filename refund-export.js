@@ -5,7 +5,7 @@
 })(typeof globalThis !== 'undefined' ? globalThis : this, function (M) {
   'use strict';
   const TYPES = ['all', ...M.REFUND_TYPES];
-  const typeName = type => M.REFUND_TYPE_LABELS[type];
+  const typeName = type => M.REFUND_TYPE_LABELS[M.normalizeRefundType(type)];
   const labels = {amount:'退款金额', count:'退款订单数', amountRate:'金额退款率', rate:'订单退款率', paidAmount:'用户支付金额', paid:'支付订单数'};
   const formats = {text:'@', amount:'"¥"#,##0.00', count:'#,##0', rate:'0.00%'};
   const column = (key, label, kind='text', width=18) => ({key, label, kind, width});
@@ -42,7 +42,7 @@
     const trendState = {...state,metric:trendMetric}, series = M.buildTrend(data,trendState,{current,previous});
     const core = {
       name:'核心数据', columns:coreColumns, rows:coreRows,
-      metadata:metadata('退款范围：全部 退款及四类退款分别汇总；已收货 退款指无需退货的退款',`卡片对比：${period.previous.start} 至 ${period.previous.end}${period.realtime?'（昨日全天）':''}；金额单位：元；示例数据`),
+      metadata:metadata('退款范围：全部 退款及三类退款分别汇总。已收货 退货退款指买家签收后发生并最终成功的退款，包含部分退款。',`卡片对比：${period.previous.start} 至 ${period.previous.end}${period.realtime?'（昨日全天）':''}；金额单位：元；示例数据`),
       trend:{title:`数据趋势 · ${typeName(state.type || 'all')} · ${labels[trendMetric]}`, columns:[column('date',period.realtime?'日期 / 小时':'日期','text',25),metricColumn(trendMetric)], rows:series.currentDates.map((date,i)=>({date,[trendMetric]:series.current[i]}))}
     };
 

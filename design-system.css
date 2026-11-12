@@ -54,9 +54,9 @@ button:focus-visible, input:focus-visible, select:focus-visible {
 }
 .metric-scroll { width: 100%; overflow-x: auto; scrollbar-width: thin; }
 .metric-grid {
-  min-width: 1504px;
+  min-width: 1196px;
   margin-top: 16px;
-  grid-template-columns: minmax(0,1fr) 20px minmax(0,1fr) 20px minmax(0,1fr) 20px minmax(0,1fr) 20px minmax(0,1fr);
+  grid-template-columns: repeat(3, minmax(0,1fr) 20px) minmax(0,1fr);
   gap: 8px;
   align-items: stretch;
 }

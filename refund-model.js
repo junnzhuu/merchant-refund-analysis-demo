@@ -19,8 +19,11 @@
   let DAY = CUTOFF.slice(0,10);
   const REFUND_WINDOW_MS = 30 * 24 * 60 * 60 * 1000;
   const SELECTABLE_START = '2026-01-01', DATA_START = '2025-01-01';
-  const REFUND_TYPES = ['mid', 'transit', 'only', 'return'];
-  const REFUND_TYPE_LABELS = {all:'全部 退款',mid:'发货前 退款',transit:'未收货 退款',only:'已收货 退款',return:'已收货 退货退款'};
+  const REFUND_TYPES = ['mid', 'transit', 'return'];
+  const REFUND_TYPE_LABELS = {all:'全部 退款',mid:'发货前 退款',transit:'未收货 退款',return:'已收货 退货退款'};
+  function normalizeRefundType(type) {
+    return type === 'only' ? 'return' : type;
+  }
   const SKUS = ['灰色 / M', '灰色 / L', '黑色 / L'];
   // Display taxonomy observed in the Douyin refund-analysis page on 2026-11-03.
   // Names and parent/child mapping are demo parameters, not Dewu production rules.
@@ -113,16 +116,16 @@
           const paid={subOrderId,product:p.id,sku,skuId:p.skus[j%3].id,payDate:date,payTime,amount:p.unitCents};payments.push(paid);
           const seed=dayIndex*17+j*11+pi*5;
           if(seed%100>=32)continue;
-          // Split the previous refund-only mock cohort by receipt stage without changing amounts or order IDs.
-          // These deterministic stage tags demonstrate the prototype, not production logistics-field mapping.
-          const type=seed%10<3?'mid':seed%10<8?'return':seed%10===8?'transit':'only';
-          const lag=type==='mid'?(seed%3):2+seed%11;
+          // Preserve the original mock amount, reason and timing before grouping by the new stages.
+          const legacyType=seed%10<3?'mid':seed%10<8?'return':seed%10===8?'transit':'only';
+          const lag=legacyType==='mid'?(seed%3):2+seed%11;
           let refundDate=dayOffset(date,lag),refundHour=8+seed%15;
           let refundTime=`${refundDate} ${String(refundHour).padStart(2,'0')}:${String((minute+7)%60).padStart(2,'0')}:00`;
           if(lag===0){refundTime=new Date(Date.parse(payTime.replace(' ','T')+'Z')+67*60000).toISOString().slice(0,19).replace('T',' ');refundDate=refundTime.slice(0,10);refundHour=Number(refundTime.slice(11,13));}
           if(refundTime>cutoff)continue;
-          const pool=MOCK_REASON_POOLS[type],reason=pool[(dayIndex*13+j*7+pi*11)%pool.length],reasonGroup=reasonParents.get(reason).id;
-          const amount=type==='only'||type==='transit'?Math.round(p.unitCents*(.25+(seed%5)*.1)):p.unitCents;
+          const pool=MOCK_REASON_POOLS[legacyType],reason=pool[(dayIndex*13+j*7+pi*11)%pool.length],reasonGroup=reasonParents.get(reason).id;
+          const amount=legacyType==='only'||legacyType==='transit'?Math.round(p.unitCents*(.25+(seed%5)*.1)):p.unitCents;
+          const type=normalizeRefundType(legacyType);
           const base={...paid,type,reason,reasonGroup,status:'success',refundDate,refundHour,refundTime};
           if(seed%19===0) { const first=Math.floor(amount*.4);refunds.push({...base,refundId:'RF'+serial+'A',afterSale:'RE'+serial+'A',amount:first});refunds.push({...base,refundId:'RF'+serial+'B',afterSale:'RE'+serial+'B',amount:amount-first}); }
           else refunds.push({...base,refundId:'RF'+serial,afterSale:'RE'+serial,amount});
@@ -147,7 +150,11 @@
   function uniqueRecords(rows, cutoff=CUTOFF) { const end=timestamp(cutoff);return [...new Map(rows.filter(r=>r.status==='success'&&(!r.refundTime||timestamp(r.refundTime)<=end)).map(r=>[r.refundId,r])).values()]; }
   function total(rows,cutoff=CUTOFF) { return uniqueRecords(rows,cutoff).reduce((s,r)=>s+r.amount,0); }
   function count(rows,cutoff=CUTOFF) { return new Set(uniqueRecords(rows,cutoff).map(r=>r.subOrderId)).size; }
-  function typeRows(rows,type) { return type==='all'?rows:rows.filter(r=>r.type===type); }
+  function typeRows(rows,type) {
+    if (type === 'all') return rows;
+    const stage = normalizeRefundType(type);
+    return rows.filter(row => normalizeRefundType(row.type) === stage);
+  }
   function matches(row,state,items=catalog) {
     const p=items.find(p=>p.id===row.product);if(!p)return false;
     return (!state.brand||state.brand==='全部品牌'||p.name.startsWith(state.brand))&&(!state.category||state.category==='全部类目'||p.category===state.category)&&(!state.channel||state.channel==='全部出价渠道'||p.channel===state.channel)&&(!state.search||(p.name+p.code+p.spu).toLowerCase().includes(state.search.toLowerCase()))&&(!state.product||row.product===state.product)&&(!state.sku||row.sku===state.sku);
@@ -246,5 +253,5 @@
     }
     return {...period,labels,current,previous,currentDates,previousDates,currentReasons,previousReasons,currentLabel:period.realtime?'今日截至当前':'本期',previousLabel:period.realtime?'昨日全天':period.partial?'上期同进度':'上周期'};
   }
-  return {get DAY(){return DAY},get CUTOFF(){return CUTOFF},SELECTABLE_START,DATA_START,REFUND_TYPES,REFUND_TYPE_LABELS,SKUS,REASON_GROUPS,catalog,dayOffset,dayCount,dateList,monthBounds,weekBounds,isoWeek,defaults,getPeriod,validateSelection,createData,refreshData,uniqueRecords,total,count,typeRows,matches,query,summarize,summarizeReasons,summarizeReasonHierarchy,summarizeProducts,change,buildTrend};
+  return {get DAY(){return DAY},get CUTOFF(){return CUTOFF},SELECTABLE_START,DATA_START,REFUND_TYPES,REFUND_TYPE_LABELS,SKUS,REASON_GROUPS,catalog,dayOffset,dayCount,dateList,monthBounds,weekBounds,isoWeek,defaults,getPeriod,validateSelection,createData,refreshData,uniqueRecords,total,count,normalizeRefundType,typeRows,matches,query,summarize,summarizeReasons,summarizeReasonHierarchy,summarizeProducts,change,buildTrend};
 });

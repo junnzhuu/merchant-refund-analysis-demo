@@ -18,7 +18,7 @@ function refund(refundId, subOrderId, reason, amount, type = 'return') {
 }
 const first = refund('A1', 'A', '收到不合适', 2000);
 const data = {payments, refunds: [first, {...first}, refund('A2', 'A', '选错SKU', 3000),
-  refund('B1', 'B', '商品质量待优化', 4000, 'only')],
+  refund('B1', 'B', '商品质量待优化', 4000, 'transit')],
   cutoff: M.CUTOFF, coverage: {start: M.DATA_START, end: M.DAY}};
 const state = {basis: 'pay', period: 'custom', customStart: '2026-10-01', customEnd: '2026-10-01'};
 const query = M.query(data, state);
@@ -44,7 +44,7 @@ test('both levels retain the complete paid denominator, including unrefunded ord
 });
 
 test('refund-type filtering changes the numerator without changing the paid denominator', () => {
-  const groups = M.summarizeReasonHierarchy({...query, refunds: M.typeRows(query.refunds, 'only')});
+  const groups = M.summarizeReasonHierarchy({...query, refunds: M.typeRows(query.refunds, 'transit')});
   assert.equal(groups.length, 1);
   assert.equal(groups[0].reason, '商品问题');
   assert.equal(groups[0].amount, 4000);
