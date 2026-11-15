@@ -317,29 +317,6 @@ body[data-demo-page="analysis"][data-refund-view="review"] .chart-head {
   margin-top: 20px;
   gap: 16px;
 }
-body[data-demo-page="analysis"][data-refund-view="review"] #metric {
-  height: 40px;
-  border: 0;
-  border-radius: 0;
-  background: #f8f8fa;
-}
-body[data-demo-page="analysis"][data-refund-view="review"] #metric button {
-  height: 40px;
-  min-height: 40px;
-  padding: 0 24px;
-  border: 1px solid transparent;
-  border-radius: 0;
-  color: #7f7f8e;
-  background: #f8f8fa;
-  font: 500 14px/20px "PingFang SC", "Microsoft YaHei", sans-serif;
-  letter-spacing: .5px;
-}
-body[data-demo-page="analysis"][data-refund-view="review"] #metric button.on {
-  color: #2b2c3c;
-  background: #fff;
-  border-color: #f1f1f5;
-  font-weight: 600;
-}
 body[data-demo-page="analysis"][data-refund-view="review"] .trend {
   height: 264px;
   margin-top: 16px;
@@ -696,8 +673,6 @@ body[data-demo-page="analysis"][data-refund-view="review"] #productReasonsToolti
     flex-wrap: wrap;
     align-items: flex-start;
   }
-  body[data-demo-page="analysis"][data-refund-view="review"] #metric { max-width: 100%; overflow-x: auto; }
-  body[data-demo-page="analysis"][data-refund-view="review"] #metric button { flex: none; }
   body[data-demo-page="analysis"][data-refund-view="review"] .product-controls { max-width: 100%; }
   body[data-demo-page="analysis"][data-refund-view="review"] .products .table-footer,
   body[data-demo-page="analysis"][data-refund-view="review"] .reason-table-footer { overflow-x: auto; }

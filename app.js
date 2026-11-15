@@ -60,8 +60,6 @@ function render(){
  $('#refundAiSummary .refund-ai-summary-label').textContent=isReviewView()?'近7日退款分析':'AI 近7日退款分析：';
  const period=M.getPeriod(state),cur=queryFor(period.current.start,period.current.end),prev=queryFor(period.previous.start,period.previous.end),rows=cur.refunds,allAmount=total(rows);
  $('#metrics').innerHTML=CARD_TYPES.map((type,i)=>(i?`<span class="metric-operator" aria-hidden="true">${i===1?'＝':'＋'}</span>`:'')+metricCard(cur,prev,type,allAmount,period.realtime)).join('');
- $('#rateMetric').hidden=$('#amountRateMetric').hidden=state.basis!=='pay';
- $$('#metric button').forEach(b=>b.classList.toggle('on',b.dataset.metric===state.metric));
  $$('.filter-field select').forEach(select=>{const active=select.selectedIndex>0;select.parentElement.classList.toggle('has-value',active);select.parentElement.querySelector('.filter-clear').hidden=!active});
  $('#downloadDetails').disabled=exporting;$('#downloadDetails').title='下载当前筛选条件下的核心数据、全部退款商品及退款原因（XLSX）';
  renderTrend(cur,prev);renderReasons(cur);renderProducts(cur);
@@ -200,7 +198,6 @@ $('#metrics').addEventListener('click', event => {
 $('#basis').onchange=e=>{state.basis=e.target.value;if(state.basis==='refund'&&isRateMetric(state.metric))state.metric='amount';render()};
 $('#reasonType').onchange=e=>{state.reasonType=e.target.value;hideMetricTooltip();renderReasons(queryFor(...range()));bindMetricTooltips()};
 $('#productType').onchange=e=>{state.productType=e.target.value;state.productPage=1;hideMetricTooltip();renderProducts(queryFor(...range()));bindMetricTooltips()};
-$$('#metric button').forEach(b=>b.onclick=()=>{state.metric=b.dataset.metric;render()});
 for(const [id,key] of [['brandSelect','brand'],['categorySelect','category'],['channelSelect','channel']]){
  const select=$('#'+id),clear=select.parentElement.querySelector('.filter-clear');
  const apply=()=>{state[key]=select.value;state.productPage=1;render()};
