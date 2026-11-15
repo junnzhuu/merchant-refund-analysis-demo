@@ -97,7 +97,6 @@ function renderTrend(current,previous){
  labels.forEach((_,i)=>{const left=labels.length===1?L:i?((x(i-1)+x(i))/2):L,right=labels.length===1?W-R:i===labels.length-1?W-R:((x(i)+x(i+1))/2);svg+=`<rect class="trend-hit" data-trend-index="${i}" x="${left}" y="${T}" width="${Math.max(1,right-left)}" height="${H-T-B}" fill="transparent"><title>${escapeHTML(`${metricName()}\n${series.currentLabel} ${series.currentDates[i]||'无对应日期'}：${trendValue(cur[i],series.currentReasons[i])}`)}</title></rect>`});
  $('#trend').innerHTML=svg+'</svg><div class="trend-tooltip" id="trendTooltip" hidden></div>';
  $('#trendHeading').textContent=review?`数据趋势 · ${typeName(state.type)} / ${metricName()}`:'数据趋势';
- const legend=$('#trendLegend');legend.hidden=!review;legend.innerHTML=review?`<i aria-hidden="true"></i><span>${escapeHTML(typeName(state.type))} · ${metricName()}</span>`:'';
  $$('[data-trend-index]').forEach(hit=>{
   hit.onpointermove=e=>{
    const i=Number(hit.dataset.trendIndex),tip=$('#trendTooltip'),rect=$('#trend').getBoundingClientRect();

@@ -45,7 +45,7 @@ function render(series, metric = 'amount', review = false, cutoff = '2026-11-02 
       tip = { innerHTML: '', hidden: true, style: {} };
     }
   };
-  const heading = {textContent:''}, legend = {hidden:true,innerHTML:''};
+  const heading = {textContent:''};
   const floating = () => ({attrs:{hidden:''},setAttribute(k,v){this.attrs[k]=String(v)},removeAttribute(k){delete this.attrs[k]},toggleAttribute(k,on){if(on)this.attrs[k]='';else delete this.attrs[k]}});
   const hoverLine=floating(),hoverDot=floating();
   const context = vm.createContext({
@@ -57,7 +57,6 @@ function render(series, metric = 'amount', review = false, cutoff = '2026-11-02 
       if (selector === '#trend') return host;
       if (selector === '#trendTooltip') return tip;
       if (selector === '#trendHeading') return heading;
-      if (selector === '#trendLegend') return legend;
       if (selector === '#trendHoverLine') return hoverLine;
       if (selector === '#trendHoverDot') return hoverDot;
       throw new Error('Unexpected DOM selector: ' + selector);
@@ -71,7 +70,7 @@ function render(series, metric = 'amount', review = false, cutoff = '2026-11-02 
   vm.runInContext('renderTrend({}, {});', context);
   return {
     svg: html.match(/<svg\b[\s\S]*?<\/svg>/)[0],
-    heading,legend,hoverLine,hoverDot,
+    heading,hoverLine,hoverDot,
     hover(index) {
       assert(hits[index], 'Hover target must exist at index ' + index);
       hits[index].onpointermove({ clientX: 150 });
@@ -196,8 +195,6 @@ test('review adds current-period area and context without adding a second data s
   assert.match(view.svg,/class="trend-area"/);
   assert.match(view.hover(1),/¥20\.00/);
   assert.match(view.heading.textContent,/数据趋势.*全部 退款.*退款金额/);
-  assert.equal(view.legend.hidden,false);
-  assert.match(view.legend.innerHTML,/全部 退款/);
   assert.equal(view.hoverLine.attrs.x1,view.hoverLine.attrs.x2);
   assert.equal('hidden' in view.hoverLine.attrs,false);
   assert.equal('hidden' in view.hoverDot.attrs,false);

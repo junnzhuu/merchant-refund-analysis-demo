@@ -363,25 +363,6 @@ body[data-demo-page="analysis"][data-refund-view="review"] .trend-tooltip h4 {
   font-size: 12px;
   font-weight: 500;
 }
-body[data-demo-page="analysis"][data-refund-view="review"] #trendLegend {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  min-height: 16px;
-  margin-top: 8px;
-  color: #4c4c59;
-  font-size: 12px;
-  line-height: 16px;
-}
-body[data-demo-page="analysis"][data-refund-view="review"] #trendLegend i {
-  display: inline-block;
-  flex: none;
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: #01c2c3;
-}
 body[data-demo-page="analysis"][data-refund-view="review"] .product-controls { gap: 16px; }
 body[data-demo-page="analysis"][data-refund-view="review"] .product-search-form { gap: 0; }
 body[data-demo-page="analysis"][data-refund-view="review"] .product-search-input {
