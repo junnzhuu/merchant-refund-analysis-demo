@@ -239,30 +239,20 @@ $('#downloadDetails').onclick=async()=>{
  finally{exporting=false;button.disabled=false;button.removeAttribute('aria-busy')}
 };
 // Tooltip content follows the confirmed PRD; floating surface stays visible above cards.
+const productOnlyMetricCopy={
+ paidAmount:{definition:'统计所选周期内该商品支付成功的金额总和，按支付完成日期统计，包含未退款订单。',example:'选择10月1日，该商品当天支付100单、合计10,000元，用户支付金额为10,000元。'},
+ paid:{definition:'统计所选周期内该商品支付成功的子订单数，按支付完成日期统计，包含未退款订单。',example:'选择10月1日，该商品当天支付100单，其中90单未退款，支付订单数仍为100单。'},
+ reasons:{definition:'按各原因退款金额占该商品退款金额的比例降序展示。原因（占比）中的占比＝该原因退款金额÷该商品退款金额；悬浮可查看全部原因，规格行以该规格退款金额为分母。',example:'选择10月5日，该商品退款1,000元，其中“收到不合适”退款400元，展示为“收到不合适（40.00%）”。'}
+};
 const metricTooltip=document.createElement('div');metricTooltip.id='metricTooltip';metricTooltip.className='metric-tooltip';metricTooltip.role='tooltip';metricTooltip.hidden=true;document.body.appendChild(metricTooltip);
 let tooltipAnchor=null,tooltipTimer;
 function hideMetricTooltip(){clearTimeout(tooltipTimer);if(typeof metricTooltip!=='undefined'){metricTooltip.hidden=true;tooltipAnchor=null}}
 function showMetricTooltip(anchor){
  hideProductReasonTooltip();clearTimeout(tooltipTimer);tooltipAnchor=anchor;const[type,metric]=anchor.dataset.definition.split('|');
- const reasonCopy={
-  amountRate:{definition:'该原因退款金额（支付日）÷所选周期内全部成交金额。退款金额统计这批订单在各自支付后30天内因该原因成功退款的金额。',example:'10月1日成交金额为10,000元，这批订单在各自支付后30天内因“收到不合适”成功退款500元，该原因的金额退款率为5%。'},
-  rate:{definition:'该原因退款订单数（支付日）÷所选周期内全部成交订单数。退款订单数统计这批订单在各自支付后30天内因该原因成功退款的子订单数。',example:'10月1日成交100单，这批订单在各自支付后30天内有5单因“收到不合适”成功退款，该原因的订单退款率为5%。'},
-  amount:state.basis==='pay'?{definition:'统计所选周期内支付成功的订单，在各自支付后30天内因该原因成功退款的金额总和。',example:'选择10月1日，某笔订单当天支付、10月5日因“收到不合适”成功退款200元，这200元计入该原因在10月1日支付口径下的退款金额。'}:{definition:'统计所选周期内因该原因成功退款的金额总和，按退款完成日期统计。',example:'选择10月5日，某笔订单在10月1日支付、10月5日因“收到不合适”成功退款200元，这200元计入该原因在10月5日退款口径下的退款金额。'},
-  count:state.basis==='pay'?{definition:'统计所选周期内支付成功的订单中，在各自支付后30天内因该原因成功退款的订单数，按子订单号去重。',example:'选择10月1日，某笔当天支付的子订单在10月5日因“收到不合适”分两笔成功退款，在该原因下仍计1单。'}:{definition:'统计所选周期内因该原因成功退款的订单数，按退款完成日期统计，按子订单号去重。',example:'选择10月5日，某笔子订单当天因“收到不合适”分两笔成功退款，在该原因下仍计1单。'}
- };
- const productCopy={
-  amountRate:{definition:'该商品退款金额（支付日）÷该商品用户支付金额。退款统计所选周期内支付的订单，在各自支付后30天内成功退款的结果。',example:'10月1日该商品用户支付金额为10,000元，这批订单在各自支付后30天内成功退款1,000元，金额退款率为10%。'},
-  rate:{definition:'该商品退款订单数（支付日）÷该商品支付订单数，按子订单号去重。退款统计这批订单在各自支付后30天内成功退款的结果。',example:'10月1日该商品支付100单，这批订单在各自支付后30天内有10单成功退款，订单退款率为10%。'},
-  amount:state.basis==='pay'?{definition:'统计所选周期内支付的该商品订单，在各自支付后30天内成功退款的金额总和。',example:'选择10月1日，该商品某笔订单当天支付、10月5日成功退款200元，这200元计入10月1日支付口径的退款金额。'}:{definition:'统计所选周期内该商品成功退款的金额总和，按退款完成日期统计。',example:'选择10月5日，该商品某笔订单10月1日支付、10月5日成功退款200元，这200元计入10月5日退款口径的退款金额。'},
-  paidAmount:{definition:'统计所选周期内该商品支付成功的金额总和，按支付完成日期统计，包含未退款订单。',example:'选择10月1日，该商品当天支付100单、合计10,000元，用户支付金额为10,000元。'},
-  count:state.basis==='pay'?{definition:'统计所选周期内支付的该商品订单中，在各自支付后30天内成功退款的子订单数，按子订单号去重。',example:'选择10月1日，该商品某笔当天支付的子订单在10月5日分两笔成功退款，退款订单数仍计1单。'}:{definition:'统计所选周期内该商品成功退款的子订单数，按退款完成日期统计，按子订单号去重。',example:'选择10月5日，该商品某笔子订单当天分两笔成功退款，退款订单数仍计1单。'},
-  paid:{definition:'统计所选周期内该商品支付成功的子订单数，按支付完成日期统计，包含未退款订单。',example:'选择10月1日，该商品当天支付100单，其中90单未退款，支付订单数仍为100单。'},
-  reasons:{definition:'按各原因退款金额占该商品退款金额的比例降序展示。原因（占比）中的占比＝该原因退款金额÷该商品退款金额；悬浮可查看全部原因，规格行以该规格退款金额为分母。',example:'选择10月5日，该商品退款1,000元，其中“收到不合适”退款400元，展示为“收到不合适（40.00%）”。'}
- };
  if(metric==='type'){
   metricTooltip.innerHTML=`<p>${escapeHTML(refundTypeDefinitions[type])}</p>`;
- }else if(type==='product'||type==='reason'){
-  const copy=type==='product'?productCopy[metric]:reasonCopy[metric];
+ }else if(type==='product'&&productOnlyMetricCopy[metric]){
+  const copy=productOnlyMetricCopy[metric];
   metricTooltip.innerHTML=`<p><b>指标释义：</b>${escapeHTML(copy.definition)}</p><p><b>举例：</b>${escapeHTML(copy.example)}</p>`;
  }else{
   metricTooltip.innerHTML=RefundMetricDefinitions[metric].map(paragraph=>`<p>${escapeHTML(paragraph)}</p>`).join('');
