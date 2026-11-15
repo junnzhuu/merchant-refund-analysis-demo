@@ -75,16 +75,21 @@ test('XLSX includes four core rows and carries the merged stage into trend and i
     assert.equal(core.rows[0].count,core.rows.slice(1).reduce((sum,row)=>sum+row.count,0));
   }
 });
-test('every stage has payment and refund explanations with a daily example',()=>{
+test('core tooltips explain both time bases and keep one shared definition for each refund rate',()=>{
   const context={window:{}};vm.runInNewContext(fs.readFileSync(path.join(__dirname,'../metric-definitions.js'),'utf8'),context);
   const definitions=context.window.RefundMetricDefinitions;
-  assert.deepEqual(Object.keys(definitions),types);
-  for(const type of types)for(const basis of ['pay','refund'])for(const metric of basis==='pay'?['amount','count','rate','amountRate']:['amount','count']){
-    assert(definitions[type][basis][metric].definition.length>0);assert(definitions[type][basis][metric].example.includes('10月'));
-    assert(!/发货后仅退款|发货后退货退款/.test(definitions[type][basis][metric].definition));
+  assert.deepEqual(Object.keys(definitions).sort(),['amount','amountRate','count','rate']);
+  for(const metric of ['amount','count']){
+    const paragraphs=definitions[metric];
+    assert.equal(paragraphs.length,2);
+    assert.match(paragraphs[0],/^支付时间口径：.*支付后30天/);
+    assert.match(paragraphs[1],/^退款时间口径：/);
   }
-  const received=definitions.return.pay;
-  assert.match(received.amountRate.example,/800元.*8%/);
-  assert.match(received.rate.example,/3单.*3%/);
+  for(const metric of ['rate','amountRate']){
+    assert.equal(definitions[metric].length,1);
+    assert.match(definitions[metric][0],/分母包含未退款订单.*只限制分子，分母不变/);
+  }
+  assert.match(definitions.amountRate[0],/全部支付成功订单的用户支付金额/);
+  assert.match(definitions.rate[0],/全部支付成功子订单数/);
 });
 console.log(`\n${passed}/${passed} lifecycle checks passed`);

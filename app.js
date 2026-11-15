@@ -256,8 +256,14 @@ function showMetricTooltip(anchor){
   paid:{definition:'统计所选周期内该商品支付成功的子订单数，按支付完成日期统计，包含未退款订单。',example:'选择10月1日，该商品当天支付100单，其中90单未退款，支付订单数仍为100单。'},
   reasons:{definition:'按各原因退款金额占该商品退款金额的比例降序展示。原因（占比）中的占比＝该原因退款金额÷该商品退款金额；悬浮可查看全部原因，规格行以该规格退款金额为分母。',example:'选择10月5日，该商品退款1,000元，其中“收到不合适”退款400元，展示为“收到不合适（40.00%）”。'}
  };
- const copy=metric==='type'?{definition:refundTypeDefinitions[type]}:type==='product'?productCopy[metric]:type==='reason'?reasonCopy[metric]:RefundMetricDefinitions[type][state.basis][metric];
- metricTooltip.innerHTML=metric==='type'?`<p>${escapeHTML(copy.definition)}</p>`:`<p><b>指标释义：</b>${escapeHTML(copy.definition)}</p><p><b>举例：</b>${escapeHTML(copy.example)}</p>`;
+ if(metric==='type'){
+  metricTooltip.innerHTML=`<p>${escapeHTML(refundTypeDefinitions[type])}</p>`;
+ }else if(type==='product'||type==='reason'){
+  const copy=type==='product'?productCopy[metric]:reasonCopy[metric];
+  metricTooltip.innerHTML=`<p><b>指标释义：</b>${escapeHTML(copy.definition)}</p><p><b>举例：</b>${escapeHTML(copy.example)}</p>`;
+ }else{
+  metricTooltip.innerHTML=RefundMetricDefinitions[metric].map(paragraph=>`<p>${escapeHTML(paragraph)}</p>`).join('');
+ }
  metricTooltip.hidden=false;
  const r=anchor.getBoundingClientRect(),t=metricTooltip.getBoundingClientRect(),center=r.left+r.width/2;
  const left=Math.min(Math.max(12,center-t.width/2),innerWidth-t.width-12),above=r.top-t.height-10;
