@@ -163,16 +163,17 @@ test('the four metric modes retain correct chart and hover units', () => {
   }
 });
 
-test('realtime retains hourly dates and cutoff marker while future hours stay empty', () => {
+test('realtime tooltips show only the hour and future hours stay empty', () => {
   const hours = Array.from({ length: 24 }, (_, i) => String(i).padStart(2, '0') + ':00');
   const current = hours.map((_, i) => i <= 14 ? i + 1 : null);
-  const view = render(fixture(current, {
+  const realtime = fixture(current, {
     realtime: true,
     currentLabel: '今日截至当前',
     labels: hours,
     currentDates: hours.map(hour => '2026-11-02 ' + hour),
     currentReasons: hours.map((_, i) => i > 14 ? '尚未到达该时段' : '')
-  }), 'count');
+  });
+  const view = render(realtime, 'count');
   noPrevious(view, 14);
   assert.match(view.svg, />00:00<\/text>/);
   assert.match(view.svg, />23:00<\/text>/);
@@ -181,10 +182,14 @@ test('realtime retains hourly dates and cutoff marker while future hours stay em
   assert(cutoff, 'A vertical cutoff marker must remain');
   const lastDrawnX = Math.max(...[...attribute(tags(view.svg, 'path')[0], 'd').matchAll(/[ML]([\d.]+),/g)].map(match => Number(match[1])));
   assert(lastDrawnX <= Number(attribute(cutoff, 'x1')) + 0.1, 'Future hours must not extend the line past the cutoff');
-  assert.match(view.hover(14), /2026-11-02 14:00/);
-  assert.match(view.hover(14), /15单/);
-  assert.match(view.hover(15), /2026-11-02 15:00/);
-  assert.match(view.hover(15), /尚未到达该时段/);
+  for (const version of [view, render(realtime, 'count', true)]) {
+    assert.doesNotMatch(version.svg, /2026-11-02/);
+    assert.match(version.svg, /<title>退款订单数\n14:00：15单<\/title>/);
+    assert.match(version.hover(14), /14:00.*15单/);
+    assert.match(version.hover(15), /15:00.*尚未到达该时段/);
+    assert.doesNotMatch(version.hover(14), /2026-11-02|今日截至当前/);
+    assert.doesNotMatch(version.hover(15), /2026-11-02|今日截至当前/);
+  }
   assert.equal(tags(view.svg, 'circle').length, 0);
 });
 

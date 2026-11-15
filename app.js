@@ -69,6 +69,7 @@ function render(){
 function trendValue(value,reason){return value===null?(reason||'—'):state.metric==='amount'?money(value*100)+'元':isRateMetric(state.metric)?percentage(value):value.toLocaleString()+'单'}
 function renderTrend(current,previous){
  const series=M.buildTrend(data,state,{current,previous}),{labels,current:cur}=series,review=isReviewView();
+ const pointTimeLabel=i=>series.realtime?labels[i]:(series.currentDates[i]||'无对应日期');
  const values=cur.filter(v=>v!==null),max=Math.max(...values,isRateMetric(state.metric)?.01:1);
  const amountStep=review&&max>=4000?1000:100;
  const step=state.metric==='amount'?Math.max(amountStep,Math.ceil(max/4/amountStep)*amountStep):isRateMetric(state.metric)?Math.max(.01,Math.ceil(max/4/.01)*.01):Math.max(1,Math.ceil(max/4));
@@ -92,14 +93,20 @@ function renderTrend(current,previous){
   svg += `<line class="trend-cutoff" x1="${px}" x2="${px}" y1="${T}" y2="${H-B}" stroke="var(--dw-color-chart-reference)" stroke-dasharray="3 4"/><text x="${px + (right ? -8 : 8)}" ${right ? 'text-anchor="end"' : ''} y="17" font-size="12" fill="var(--dw-color-chart-label)">更新至 ${hourText}:00</text>`;
  }
  if(review)svg+=`<line id="trendHoverLine" x1="0" x2="0" y1="${T}" y2="${H-B}" stroke="#c8cad5" hidden aria-hidden="true"/><circle id="trendHoverDot" cx="0" cy="0" r="3.5" fill="var(--dw-color-chart-1)" stroke="white" stroke-width="1.5" hidden aria-hidden="true"/>`;
- labels.forEach((_,i)=>{const left=labels.length===1?L:i?((x(i-1)+x(i))/2):L,right=labels.length===1?W-R:i===labels.length-1?W-R:((x(i)+x(i+1))/2);svg+=`<rect class="trend-hit" data-trend-index="${i}" x="${left}" y="${T}" width="${Math.max(1,right-left)}" height="${H-T-B}" fill="transparent"><title>${escapeHTML(`${metricName()}\n${series.currentLabel} ${series.currentDates[i]||'无对应日期'}：${trendValue(cur[i],series.currentReasons[i])}`)}</title></rect>`});
+ labels.forEach((_,i)=>{
+  const left=labels.length===1?L:i?((x(i-1)+x(i))/2):L,right=labels.length===1?W-R:i===labels.length-1?W-R:((x(i)+x(i+1))/2);
+  const time=series.realtime?pointTimeLabel(i):series.currentLabel+' '+pointTimeLabel(i);
+  const title=escapeHTML(`${metricName()}\n${time}：${trendValue(cur[i],series.currentReasons[i])}`);
+  svg+=`<rect class="trend-hit" data-trend-index="${i}" x="${left}" y="${T}" width="${Math.max(1,right-left)}" height="${H-T-B}" fill="transparent"><title>${title}</title></rect>`;
+ });
  $('#trend').innerHTML=svg+'</svg><div class="trend-tooltip" id="trendTooltip" hidden></div>';
  $('#trendHeading').textContent=review?`数据趋势 · ${typeName(state.type)} / ${metricName()}`:'数据趋势';
  $$('[data-trend-index]').forEach(hit=>{
   hit.onpointermove=e=>{
    const i=Number(hit.dataset.trendIndex),tip=$('#trendTooltip'),rect=$('#trend').getBoundingClientRect();
    const shown=review&&state.metric==='amount'&&cur[i]!==null?'¥'+money(cur[i]*100):trendValue(cur[i],series.currentReasons[i]);
-   tip.innerHTML=review?`<b>${series.currentDates[i]||'无对应日期'}</b><div><i></i>${metricName()}<strong>${shown}</strong></div>`:`<b>${metricName()}</b><div><i></i>${series.currentLabel} · ${series.currentDates[i]||'无对应日期'}<strong>${shown}</strong></div>`;
+   const time=escapeHTML(pointTimeLabel(i)),periodPrefix=series.realtime?'':series.currentLabel+' · ';
+   tip.innerHTML=review?`<b>${time}</b><div><i></i>${metricName()}<strong>${shown}</strong></div>`:`<b>${metricName()}</b><div><i></i>${periodPrefix}${time}<strong>${shown}</strong></div>`;
    tip.hidden=false;tip.style.left=Math.min(Math.max(0,e.clientX-rect.left+15),Math.max(0,rect.width-(review?236:340)))+'px';tip.style.top=review?Math.min(Math.max(20,cur[i]===null?20:y(cur[i])+16),H-80)+'px':'15px';
    if(review){const line=$('#trendHoverLine'),dot=$('#trendHoverDot');line.setAttribute('x1',x(i));line.setAttribute('x2',x(i));line.removeAttribute('hidden');dot.setAttribute('cx',x(i));dot.setAttribute('cy',cur[i]===null?y(0):y(cur[i]));dot.toggleAttribute('hidden',cur[i]===null)}
   };
