@@ -189,7 +189,17 @@ function renderProducts(result){
   const jump=pagination.querySelector('input'),go=()=>{const value=Number(jump.value);if(Number.isFinite(value)){state.productPage=Math.min(Math.max(1,Math.trunc(value)),pageCount);renderProducts(queryFor(...range()));bindMetricTooltips()}};
   jump.onchange=go;jump.onkeydown=e=>{if(e.key==='Enter'){e.preventDefault();go()}};
  }
- $$('[data-product-sort]').forEach(button=>button.onclick=()=>{const key=button.dataset.productSort;state.productDirection=state.sort===key&&state.productDirection==='desc'?'asc':'desc';state.sort=key;state.productPage=1;hideMetricTooltip();renderProducts(queryFor(...range()));bindMetricTooltips();$(`[data-product-sort="${key}"]`).focus({preventScroll:true})});
+ $$('[data-product-sort]').forEach(button=>button.onclick=()=>{
+  const key=button.dataset.productSort;
+  state.productDirection=state.sort===key&&state.productDirection==='desc'?'asc':'desc';
+  state.sort=key;
+  state.productPage=1;
+  state.expanded.clear();
+  hideMetricTooltip();
+  renderProducts(queryFor(...range()));
+  bindMetricTooltips();
+  $(`[data-product-sort="${key}"]`).focus({preventScroll:true});
+ });
  $$('[data-expand]').forEach(button=>button.onclick=()=>{const key=button.dataset.expand;state.expanded.has(key)?state.expanded.delete(key):state.expanded.add(key);renderProducts(queryFor(...range()));bindMetricTooltips();$(`[data-expand="${key}"]`).focus({preventScroll:true})});
  $$('[data-product-page]').forEach(button=>button.onclick=()=>{state.productPage=Number(button.dataset.productPage);renderProducts(queryFor(...range()));bindMetricTooltips();$(`[data-product-page="${state.productPage}"].current`)?.focus({preventScroll:true})});
  bindProductReasonTips();
