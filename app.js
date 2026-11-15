@@ -30,10 +30,11 @@ const isRateMetric=metric=>metric==='rate'||metric==='amountRate';
 const metricLabel=metric=>({amount:'退款金额',count:'退款订单数',rate:'订单退款率',amountRate:'金额退款率'}[metric]);
 const infoIcon='<svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="6.1"/><path d="M6.3 5.9a1.75 1.75 0 0 1 3.4.6c0 1.2-1.7 1.5-1.7 2.7M8 11.4h.01"/></svg>';
 const refundTypeDefinitions={
- mid:'按所选时间口径和范围，统计支付成功后、生成发往买家的正向物流单前发起售后申请或触发平台取消，并最终退款成功的数据。',
- transit:'按所选时间口径和范围，统计已生成发往买家的正向物流单、买家尚未签收时发起售后申请或触发平台取消，并最终退款成功的数据，包含拦截、拒收等场景。',
- return:'买家签收后发生并最终成功的退款，包含部分退款。履约阶段以售后申请发起或平台取消触发时的状态为准。'
+ mid:'售后发生时订单已支付，尚未向买家发货，且最终退款成功。发货前申请但在发货后退款成功的订单仍归入此类。发货取商品正向发往买家的发货时间。',
+ transit:'售后发生时已向买家发货、买家尚未签收，且最终退款成功，包含在途拦截、拒收后成功退款。',
+ return:'售后发生时买家已签收，且最终退款成功，包含部分退款。'
 };
+$('#refundTypeHelp').innerHTML=M.REFUND_TYPES.map(type=>`<p><strong>${escapeHTML(typeName(type))}：</strong>${escapeHTML(refundTypeDefinitions[type])}</p>`).join('');
 function definitionButton(type,metric,label){return `<span class="metric-definition-label">${label}<button type="button" class="metric-definition" data-definition="${type}|${metric}" aria-label="${label}指标释义" aria-describedby="metricTooltip">${infoIcon}</button></span>`}
 function metricCard(current,previous,type,allAmount,realtime) {
  const c=M.summarize(current,type),p=M.summarize(previous,type),share=type==='all'?(allAmount?'100%':'—'):amountShare(c.amount,allAmount);
