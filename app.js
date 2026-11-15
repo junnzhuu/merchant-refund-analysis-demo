@@ -194,7 +194,6 @@ function renderProducts(result){
   state.productDirection=state.sort===key&&state.productDirection==='desc'?'asc':'desc';
   state.sort=key;
   state.productPage=1;
-  state.expanded.clear();
   hideMetricTooltip();
   renderProducts(queryFor(...range()));
   bindMetricTooltips();
