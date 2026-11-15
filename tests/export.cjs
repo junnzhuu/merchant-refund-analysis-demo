@@ -28,13 +28,22 @@ const report=E.buildReport(data,state),[core,products,reasons]=report.sheets;
     assert.equal(result.sheets[0].trend.columns[1].key,'amount');
   });
   await test('product and reason local filters stay independent of core and each other',()=>{
-    const result=E.buildReport(data,{...state,productType:'mid',reasonType:'return',productSearch:'K1057'});
+    const result=E.buildReport(data,{...state,productType:'mid',reasonType:'return',productSearch:'K1057-服饰'});
     assert.deepEqual(result.sheets[0].rows,core.rows);
     assert.equal(result.sheets[1].rows.length,1);assert.equal(result.sheets[1].rows[0].code,'K1057-服饰');
     const cur=M.query(data,state),product=M.summarizeProducts({...cur,refunds:cur.refunds.filter(r=>r.product==='p1'),payments:cur.payments.filter(r=>r.product==='p1')},'mid')[0];
     assert.equal(result.sheets[1].rows[0].paid,product.paid);assert.equal(result.sheets[1].rows[0].amountRate,product.amountRate);
     const expected=M.summarizeReasonHierarchy({...cur,refunds:M.typeRows(cur.refunds,'return')});
     assert.equal(result.sheets[2].rows.filter(r=>!r.detail).reduce((s,r)=>s+Math.round(r.amount*100),0),expected.reduce((s,r)=>s+r.amount,0));
+  });
+  await test('product search and export allow a partial name but require the full code or SPU',()=>{
+    const find=productSearch=>E.buildReport(data,{...state,productSearch}).sheets[1].rows.map(row=>row.spu);
+    for(const search of ['高腰灯芯绒',' k1057-服饰 ','1000398278']){
+      assert.deepEqual(find(search),['1000398278'],search);
+    }
+    for(const search of ['K1057','100039827','女款K1057','100039827801']){
+      assert.deepEqual(find(search),[],search);
+    }
   });
   await test('global category and channel scopes apply to all sheets',()=>{
     const narrowed={...state,category:'牛仔裤',channel:'现货'},result=E.buildReport(data,narrowed),cur=M.query(data,narrowed);

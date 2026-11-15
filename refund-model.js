@@ -157,7 +157,12 @@
   }
   function matches(row,state,items=catalog) {
     const p=items.find(p=>p.id===row.product);if(!p)return false;
-    return (!state.brand||state.brand==='全部品牌'||p.name.startsWith(state.brand))&&(!state.category||state.category==='全部类目'||p.category===state.category)&&(!state.channel||state.channel==='全部出价渠道'||p.channel===state.channel)&&(!state.search||(p.name+p.code+p.spu).toLowerCase().includes(state.search.toLowerCase()))&&(!state.product||row.product===state.product)&&(!state.sku||row.sku===state.sku);
+    const search = state.search?.trim().toLowerCase();
+    const matchesSearch = !search
+      || p.name.toLowerCase().includes(search)
+      || String(p.code ?? '').toLowerCase() === search
+      || String(p.spu ?? '').toLowerCase() === search;
+    return matchesSearch&&(!state.brand||state.brand==='全部品牌'||p.name.startsWith(state.brand))&&(!state.category||state.category==='全部类目'||p.category===state.category)&&(!state.channel||state.channel==='全部出价渠道'||p.channel===state.channel)&&(!state.product||row.product===state.product)&&(!state.sku||row.sku===state.sku);
   }
   function query(data,state,range=getPeriod(state).current) {
     const cutoff=state.cutoff||data.cutoff||CUTOFF,items=data.catalog||catalog;
