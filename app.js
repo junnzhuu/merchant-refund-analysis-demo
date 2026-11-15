@@ -248,13 +248,10 @@ $('#downloadDetails').onclick=async()=>{
  finally{exporting=false;button.disabled=false;button.removeAttribute('aria-busy')}
 };
 // Tooltip content follows the confirmed PRD; floating surface stays visible above cards.
-const productPaymentMetricDefinitions={
+const productMetricDefinitions={
  paidAmount:['所选日期内，商品所有支付成功订单的用户支付金额之和，包含退货退款订单。'],
- paid:['所选日期内，商品所有支付成功的子订单数，按子订单号去重，包含退货退款订单。']
-};
-const productReasonCopy={
- definition:'按各原因退款金额占该商品退款金额的比例降序展示。原因（占比）中的占比＝该原因退款金额÷该商品退款金额；悬浮可查看全部原因，规格行以该规格退款金额为分母。',
- example:'选择10月5日，该商品退款1,000元，其中“收到不合适”退款400元，展示为“收到不合适（40.00%）”。'
+ paid:['所选日期内，商品所有支付成功的子订单数，按子订单号去重，包含退货退款订单。'],
+ reasons:['在当前筛选条件下，退款原因占比＝该原因的退款金额 ÷ 对应商品或规格的退款总金额。']
 };
 const metricTooltip=document.createElement('div');metricTooltip.id='metricTooltip';metricTooltip.className='metric-tooltip';metricTooltip.role='tooltip';metricTooltip.hidden=true;document.body.appendChild(metricTooltip);
 let tooltipAnchor=null,tooltipTimer;
@@ -263,10 +260,8 @@ function showMetricTooltip(anchor){
  hideProductReasonTooltip();clearTimeout(tooltipTimer);tooltipAnchor=anchor;const[type,metric]=anchor.dataset.definition.split('|');
  if(metric==='type'){
   metricTooltip.innerHTML=`<p>${escapeHTML(refundTypeDefinitions[type])}</p>`;
- }else if(type==='product'&&metric==='reasons'){
-  metricTooltip.innerHTML=`<p><b>指标释义：</b>${escapeHTML(productReasonCopy.definition)}</p><p><b>举例：</b>${escapeHTML(productReasonCopy.example)}</p>`;
  }else{
-  const paragraphs=RefundMetricDefinitions[metric]||productPaymentMetricDefinitions[metric];
+  const paragraphs=RefundMetricDefinitions[metric]||productMetricDefinitions[metric];
   metricTooltip.innerHTML=paragraphs.map(paragraph=>`<p>${escapeHTML(paragraph)}</p>`).join('');
  }
  metricTooltip.hidden=false;
