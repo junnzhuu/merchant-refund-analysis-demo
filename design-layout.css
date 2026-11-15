@@ -366,6 +366,10 @@ main {
   scrollbar-color: var(--dw-color-border-strong) transparent;
 }
 
+.products .table-scroll:has(.product-empty) {
+  container-type: inline-size;
+}
+
 .reason-analysis-table,
 .products .top-products-table {
   width: 100%;
@@ -525,8 +529,7 @@ main {
   background: var(--dw-color-table-row-hover);
 }
 
-.reason-analysis-table .reason-empty,
-.products .top-products-table .product-empty {
+.reason-analysis-table .reason-empty {
   height: 144px;
   color: var(--dw-color-text-tertiary);
   text-align: center;
@@ -598,12 +601,27 @@ main {
 }
 
 .products .top-products-table th:first-child,
-.products .top-products-table td:first-child {
+.products .top-products-table td:first-child:not(.product-empty) {
   position: sticky;
   left: 0;
   z-index: 1;
   padding-left: var(--dw-space-16);
   box-shadow: 1px 0 0 var(--dw-color-table-border);
+}
+
+.products .top-products-table td.product-empty {
+  height: 144px;
+  padding: 0;
+  color: var(--dw-color-text-tertiary);
+  text-align: center;
+  vertical-align: middle;
+}
+
+.product-empty > span {
+  display: block;
+  position: sticky;
+  inset-inline-start: 0;
+  inline-size: 100cqi;
 }
 
 .products .top-products-table th:first-child {

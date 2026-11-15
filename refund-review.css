@@ -413,7 +413,7 @@ body[data-demo-page="analysis"][data-refund-view="review"] .reason-sort {
 }
 body[data-demo-page="analysis"][data-refund-view="review"] .product-sort.is-active,
 body[data-demo-page="analysis"][data-refund-view="review"] .reason-sort.is-active { color: #4c4c59; }
-body[data-demo-page="analysis"][data-refund-view="review"] .products .top-products-table td {
+body[data-demo-page="analysis"][data-refund-view="review"] .products .top-products-table td:not(.product-empty) {
   height: 107.5px;
   padding: 12px 16px;
   color: #14151a;
