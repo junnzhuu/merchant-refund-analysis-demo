@@ -239,10 +239,13 @@ $('#downloadDetails').onclick=async()=>{
  finally{exporting=false;button.disabled=false;button.removeAttribute('aria-busy')}
 };
 // Tooltip content follows the confirmed PRD; floating surface stays visible above cards.
-const productOnlyMetricCopy={
- paidAmount:{definition:'统计所选周期内该商品支付成功的金额总和，按支付完成日期统计，包含未退款订单。',example:'选择10月1日，该商品当天支付100单、合计10,000元，用户支付金额为10,000元。'},
- paid:{definition:'统计所选周期内该商品支付成功的子订单数，按支付完成日期统计，包含未退款订单。',example:'选择10月1日，该商品当天支付100单，其中90单未退款，支付订单数仍为100单。'},
- reasons:{definition:'按各原因退款金额占该商品退款金额的比例降序展示。原因（占比）中的占比＝该原因退款金额÷该商品退款金额；悬浮可查看全部原因，规格行以该规格退款金额为分母。',example:'选择10月5日，该商品退款1,000元，其中“收到不合适”退款400元，展示为“收到不合适（40.00%）”。'}
+const productPaymentMetricDefinitions={
+ paidAmount:['所选日期内，商品所有支付成功订单的用户支付金额之和，包含退货退款订单。'],
+ paid:['所选日期内，商品所有支付成功的子订单数，按子订单号去重，包含退货退款订单。']
+};
+const productReasonCopy={
+ definition:'按各原因退款金额占该商品退款金额的比例降序展示。原因（占比）中的占比＝该原因退款金额÷该商品退款金额；悬浮可查看全部原因，规格行以该规格退款金额为分母。',
+ example:'选择10月5日，该商品退款1,000元，其中“收到不合适”退款400元，展示为“收到不合适（40.00%）”。'
 };
 const metricTooltip=document.createElement('div');metricTooltip.id='metricTooltip';metricTooltip.className='metric-tooltip';metricTooltip.role='tooltip';metricTooltip.hidden=true;document.body.appendChild(metricTooltip);
 let tooltipAnchor=null,tooltipTimer;
@@ -251,11 +254,11 @@ function showMetricTooltip(anchor){
  hideProductReasonTooltip();clearTimeout(tooltipTimer);tooltipAnchor=anchor;const[type,metric]=anchor.dataset.definition.split('|');
  if(metric==='type'){
   metricTooltip.innerHTML=`<p>${escapeHTML(refundTypeDefinitions[type])}</p>`;
- }else if(type==='product'&&productOnlyMetricCopy[metric]){
-  const copy=productOnlyMetricCopy[metric];
-  metricTooltip.innerHTML=`<p><b>指标释义：</b>${escapeHTML(copy.definition)}</p><p><b>举例：</b>${escapeHTML(copy.example)}</p>`;
+ }else if(type==='product'&&metric==='reasons'){
+  metricTooltip.innerHTML=`<p><b>指标释义：</b>${escapeHTML(productReasonCopy.definition)}</p><p><b>举例：</b>${escapeHTML(productReasonCopy.example)}</p>`;
  }else{
-  metricTooltip.innerHTML=RefundMetricDefinitions[metric].map(paragraph=>`<p>${escapeHTML(paragraph)}</p>`).join('');
+  const paragraphs=RefundMetricDefinitions[metric]||productPaymentMetricDefinitions[metric];
+  metricTooltip.innerHTML=paragraphs.map(paragraph=>`<p>${escapeHTML(paragraph)}</p>`).join('');
  }
  metricTooltip.hidden=false;
  const r=anchor.getBoundingClientRect(),t=metricTooltip.getBoundingClientRect(),center=r.left+r.width/2;
