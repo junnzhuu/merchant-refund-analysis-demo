@@ -4,38 +4,17 @@
   const PERIODS = [
     ['today', '实时'], ['one', '昨天'], ['seven', '近7天'], ['thirty', '近30天']
   ];
-  const GROUPS = [
-    {
-      name: '交易正向',
-      metrics: [
-        { key: 'paidAmount', name: '支付金额', format: 'money' },
-        { key: 'paid', name: '支付订单数', format: 'count' },
-        { key: 'buyers', name: '支付用户数', format: 'count' }
-      ]
-    },
-    {
-      name: '交易逆向',
-      note: '按支付时间',
-      metrics: [
-        { key: 'amount', name: '退款金额', format: 'money', refund: true },
-        { key: 'count', name: '退款订单数', format: 'count', refund: true },
-        { key: 'rate', name: '订单退款率', format: 'percent', refund: true }
-      ]
-    },
-    {
-      name: '流量与转化',
-      metrics: [
-        { key: 'visitors', name: '商详访问人数', format: 'count' },
-        { key: 'conversion', name: '商详转化率', format: 'percent' }
-      ]
-    },
-    {
-      name: '投放',
-      metrics: [
-        { key: 'spend', name: '投放消耗', format: 'money' },
-        { key: 'spendShare', name: '投放费比', format: 'percent', note: '演示口径：投放消耗 ÷ 同期支付金额' }
-      ]
-    }
+  const METRICS = [
+    { key: 'paidAmount', name: '支付金额', format: 'money' },
+    { key: 'paid', name: '支付订单数', format: 'count' },
+    { key: 'buyers', name: '支付用户数', format: 'count' },
+    { key: 'amount', name: '退款金额', format: 'money', refund: true },
+    { key: 'count', name: '退款订单数', format: 'count', refund: true },
+    { key: 'rate', name: '订单退款率', format: 'percent', refund: true },
+    { key: 'visitors', name: '商详访问人数', format: 'count' },
+    { key: 'conversion', name: '商详转化率', format: 'percent' },
+    { key: 'spend', name: '投放消耗', format: 'money' },
+    { key: 'spendShare', name: '投放费比', format: 'percent', note: '演示口径：投放消耗 ÷ 同期支付金额' }
   ];
   const formats = {
     money: new Intl.NumberFormat('zh-CN', { style: 'currency', currency: 'CNY' }),
@@ -102,14 +81,6 @@
     </${tag}>`;
   }
 
-  function groupMarkup(group) {
-    const note = group.note ? `<span class="home-metric-group-note">${group.note}</span>` : '';
-    return `<section class="home-metric-group" style="--home-metric-count: ${group.metrics.length}">
-      <h3>${group.name}${note}</h3>
-      <div class="home-metric-group-cards">${group.metrics.map(cardMarkup).join('')}</div>
-    </section>`;
-  }
-
   function mount({ root, model, getData, onRefund }) {
     let period = 'today';
     root.classList.add('home-metrics');
@@ -125,13 +96,13 @@
       <a class="home-metrics-more" href="${DATA_CENTER_URL}" target="_blank" rel="noopener">查看更多<span aria-hidden="true">›</span></a>
     </div>
     <div class="home-metrics-scroll" role="region" aria-label="经营数据指标，可横向滚动" tabindex="0">
-      <div class="home-metrics-track">${GROUPS.map(groupMarkup).join('')}</div>
+      <div class="home-metrics-track" style="--home-metric-count: ${METRICS.length}">${METRICS.map(cardMarkup).join('')}</div>
     </div>`;
 
     const cutoffLabel = root.querySelector('[data-home-cutoff]');
     const comparisonLabel = root.querySelector('[data-home-comparison]');
     const periodButtons = [...root.querySelectorAll('[data-home-period]')];
-    const cards = GROUPS.flatMap(group => group.metrics).map(metric => {
+    const cards = METRICS.map(metric => {
       const card = root.querySelector(`[data-home-metric="${metric.key}"]`);
       return {
         metric,

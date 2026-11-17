@@ -2,7 +2,7 @@
   --home-metric-min-width: 116px;
   box-sizing: border-box;
   min-width: 0;
-  min-height: 172px;
+  min-height: 150px;
   padding: 18px 20px 10px;
   border: 1px solid #edebf1;
   border-radius: 4px;
@@ -108,47 +108,9 @@
 }
 
 .home-metrics-track {
-  display: flex;
-  min-width: calc(10 * var(--home-metric-min-width));
-}
-
-.home-metric-group {
-  box-sizing: border-box;
-  flex: var(--home-metric-count) 1 0;
-  min-width: calc(var(--home-metric-count) * var(--home-metric-min-width));
-}
-
-.home-metric-group + .home-metric-group {
-  border-left: 1px solid #e8e9ee;
-}
-
-.home-metric-group h3 {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  margin: 0 0 4px;
-  padding-left: 10px;
-  color: #626675;
-  font-size: 12px;
-  font-weight: 600;
-  line-height: 18px;
-  white-space: nowrap;
-}
-
-.home-metric-group:first-child h3,
-.home-metric-group:first-child .home-metric-card:first-child {
-  padding-left: 0;
-}
-
-.home-metric-group-note {
-  color: #777b89;
-  font-weight: 400;
-}
-
-.home-metric-group-cards {
   display: grid;
   grid-template-columns: repeat(var(--home-metric-count), minmax(0, 1fr));
-  align-items: stretch;
+  min-width: calc(var(--home-metric-count) * var(--home-metric-min-width));
 }
 
 .home-metric-card {
@@ -168,6 +130,10 @@
 
 .home-metric-card + .home-metric-card {
   border-left: 1px solid #f0f0f4;
+}
+
+.home-metric-card:first-child {
+  padding-left: 0;
 }
 
 button.home-metric-card {
