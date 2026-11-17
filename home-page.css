@@ -251,23 +251,6 @@ body[data-demo-page="home"] .service { display: none; }
 .home-notice-title { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 15px; font-weight: 550; }
 .home-notice-list time { color: #8a8e9f; font-size: 12px; font-variant-numeric: tabular-nums; }
 
-.home-environment {
-  position: fixed;
-  z-index: 32;
-  right: 48px;
-  bottom: 13%;
-  display: grid;
-  width: 121px;
-  padding: 5px 0;
-  border-radius: 5px;
-  background: #37bec3;
-  color: white;
-  box-shadow: 0 2px 5px #0003;
-}
-
-.home-environment span { display: flex; align-items: center; gap: 8px; padding: 7px 17px; font-size: 15px; font-weight: 550; white-space: nowrap; }
-.home-environment i { width: 16px; font-style: normal; text-align: center; }
-
 @media (max-width: 1400px) {
   .home-top-grid { grid-template-columns: minmax(0, 3fr) minmax(300px, 1fr); }
   .home-store-panel, .home-notice-panel { padding-left: 18px; padding-right: 18px; }
@@ -283,7 +266,6 @@ body[data-demo-page="home"] .service { display: none; }
   .home-notice-tabs { gap: 10px; }
   .home-notice-tabs button { font-size: 14px; }
   .home-notice-header > button { font-size: 12px; }
-  .home-environment { display: none; }
 }
 @media (max-width: 1060px) {
   body[data-demo-page="home"] .rc-portal-topbar { left: 200px; }

@@ -93,12 +93,6 @@
         </aside>
       </div>
       <div id="homeLower"></div>
-      <aside class="home-environment" aria-label="预发环境工具栏">
-        <span><i aria-hidden="true">♙</i>账号切换</span>
-        <span><i aria-hidden="true">▥</i>性能监控</span>
-        <span><i aria-hidden="true">◎</i>预发环境</span>
-        <span><i aria-hidden="true">⊙</i>埋点跟踪</span>
-      </aside>
     `;
 
     const bannerImage = root.querySelector('.home-banner-image');
