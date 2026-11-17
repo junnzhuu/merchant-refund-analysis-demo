@@ -1,0 +1,229 @@
+.home-metrics {
+  --home-metric-min-width: 116px;
+  box-sizing: border-box;
+  min-width: 0;
+  min-height: 172px;
+  padding: 18px 20px 10px;
+  border: 1px solid #edebf1;
+  border-radius: 4px;
+  background: #fff;
+  color: #18191f;
+}
+
+.home-metrics-heading {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 12px;
+  min-height: 28px;
+}
+
+.home-metrics-heading h2 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 700;
+  line-height: 28px;
+  white-space: nowrap;
+}
+
+.home-metrics-periods {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  padding: 2px;
+  border-radius: 4px;
+  background: #f1f1f5;
+  white-space: nowrap;
+}
+
+.home-metrics-periods button {
+  min-height: 24px;
+  padding: 0 8px;
+  border: 1px solid transparent;
+  border-radius: 3px;
+  background: transparent;
+  color: #5b5e6b;
+  cursor: pointer;
+  font: inherit;
+  font-size: 12px;
+  line-height: 20px;
+}
+
+.home-metrics-periods button:hover {
+  color: #161c2c;
+}
+
+.home-metrics-periods button[aria-pressed="true"] {
+  border-color: #e1e4ed;
+  background: #fff;
+  color: #315b9e;
+  font-weight: 600;
+}
+
+.home-metrics-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #6e7281;
+  font-size: 12px;
+  line-height: 20px;
+  white-space: nowrap;
+}
+
+.home-metrics-comparison {
+  padding-left: 8px;
+  border-left: 1px solid #e5e6ec;
+}
+
+.home-metrics-more {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-left: auto;
+  color: #315b9e;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 24px;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.home-metrics-more:hover {
+  text-decoration: underline;
+}
+
+.home-metrics-more span {
+  font-size: 20px;
+  line-height: 18px;
+}
+
+.home-metrics-scroll {
+  min-width: 0;
+  margin-top: 10px;
+  padding: 2px 0 4px;
+  overflow-x: auto;
+  overscroll-behavior-inline: contain;
+  scrollbar-color: #c6cad5 transparent;
+  scrollbar-width: thin;
+}
+
+.home-metrics-track {
+  display: flex;
+  min-width: calc(10 * var(--home-metric-min-width));
+}
+
+.home-metric-group {
+  box-sizing: border-box;
+  flex: var(--home-metric-count) 1 0;
+  min-width: calc(var(--home-metric-count) * var(--home-metric-min-width));
+}
+
+.home-metric-group + .home-metric-group {
+  border-left: 1px solid #e8e9ee;
+}
+
+.home-metric-group h3 {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0 0 4px;
+  padding-left: 10px;
+  color: #626675;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 18px;
+  white-space: nowrap;
+}
+
+.home-metric-group:first-child h3,
+.home-metric-group:first-child .home-metric-card:first-child {
+  padding-left: 0;
+}
+
+.home-metric-group-note {
+  color: #777b89;
+  font-weight: 400;
+}
+
+.home-metric-group-cards {
+  display: grid;
+  grid-template-columns: repeat(var(--home-metric-count), minmax(0, 1fr));
+  align-items: stretch;
+}
+
+.home-metric-card {
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 76px;
+  padding: 3px 8px 3px 10px;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+}
+
+.home-metric-card + .home-metric-card {
+  border-left: 1px solid #f0f0f4;
+}
+
+button.home-metric-card {
+  cursor: pointer;
+}
+
+button.home-metric-card:hover {
+  background: #f7f9fd;
+}
+
+.home-metrics :is(button, a, .home-metrics-scroll):focus-visible {
+  outline: 2px solid #3e67a8;
+  outline-offset: -2px;
+}
+
+.home-metric-label {
+  color: #272936;
+  font-size: 13px;
+  line-height: 19px;
+  white-space: nowrap;
+}
+
+.home-metric-value {
+  margin-top: 3px;
+  font-size: 22px;
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+  letter-spacing: -0.025em;
+  line-height: 28px;
+  white-space: nowrap;
+}
+
+.home-metric-value.is-compact {
+  font-size: 17px;
+  letter-spacing: -0.015em;
+}
+
+.home-metric-value.is-long { font-size: 15px; }
+
+.home-metric-compare {
+  margin-top: 2px;
+  color: #707482;
+  font-size: 12px;
+  line-height: 18px;
+  white-space: nowrap;
+}
+
+.home-metric-compare b {
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+}
+
+.home-metric-compare [data-direction="up"] { color: #08785e; }
+.home-metric-compare [data-direction="down"] { color: #be3c46; }
+
+@media (max-width: 700px) {
+  .home-metrics { padding-inline: 14px; }
+  .home-metrics-meta { order: 1; flex-basis: 100%; }
+}

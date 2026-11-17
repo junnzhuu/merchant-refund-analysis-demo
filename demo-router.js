@@ -1,11 +1,13 @@
 (function () {
   'use strict';
   const ROUTES = {
+    home: '/main/dataBoard',
     analysis: '/data/refund-analysis',
     'return-center': '/after-sales/return-center',
     assistant: '/after-sales/assistant'
   };
-  const LABELS = { analysis: '退款分析', 'return-center': '退货中心', assistant: '售后小助手' };
+  const LABELS = { home: '首页', analysis: '退款分析', 'return-center': '退货中心', assistant: '售后小助手' };
+  const homePage = document.getElementById('merchantHome');
   const analysisPage = document.getElementById('refundAnalysisPage');
   const salesRoot = document.getElementById('afterSalesRoot');
   const dataSidebar = document.getElementById('dataSidebar');
@@ -18,6 +20,8 @@
   const positions = new Map();
   let currentPage = null;
   let returnPage = null;
+  let homeMetrics;
+  let homeRefreshTimer;
   const ai = window.RefundAiDemo.mount({
     model: window.RefundModel,
     data: bridge.getData(),
@@ -54,9 +58,30 @@
     else location.hash = hash;
   }
 
+  function openHome() {
+    if (!homeMetrics) {
+      homeMetrics = window.HomeMetrics.mount({
+        root: window.HomePage.mount(homePage, { notify: toast }),
+        model: window.RefundModel,
+        getData: bridge.getData,
+        onRefund(period) {
+          returnPage = 'home';
+          bridge.applyScope({basis: 'pay', period, brand: '全部品牌', category: '全部类目', channel: '全部出价渠道'});
+          positions.set('analysis', 0);
+          navigate('analysis');
+        }
+      });
+    }
+    bridge.refreshData();
+    homeMetrics.refresh();
+    const hour = 60 * 60 * 1000;
+    homeRefreshTimer = setTimeout(openHome, hour - Date.now() % hour);
+  }
+
   function showPage(page) {
     if (currentPage === page) return;
     if (currentPage) positions.set(currentPage, window.scrollY);
+    clearTimeout(homeRefreshTimer);
     sales.hide();
     ai.close();
     bridge.suspend();
@@ -64,13 +89,18 @@
     returnTopbar.hidden = false;
     returnFloats.hidden = page === 'analysis';
     const isAnalysis = page === 'analysis';
+    const isHome = page === 'home';
+    const isAfterSales = !isAnalysis && !isHome;
+    homePage.hidden = !isHome;
     analysisPage.hidden = !isAnalysis;
-    salesRoot.hidden = isAnalysis;
+    salesRoot.hidden = !isAfterSales;
     dataSidebar.hidden = !isAnalysis;
-    salesSidebar.hidden = isAnalysis;
+    salesSidebar.hidden = !isAfterSales;
     returnButton.hidden = !isAnalysis || !returnPage;
+    returnButton.textContent = returnPage === 'home' ? '返回首页' : '返回售后';
+    const activeSection = isHome ? 'home' : isAnalysis ? 'data' : 'after-sales';
     primaryNav.forEach(button => {
-      const active = button.dataset.navSection === (isAnalysis ? 'data' : 'after-sales');
+      const active = button.dataset.navSection === activeSection;
       button.classList.toggle('selected', active);
       if (active) button.setAttribute('aria-current', 'true');
       else button.removeAttribute('aria-current');
@@ -81,15 +111,17 @@
       if (active) link.setAttribute('aria-current', 'page');
       else link.removeAttribute('aria-current');
     });
-    if (!isAnalysis) sales.show(page);
+    if (isAfterSales) sales.show(page);
+    if (isHome) openHome();
     currentPage = page;
     document.title = '得物商家后台 · ' + LABELS[page];
     window.scrollTo({ top: positions.get(page) || 0, behavior: 'instant' });
     if (isAnalysis) bridge.resume();
   }
 
+  const pageBySection = { home: 'home', data: 'analysis', 'after-sales': 'return-center' };
   primaryNav.forEach(button => button.addEventListener('click', () => {
-    navigate(button.dataset.navSection === 'data' ? 'analysis' : 'return-center');
+    navigate(pageBySection[button.dataset.navSection]);
   }));
   document.getElementById('refundNav').addEventListener('click', () => navigate('analysis'));
   returnButton.addEventListener('click', () => navigate(returnPage || 'return-center'));

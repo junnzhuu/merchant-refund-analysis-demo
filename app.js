@@ -46,11 +46,13 @@ function metricCard(current,previous,type,allAmount,realtime) {
 }
 function selectTrend(type,metric=state.metric){const active=document.activeElement,focusKey=active?.dataset.cardMetric,focusType=active?.dataset.card;state.type=type;state.metric=metric;render();const selector=focusKey?`[data-card-metric="${focusKey}"]`:focusType?`[data-card="${focusType}"]`:null;if(selector)$(selector)?.focus({preventScroll:true})}
 let datePicker,exporting=false,excelLibraryPromise,liveRefreshTimer;
+function refreshSharedData(time = new Date()) {
+ if (M.refreshData(data, time)) queryCache.clear();
+}
 function refreshToday() {
  clearTimeout(liveRefreshTimer);
  if (state.period !== 'today' || $('#refundAnalysisPage').hidden) return;
- const now = new Date();
- if (M.refreshData(data, now)) queryCache.clear();
+ refreshSharedData();
  const hourMs = 60 * 60 * 1000;
  liveRefreshTimer = setTimeout(render, hourMs - Date.now() % hourMs);
 }
@@ -312,6 +314,7 @@ if (typeof ResizeObserver === 'function') {
 // Keep the existing analytics DOM and state mounted while the shell changes views.
 window.RefundAnalysisDemo = {
  getData:()=>data,
+ refreshData:refreshSharedData,
  applyScope(scope){
   Object.assign(state,scope,{type:'all',metric:'amount',productSearch:'',productType:'all',sort:'amount',productDirection:'desc',productPage:1,reasonType:'all',reasonPage:1,reasonExpanded:new Set(),reasonSort:'amount',reasonDirection:'desc',expanded:new Set()});
   for(const [id,key] of [['basis','basis'],['brandSelect','brand'],['categorySelect','category'],['channelSelect','channel'],['reasonType','reasonType'],['productType','productType']])$('#'+id).value=state[key];
