@@ -217,10 +217,54 @@ button:focus-visible, input:focus-visible, select:focus-visible {
   .rdp-popover[data-quick="true"] .rdp-range { gap: 5px; }
   .rdp-popover[data-quick="true"] .rdp-range-divider { font-size: 14px; }
 }
-#help { border-radius: 4px; box-shadow: var(--dw-shadow-dialog); color: var(--dw-color-text); }
-#help .dialog-head { border-color: var(--dw-color-divider); }
-#help .definition-text { font-size: 14px; line-height: 22px; color: var(--dw-color-text-secondary); }
-#help .definition-text b { color: var(--dw-color-text); }
+#help {
+  width: min(1260px, calc(100% - 32px));
+  max-height: 85vh;
+  padding: 0;
+  overflow: hidden;
+  border: 0;
+  border-radius: 4px;
+  box-shadow: var(--dw-shadow-dialog);
+  color: var(--dw-color-text);
+  background: var(--dw-color-surface);
+}
+#help[open] { display: flex; flex-direction: column; }
+#help .dialog-head {
+  flex: none;
+  margin: 0;
+  padding: 16px 24px;
+  border-bottom: 1px solid var(--dw-color-divider);
+}
+#help .metric-help-body { min-height: 0; padding: 20px 24px 24px; overflow: auto; }
+#help section + section { margin-top: 24px; }
+#help h3 { margin: 0 0 12px; font-size: 16px; line-height: 24px; }
+#help .metric-help-table-scroll { overflow-x: auto; }
+#help table { font-size: 14px; line-height: 22px; }
+#help .metric-help-stage-table { min-width: 940px; }
+#help .metric-help-process-table { min-width: 560px; }
+#help .metric-help-stage-table col:nth-child(1) { width: 12%; }
+#help .metric-help-stage-table col:nth-child(2) { width: 20%; }
+#help .metric-help-stage-table col:nth-child(3),
+#help .metric-help-stage-table col:nth-child(4) { width: 10%; }
+#help .metric-help-process-table col:first-child { width: 19%; }
+#help table th, #help table td {
+  width: auto;
+  height: auto;
+  padding: 12px 14px;
+  vertical-align: top;
+  text-align: left;
+  border: 1px solid var(--dw-color-divider);
+}
+#help table thead th { background: var(--dw-color-table-header); }
+#help table tbody th { background: var(--dw-color-surface); }
+#help table th, #help table strong, #help table b { color: var(--dw-color-text); font-weight: 600; }
+#help table td { color: var(--dw-color-text-secondary); }
+#help table p, #help table ul { margin: 0; }
+#help table p + p, #help table li + li { margin-top: 6px; }
+#help table ul { padding-inline-start: 18px; }
+@media (max-width: 600px) {
+  #help .dialog-head, #help .metric-help-body { padding-inline: 16px; }
+}
 .toast { color: var(--dw-color-text-inverse); background: var(--dw-color-tooltip-background); border-radius: 4px; }
 @media (max-width: 1600px) {
   .metric-card { padding: 20px 16px; }

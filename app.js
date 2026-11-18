@@ -34,7 +34,6 @@ const refundTypeDefinitions={
  transit:'售后发生时已向买家发货、买家尚未签收，且最终退款成功，包含在途拦截、拒收后成功退款。',
  return:'售后发生时买家已签收，且最终退款成功，包含部分退款。'
 };
-$('#refundTypeHelp').innerHTML=M.REFUND_TYPES.map(type=>`<p><strong>${escapeHTML(typeName(type))}：</strong>${escapeHTML(refundTypeDefinitions[type])}</p>`).join('');
 function definitionButton(type,metric,label){return `<span class="metric-definition-label">${label}<button type="button" class="metric-definition" data-definition="${type}|${metric}" aria-label="${label}指标释义" aria-describedby="metricTooltip">${infoIcon}</button></span>`}
 function metricCard(current,previous,type,allAmount,realtime) {
  const c=M.summarize(current,type),p=M.summarize(previous,type),share=type==='all'?(allAmount?'100%':'—'):amountShare(c.amount,allAmount);
@@ -225,7 +224,12 @@ for(const [id,key] of [['brandSelect','brand'],['categorySelect','category'],['c
 const applyProductSearch=()=>{state.productSearch=$('#productSearch').value.trim();state.productPage=1;hideMetricTooltip();renderProducts(queryFor(...range()));bindMetricTooltips()};
 $('#productSearchForm').onsubmit=event=>{event.preventDefault();applyProductSearch()};
 $('#productSearch').onsearch=applyProductSearch;
-$('#definitions').onclick=()=>$('#help').showModal();$('#closeHelp').onclick=()=>$('#help').close();
+const metricHelp=$('#help');
+$('#definitions').onclick=()=>{
+ metricHelp.showModal();
+ metricHelp.querySelector('.metric-help-body').scrollTop=0;
+};
+$('#closeHelp').onclick=()=>metricHelp.close();
 $('#salesNav').onclick=()=>toast('当前为退款分析页面预览');
 function loadExcelLibrary(){
  if(window.ExcelJS)return Promise.resolve(window.ExcelJS);
