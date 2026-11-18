@@ -162,7 +162,7 @@ function renderProducts(result){
  hideProductReasonTooltip();
  const scope=JSON.stringify([state.basis,result.range,state.brand,state.category,state.channel,state.productSearch,state.productType]);
  if(scope!==productScopeSignature){state.productPage=1;productScopeSignature=scope}
- const pay=state.basis==='pay',columns=pay?['amountRate','rate','amount','paidAmount','count','paid']:['amount','paidAmount','count','paid'];
+ const pay=state.basis==='pay',columns=pay?['amountRate','rate','amount','paidAmount','count','paid']:['amount','count'];
  if(!columns.includes(state.sort)){state.sort='amount';state.productDirection='desc'}
  const productResult=state.productSearch?{...result,refunds:result.refunds.filter(row=>M.matches(row,{search:state.productSearch},catalog)),payments:result.payments.filter(row=>M.matches(row,{search:state.productSearch},catalog))}:result;
  const ranking=M.summarizeProducts(productResult,state.productType).slice(0,20),direction=state.productDirection==='asc'?1:-1;

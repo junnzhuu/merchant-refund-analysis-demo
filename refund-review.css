@@ -379,7 +379,7 @@ body[data-demo-page="analysis"][data-refund-view="review"] #reasonType {
   background-size: 14px 14px;
 }
 body[data-demo-page="analysis"][data-refund-view="review"] .products .top-products-table {
-  min-width: 1480px;
+  min-width: 1136px;
   font-family: "PingFang SC", "Microsoft YaHei", sans-serif;
   font-size: 14px;
   line-height: 22px;

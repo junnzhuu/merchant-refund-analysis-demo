@@ -554,19 +554,17 @@ main {
 }
 
 .products .top-products-table {
-  min-width: 1120px;
+  min-width: 880px;
 }
 
 .products .top-products-table.has-rates {
   min-width: 1360px;
 }
 
-.top-products-table .col-product { width: 27%; }
-.top-products-table .col-amount { width: 14%; }
-.top-products-table .col-paidAmount { width: 15%; }
-.top-products-table .col-count,
-.top-products-table .col-paid { width: 10%; }
-.top-products-table .col-reasons { width: 24%; }
+.top-products-table .col-product { width: 34%; }
+.top-products-table .col-amount,
+.top-products-table .col-count { width: 15%; }
+.top-products-table .col-reasons { width: 36%; }
 .top-products-table.has-rates .col-product { width: 22%; }
 .top-products-table.has-rates .col-amountRate,
 .top-products-table.has-rates .col-rate { width: 9%; }
