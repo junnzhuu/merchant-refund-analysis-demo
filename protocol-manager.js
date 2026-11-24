@@ -17,6 +17,7 @@
   const STATUS_LABELS = { signed: '已签署', unsigned: '未签署', exited: '已退出' };
   const LOGISTICS_LINK = '<a href="https://t1-stark.dewu.com/main/brandStraight/logisticsConfig" target="_blank" rel="noopener noreferrer">转得物配</a>';
   const WAREHOUSE_LINK = '<a href="#" data-pm-action="warehouse">转入仓发货</a>';
+  const DEFAULT_EXIT_COPY = '确定要退出该协议？退出后协议对应权益也会取消。';
   const EXIT_COPY = {
     before: {
       warehouse: `您正在申请解除【2027年春节直发发货不打烊活动协议】，点击确认后，您将不再享受得物平台提供的营销推广的奖励资源，或通过${WAREHOUSE_LINK}，以获取平台的推广资源。若您确认需退出，请关注平台在27年1月发布的春节发货时效调整公告！`,
@@ -88,7 +89,7 @@
         <header class="pm-dialog-header"><h2 id="pmExitTitle">退出协议确认</h2><button type="button" class="pm-dialog-close" data-pm-close aria-label="关闭退出协议确认">×</button></header>
         <div class="pm-dialog-body">
           <div class="pm-reason-field"><label id="pmReasonLabel" for="pmReasonTrigger"><span class="pm-required-mark" aria-hidden="true">*</span>退出原因:<span id="pmReasonRequired" class="sr-only">必选</span></label><div class="pm-reason-select"><button type="button" id="pmReasonTrigger" class="pm-select-trigger" aria-label="退出原因" aria-describedby="pmReasonRequired" aria-haspopup="true" aria-expanded="false" aria-controls="pmReasonMenu"><span class="pm-placeholder">请选择退出原因</span></button><div id="pmReasonMenu" class="pm-reason-menu" role="group" aria-labelledby="pmReasonLabel" hidden></div></div></div>
-          <div class="pm-exit-copy">确定要退出该协议，退出后协议对应权益也会取消？</div>
+          <div class="pm-exit-copy">${DEFAULT_EXIT_COPY}</div>
           <label class="pm-exit-confirmation" hidden><input type="checkbox">我已了解，确认退出该协议</label>
         </div>
         <footer class="pm-dialog-footer"><button type="button" class="pm-button pm-button-primary" data-pm-confirm-exit disabled>确定退出</button><button type="button" class="pm-button" data-pm-close>取 消</button></footer>
@@ -190,7 +191,7 @@
     function updateExitCopy() {
       reasonTrigger.innerHTML = selectedReasons.length ? selectedReasons.map(reason => `<span class="pm-reason-tag">${REASONS[reason]}</span>`).join('') : '<span class="pm-placeholder">请选择退出原因</span>';
       if (!selectedReasons.length) {
-        exitCopy.textContent = '确定要退出该协议，退出后协议对应权益也会取消？';
+        exitCopy.textContent = DEFAULT_EXIT_COPY;
       } else {
         const key = selectedReasons.includes('warehouse') && selectedReasons.includes('transport') ? 'both' : selectedReasons[0];
         exitCopy.innerHTML = EXIT_COPY[scene === 'before' ? 'before' : 'after'][key];
