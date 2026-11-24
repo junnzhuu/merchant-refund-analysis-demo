@@ -3,6 +3,7 @@
 
   const STORAGE_KEY = 'merchant-protocol-demo-v1';
   const SIGNING_DEADLINE = '2027-02-08 23:59';
+  const LEGACY_SIGNING_DEADLINE = '2026-12-31';
   const SCENES = {
     before: { label: '活动开始前', time: '2027-01-20 10:00' },
     after: { label: '活动开始后', time: '2027-02-03 10:00' },
@@ -98,7 +99,7 @@
         <header class="pm-dialog-header"><h2 id="pmViewTitle">协议详情</h2><button type="button" class="pm-dialog-close" data-pm-close aria-label="关闭协议详情">×</button></header>
         <div class="pm-view-meta"></div>
         <div class="pm-document-viewer"><div class="pm-document-toolbar"><span>协议样稿</span><span>1 / 1</span><span>100%</span></div><div class="pm-document-viewer-body"><aside class="pm-document-thumbnails" aria-hidden="true"><div class="pm-document-thumbnail">1</div></aside><div class="pm-document-scroll" tabindex="0" aria-label="协议正文"><article class="pm-document"></article></div></div></div>
-        <footer class="pm-dialog-footer pm-view-footer"><label class="pm-sign-check" hidden><input type="checkbox">我已阅读并同意该协议（原型演示）</label><button type="button" class="pm-button pm-button-primary" data-pm-confirm-sign hidden disabled>确认签署</button><button type="button" class="pm-button" data-pm-close>关 闭</button></footer>
+        <footer class="pm-dialog-footer pm-view-footer"><button type="button" class="pm-button" data-pm-close>关 闭</button><button type="button" class="pm-button pm-button-primary" data-pm-confirm-sign hidden>确认协议</button></footer>
       </dialog>
       <dialog class="pm-dialog pm-jump-dialog" aria-labelledby="pmJumpTitle"><header class="pm-dialog-header"><h2 id="pmJumpTitle">入仓预约</h2><button type="button" class="pm-dialog-close" data-pm-close-jump aria-label="关闭入仓预约跳转示意">×</button></header><div class="pm-dialog-body"><h3>入仓预约跳转示意</h3><p>此处演示从退出协议提示进入商家后台「入仓预约」的路径。返回后可继续选择原因或确认退出协议。</p><p class="pm-document-notice">原型示例，不会创建真实入仓预约。</p></div><footer class="pm-dialog-footer"><button type="button" class="pm-button pm-button-primary" data-pm-close-jump>返回协议</button></footer></dialog>
       <div class="pm-demo"><button type="button" class="pm-demo-toggle" aria-expanded="false" aria-controls="pmDemoPanel">原型演示</button><section class="pm-demo-panel" id="pmDemoPanel" aria-label="原型演示设置" hidden><h3>原型演示</h3><div class="pm-demo-scenes">${Object.entries(SCENES).map(([key, value]) => `<button type="button" class="pm-demo-scene" data-pm-scene="${key}" aria-pressed="${key === scene}">${value.label}</button>`).join('')}</div><p class="pm-demo-time"></p><p class="pm-demo-note">演示签署截止时间：${SIGNING_DEADLINE}。场景时间仅用于原型演示，正式时间待配置。</p><div class="pm-demo-reset"><button type="button" class="pm-button" data-pm-reset="signed">重置为已签署</button><button type="button" class="pm-button" data-pm-reset="unsigned">重置为未签署</button></div><p class="pm-demo-note">签署与退出只更新浏览器中的示例状态；协议正文为非约束性的演示内容。</p></section></div>
@@ -114,8 +115,6 @@
     const reasonMenu = root.querySelector('#pmReasonMenu');
     const validation = root.querySelector('.pm-validation');
     const exitCopy = root.querySelector('.pm-exit-copy');
-    const signCheck = root.querySelector('.pm-sign-check');
-    const signCheckbox = signCheck.querySelector('input');
     const signButton = root.querySelector('[data-pm-confirm-sign]');
     const demoPanel = root.querySelector('.pm-demo-panel');
     const demoToggle = root.querySelector('.pm-demo-toggle');
@@ -132,7 +131,7 @@
 
     function render() {
       const filtered = records.filter(record => {
-        const cutoff = record.legacy ? '2026-12-31' : SIGNING_DEADLINE.slice(0, 10);
+        const cutoff = record.legacy ? LEGACY_SIGNING_DEADLINE : SIGNING_DEADLINE.slice(0, 10);
         return (!filters.name || record.name.includes(filters.name)) && (!filters.type || record.id === filters.type) && (!filters.status || record.status === filters.status) && filters.limit !== 'limited' && (!filters.start || cutoff >= filters.start) && (!filters.end || cutoff <= filters.end);
       });
       const pages = Math.max(1, Math.ceil(filtered.length / pageSize));
@@ -140,13 +139,16 @@
       const visible = filtered.slice((page - 1) * pageSize, page * pageSize);
       tbody.innerHTML = visible.length ? visible.map(record => {
         const reasonTitle = record.status === 'exited' && record.reasons.length ? ` title="退出原因：${record.reasons.map(reason => REASONS[reason]).join('、')}"` : '';
+        const withinSigningPeriod = canChange(record);
+        const viewAction = record.status === 'unsigned' && withinSigningPeriod ? '' :
+          `<button type="button" class="pm-link" data-pm-action="view" data-protocol-id="${record.id}">查看</button>`;
         let action = '';
         if (record.status === 'signed') {
-          action = canChange(record) ? `<button type="button" class="pm-link" data-pm-action="exit" data-protocol-id="${record.id}">退出协议</button>` : `<span class="pm-disabled-action" tabindex="0" title="已过协议签署有效期，不可申请退出" aria-label="已过协议签署有效期，不可申请退出"><button type="button" class="pm-link" disabled>退出协议</button><span class="pm-expired-tooltip" role="tooltip">已过协议签署有效期，不可申请退出</span></span>`;
-        } else if (canChange(record)) {
+          action = withinSigningPeriod ? `<button type="button" class="pm-link" data-pm-action="exit" data-protocol-id="${record.id}">退出协议</button>` : `<span class="pm-disabled-action" tabindex="0" title="已过协议签署有效期，不可申请退出" aria-label="已过协议签署有效期，不可申请退出"><button type="button" class="pm-link" disabled>退出协议</button><span class="pm-expired-tooltip" role="tooltip">已过协议签署有效期，不可申请退出</span></span>`;
+        } else if (withinSigningPeriod) {
           action = `<button type="button" class="pm-link" data-pm-action="sign" data-protocol-id="${record.id}">签署协议</button>`;
         }
-        return `<tr data-protocol-id="${record.id}"><td>${record.name}</td><td>${record.name}</td><td>${record.createdAt}</td><td>不限制出价</td><td><span class="pm-status pm-status-${record.status}"${reasonTitle}>${STATUS_LABELS[record.status]}</span></td><td>${record.confirmedAt || '-'}</td><td><div class="pm-row-actions"><button type="button" class="pm-link" data-pm-action="view" data-protocol-id="${record.id}">查看</button>${action}</div></td></tr>`;
+        return `<tr data-protocol-id="${record.id}"><td>${record.name}</td><td>${record.name}</td><td>${record.createdAt}</td><td>不限制出价</td><td><span class="pm-status pm-status-${record.status}"${reasonTitle}>${STATUS_LABELS[record.status]}</span></td><td>${record.confirmedAt || '-'}</td><td><div class="pm-row-actions">${viewAction}${action}</div></td></tr>`;
       }).join('') : '<tr><td colspan="7" class="pm-empty"><div class="pm-empty-icon" aria-hidden="true">▱</div>暂无数据</td></tr>';
       const start = filtered.length ? (page - 1) * pageSize + 1 : 0;
       const end = Math.min(page * pageSize, filtered.length);
@@ -213,7 +215,11 @@
       viewerMode = mode;
       opener = target;
       const kindLabel = record.kind === 'direct' ? '直发履约' : record.kind === 'customer' ? '客服履约' : '售后履约';
-      root.querySelector('.pm-view-meta').innerHTML = `<span>协议类型：${escapeHtml(record.name)}</span><span>状态：${STATUS_LABELS[record.status]}</span><span>协议创建时间：${record.createdAt}</span><span>协议确认时间：${escapeHtml(record.confirmedAt || '-')}</span>`;
+      const signing = mode === 'sign' && canChange(record);
+      const signingDeadline = record.legacy ? LEGACY_SIGNING_DEADLINE : SIGNING_DEADLINE + ':00';
+      root.querySelector('.pm-view-meta').innerHTML = `<span>协议类型：${escapeHtml(record.name)}</span>` + (signing
+        ? `<span>协议签署时间：${escapeHtml(record.confirmedAt || '')}</span><span>截止签约时间：${signingDeadline}</span><span>截止限制出价时间未签约是否限制出价：不限制出价</span>`
+        : `<span>状态：${STATUS_LABELS[record.status]}</span><span>协议创建时间：${record.createdAt}</span><span>协议确认时间：${escapeHtml(record.confirmedAt || '-')}</span>`);
       root.querySelector('.pm-document').innerHTML = `
         <h2 class="pm-document-title">${escapeHtml(record.name)}</h2>
         <p class="pm-document-meta">协议状态：${STATUS_LABELS[record.status]}${record.confirmedAt ? `　协议确认时间：${escapeHtml(record.confirmedAt)}` : ''}</p>
@@ -224,11 +230,7 @@
         <h3>四、协议退出与再次签署</h3><p>本原型支持演示在签署有效期内选择原因退出协议，以及退出后重新进入签署流程。正式规则与退出提示请以经确认的协议内容为准。</p>
         ${record.status === 'exited' && record.reasons.length ? `<p class="pm-document-meta">示例退出原因：${record.reasons.map(reason => REASONS[reason]).join('、')}<br>示例退出时间：${escapeHtml(record.exitedAt || '-')}</p>` : ''}
       `;
-      const signing = mode === 'sign' && canChange(record);
-      signCheck.hidden = !signing;
       signButton.hidden = !signing;
-      signCheckbox.checked = false;
-      signButton.disabled = true;
       viewDialog.querySelector('.pm-view-footer [data-pm-close]').textContent = signing ? '取 消' : '关 闭';
       viewDialog.showModal();
       root.querySelector('.pm-document-scroll').scrollTop = 0;
@@ -347,9 +349,8 @@
       focusRecord(recordId);
       notify('已退出协议');
     });
-    signCheckbox.addEventListener('change', () => { signButton.disabled = !signCheckbox.checked; });
     signButton.addEventListener('click', () => {
-      if (!activeRecord || viewerMode !== 'sign' || !canChange(activeRecord) || !signCheckbox.checked) return;
+      if (!viewDialog.open || !activeRecord || viewerMode !== 'sign' || !canChange(activeRecord)) return;
       activeRecord.status = 'signed';
       activeRecord.confirmedAt = SCENES[scene].time;
       activeRecord.reasons = [];

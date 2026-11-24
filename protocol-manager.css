@@ -638,7 +638,7 @@ body[data-demo-page="protocol-manager"] .rc-portal-floats [data-return-support]:
 #protocolManagerRoot .pm-reason-option:is(:hover, :focus-within),
 #protocolManagerRoot .pm-reason-option:has(input:checked) { background: #f2fcfc; }
 
-#protocolManagerRoot :is(.pm-reason-option, .pm-sign-check) input {
+#protocolManagerRoot .pm-reason-option input {
   width: 14px;
   height: 14px;
   margin: 0;
@@ -774,16 +774,6 @@ body[data-demo-page="protocol-manager"] .rc-portal-floats [data-return-support]:
 
 #protocolManagerRoot .pm-document h3 { margin: 15px 0 4px; font-size: 14px; }
 #protocolManagerRoot .pm-document p:not(.pm-document-notice) { margin: 0 0 8px; line-height: 1.8; }
-
-#protocolManagerRoot .pm-sign-check {
-  display: flex;
-  align-items: center;
-  gap: 7px;
-  margin-right: auto;
-  color: var(--pm-body);
-  text-align: left;
-  cursor: pointer;
-}
 
 #protocolManagerRoot .pm-demo {
   position: fixed;
