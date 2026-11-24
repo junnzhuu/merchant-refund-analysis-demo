@@ -29,9 +29,7 @@
     let active;
 
     function isAnalysisRoute() {
-      const path = global.location.hash.slice(1).replace(/\/$/, '');
-      // The router uses analysis as its fallback for empty or unknown paths.
-      return path !== '/after-sales/return-center' && path !== '/after-sales/assistant';
+      return document.body.dataset.demoPage === 'analysis';
     }
 
     function closeMenu(restoreFocus = false) {

@@ -1,17 +1,17 @@
 /* Shared Demo surfaces follow the actual merchant portal shell. */
-body:is([data-demo-page="analysis"],[data-demo-page="return-center"],[data-demo-page="assistant"],[data-demo-page="home"]) {
+body:is([data-demo-page="analysis"],[data-demo-page="return-center"],[data-demo-page="assistant"],[data-demo-page="home"],[data-demo-page="protocol-manager"]) {
   background: #f1f1f5 url("https://cdn.dewu.com/node-common/f05ed90b-195e-3eac-995e-f9d0ec1d6f0d-2220-400.png") no-repeat 84px 0 / 100% auto;
   background-attachment: fixed;
 }
 
 body:is([data-demo-page="return-center"],[data-demo-page="assistant"]) { color: #505050; }
 
-body:is([data-demo-page="analysis"],[data-demo-page="return-center"],[data-demo-page="assistant"],[data-demo-page="home"]) .brand {
+body:is([data-demo-page="analysis"],[data-demo-page="return-center"],[data-demo-page="assistant"],[data-demo-page="home"],[data-demo-page="protocol-manager"]) .brand {
   border-bottom: 0;
   background: #f1f1f5;
   border-right-color: #dddde7;
 }
-body:is([data-demo-page="analysis"],[data-demo-page="return-center"],[data-demo-page="assistant"],[data-demo-page="home"]) .brand::before {
+body:is([data-demo-page="analysis"],[data-demo-page="return-center"],[data-demo-page="assistant"],[data-demo-page="home"],[data-demo-page="protocol-manager"]) .brand::before {
   content: "";
   position: absolute;
   left: 16px;
@@ -20,19 +20,19 @@ body:is([data-demo-page="analysis"],[data-demo-page="return-center"],[data-demo-
   height: 30px;
   background: url("https://cdn.dewu.com/node-common/451317c9-db2a-f0e7-4354-9b0a2c1112dc-378-90.png") center / contain no-repeat;
 }
-body:is([data-demo-page="analysis"],[data-demo-page="return-center"],[data-demo-page="assistant"],[data-demo-page="home"]) .brand .logo,
-body:is([data-demo-page="analysis"],[data-demo-page="return-center"],[data-demo-page="assistant"],[data-demo-page="home"]) .brand strong { visibility: hidden; }
-body:is([data-demo-page="analysis"],[data-demo-page="return-center"],[data-demo-page="assistant"],[data-demo-page="home"]) .topbar,
-body:is([data-demo-page="return-center"],[data-demo-page="assistant"]) .service { display: none; }
+body:is([data-demo-page="analysis"],[data-demo-page="return-center"],[data-demo-page="assistant"],[data-demo-page="home"],[data-demo-page="protocol-manager"]) .brand .logo,
+body:is([data-demo-page="analysis"],[data-demo-page="return-center"],[data-demo-page="assistant"],[data-demo-page="home"],[data-demo-page="protocol-manager"]) .brand strong { visibility: hidden; }
+body:is([data-demo-page="analysis"],[data-demo-page="return-center"],[data-demo-page="assistant"],[data-demo-page="home"],[data-demo-page="protocol-manager"]) .topbar,
+body:is([data-demo-page="return-center"],[data-demo-page="assistant"],[data-demo-page="protocol-manager"]) .service { display: none; }
 
-body:is([data-demo-page="analysis"],[data-demo-page="return-center"],[data-demo-page="assistant"],[data-demo-page="home"]) .rail {
+body:is([data-demo-page="analysis"],[data-demo-page="return-center"],[data-demo-page="assistant"],[data-demo-page="home"],[data-demo-page="protocol-manager"]) .rail {
   width: 84px;
   padding: 0;
   border-right-color: #dddde7;
   background: #f1f1f5;
   overflow-x: hidden;
 }
-body:is([data-demo-page="analysis"],[data-demo-page="return-center"],[data-demo-page="assistant"],[data-demo-page="home"]) .rail > :not(.rail-line) {
+body:is([data-demo-page="analysis"],[data-demo-page="return-center"],[data-demo-page="assistant"],[data-demo-page="home"],[data-demo-page="protocol-manager"]) .rail > :not(.rail-line) {
   display: flex;
   align-items: center;
   justify-content: flex-start;
@@ -47,37 +47,37 @@ body:is([data-demo-page="analysis"],[data-demo-page="return-center"],[data-demo-
   color: #3d404d;
   font-weight: 400;
 }
-body:is([data-demo-page="analysis"],[data-demo-page="return-center"],[data-demo-page="assistant"],[data-demo-page="home"]) .rail > :not(.rail-line):hover,
-body:is([data-demo-page="analysis"],[data-demo-page="return-center"],[data-demo-page="assistant"],[data-demo-page="home"]) .rail > .selected { background: #dddde7; }
-body:is([data-demo-page="analysis"],[data-demo-page="return-center"],[data-demo-page="assistant"],[data-demo-page="home"]) .rail span { font-size: 16px; line-height: 24px; }
-body:is([data-demo-page="analysis"],[data-demo-page="return-center"],[data-demo-page="assistant"],[data-demo-page="home"]) .rail .selected span { color: #14151a; font-weight: 600; }
-body:is([data-demo-page="analysis"],[data-demo-page="return-center"],[data-demo-page="assistant"],[data-demo-page="home"]) .rail .rail-line {
+body:is([data-demo-page="analysis"],[data-demo-page="return-center"],[data-demo-page="assistant"],[data-demo-page="home"],[data-demo-page="protocol-manager"]) .rail > :not(.rail-line):hover,
+body:is([data-demo-page="analysis"],[data-demo-page="return-center"],[data-demo-page="assistant"],[data-demo-page="home"],[data-demo-page="protocol-manager"]) .rail > .selected { background: #dddde7; }
+body:is([data-demo-page="analysis"],[data-demo-page="return-center"],[data-demo-page="assistant"],[data-demo-page="home"],[data-demo-page="protocol-manager"]) .rail span { font-size: 16px; line-height: 24px; }
+body:is([data-demo-page="analysis"],[data-demo-page="return-center"],[data-demo-page="assistant"],[data-demo-page="home"],[data-demo-page="protocol-manager"]) .rail .selected span { color: #14151a; font-weight: 600; }
+body:is([data-demo-page="analysis"],[data-demo-page="return-center"],[data-demo-page="assistant"],[data-demo-page="home"],[data-demo-page="protocol-manager"]) .rail .rail-line {
   width: 54px;
   height: 1px;
   margin: 0 15px 18px;
   background: #dddde7;
   border: 0;
 }
-body:is([data-demo-page="analysis"],[data-demo-page="return-center"],[data-demo-page="assistant"],[data-demo-page="home"]) .rail .nav-icon {
+body:is([data-demo-page="analysis"],[data-demo-page="return-center"],[data-demo-page="assistant"],[data-demo-page="home"],[data-demo-page="protocol-manager"]) .rail .nav-icon {
   width: 16px;
   height: 16px;
   flex: none;
   background: var(--rc-nav-icon) center / contain no-repeat;
 }
-body:is([data-demo-page="analysis"],[data-demo-page="return-center"],[data-demo-page="assistant"],[data-demo-page="home"]) .rail .nav-icon > * { opacity: 0; }
-body:is([data-demo-page="analysis"],[data-demo-page="return-center"],[data-demo-page="assistant"],[data-demo-page="home"]) .rail > :nth-child(1) { --rc-nav-icon: url("https://cdn.dewu.com/node-common/45461944-fe95-b137-d009-4f0d53ce48dd-48-48.png"); }
-body:is([data-demo-page="analysis"],[data-demo-page="return-center"],[data-demo-page="assistant"],[data-demo-page="home"]) .rail > :nth-child(2) { --rc-nav-icon: url("https://cdn.dewu.com/node-common/812cbd51-e284-2649-8c75-140da5de6183-48-48.png"); }
-body:is([data-demo-page="analysis"],[data-demo-page="return-center"],[data-demo-page="assistant"],[data-demo-page="home"]) .rail > :nth-child(3) { --rc-nav-icon: url("https://cdn.dewu.com/node-common/ad34eca2-99c8-54b6-edf4-4ac77c2ab785-48-48.png"); }
-body:is([data-demo-page="analysis"],[data-demo-page="return-center"],[data-demo-page="assistant"],[data-demo-page="home"]) .rail > :nth-child(4) { --rc-nav-icon: url("https://cdn.dewu.com/node-common/27ac8531-e649-57cf-9eb8-cee953fd5b08-48-48.png"); }
-body:is([data-demo-page="analysis"],[data-demo-page="return-center"],[data-demo-page="assistant"],[data-demo-page="home"]) .rail > :nth-child(5) { --rc-nav-icon: url("https://cdn.dewu.com/node-common/7512f260-0366-012e-2ac8-8cc554d325ef-48-48.png"); }
-body:is([data-demo-page="analysis"],[data-demo-page="return-center"],[data-demo-page="assistant"],[data-demo-page="home"]) .rail > :nth-child(6) { --rc-nav-icon: url("https://cdn.dewu.com/node-common/73738dfd-2003-13c5-3495-39df3c07635f-48-48.png"); }
-body:is([data-demo-page="analysis"],[data-demo-page="return-center"],[data-demo-page="assistant"],[data-demo-page="home"]) .rail > :nth-child(7) { --rc-nav-icon: url("https://cdn.dewu.com/node-common/5d1ca193-fe7c-f84e-f824-bb8845111d08-48-48.png"); }
-body:is([data-demo-page="analysis"],[data-demo-page="return-center"],[data-demo-page="assistant"],[data-demo-page="home"]) .rail > :nth-child(8) { --rc-nav-icon: url("https://cdn.dewu.com/node-common/888b9539-06de-cb6e-5aa3-ed1df9d8ebfb-48-48.png"); }
-body:is([data-demo-page="analysis"],[data-demo-page="return-center"],[data-demo-page="assistant"],[data-demo-page="home"]) .rail > :nth-child(9) { --rc-nav-icon: url("https://cdn.dewu.com/node-common/22461047-38b0-de55-63a0-89abf992dc61-48-48.png"); }
-body:is([data-demo-page="analysis"],[data-demo-page="return-center"],[data-demo-page="assistant"],[data-demo-page="home"]) .rail > :nth-child(10) { --rc-nav-icon: url("https://cdn.dewu.com/node-common/0d8758a7-b08c-9251-6bde-3ac75a1ba1a7-48-48.png"); }
-body:is([data-demo-page="analysis"],[data-demo-page="return-center"],[data-demo-page="assistant"],[data-demo-page="home"]) .rail > :nth-child(12) { --rc-nav-icon: url("https://h5static.dewucdn.com/node-common/c1997c3c-711a-c2d6-b497-b6d487c91bb7-48-48.png"); }
+body:is([data-demo-page="analysis"],[data-demo-page="return-center"],[data-demo-page="assistant"],[data-demo-page="home"],[data-demo-page="protocol-manager"]) .rail .nav-icon > * { opacity: 0; }
+body:is([data-demo-page="analysis"],[data-demo-page="return-center"],[data-demo-page="assistant"],[data-demo-page="home"],[data-demo-page="protocol-manager"]) .rail > :nth-child(1) { --rc-nav-icon: url("https://cdn.dewu.com/node-common/45461944-fe95-b137-d009-4f0d53ce48dd-48-48.png"); }
+body:is([data-demo-page="analysis"],[data-demo-page="return-center"],[data-demo-page="assistant"],[data-demo-page="home"],[data-demo-page="protocol-manager"]) .rail > :nth-child(2) { --rc-nav-icon: url("https://cdn.dewu.com/node-common/812cbd51-e284-2649-8c75-140da5de6183-48-48.png"); }
+body:is([data-demo-page="analysis"],[data-demo-page="return-center"],[data-demo-page="assistant"],[data-demo-page="home"],[data-demo-page="protocol-manager"]) .rail > :nth-child(3) { --rc-nav-icon: url("https://cdn.dewu.com/node-common/ad34eca2-99c8-54b6-edf4-4ac77c2ab785-48-48.png"); }
+body:is([data-demo-page="analysis"],[data-demo-page="return-center"],[data-demo-page="assistant"],[data-demo-page="home"],[data-demo-page="protocol-manager"]) .rail > :nth-child(4) { --rc-nav-icon: url("https://cdn.dewu.com/node-common/27ac8531-e649-57cf-9eb8-cee953fd5b08-48-48.png"); }
+body:is([data-demo-page="analysis"],[data-demo-page="return-center"],[data-demo-page="assistant"],[data-demo-page="home"],[data-demo-page="protocol-manager"]) .rail > :nth-child(5) { --rc-nav-icon: url("https://cdn.dewu.com/node-common/7512f260-0366-012e-2ac8-8cc554d325ef-48-48.png"); }
+body:is([data-demo-page="analysis"],[data-demo-page="return-center"],[data-demo-page="assistant"],[data-demo-page="home"],[data-demo-page="protocol-manager"]) .rail > :nth-child(6) { --rc-nav-icon: url("https://cdn.dewu.com/node-common/73738dfd-2003-13c5-3495-39df3c07635f-48-48.png"); }
+body:is([data-demo-page="analysis"],[data-demo-page="return-center"],[data-demo-page="assistant"],[data-demo-page="home"],[data-demo-page="protocol-manager"]) .rail > :nth-child(7) { --rc-nav-icon: url("https://cdn.dewu.com/node-common/5d1ca193-fe7c-f84e-f824-bb8845111d08-48-48.png"); }
+body:is([data-demo-page="analysis"],[data-demo-page="return-center"],[data-demo-page="assistant"],[data-demo-page="home"],[data-demo-page="protocol-manager"]) .rail > :nth-child(8) { --rc-nav-icon: url("https://cdn.dewu.com/node-common/888b9539-06de-cb6e-5aa3-ed1df9d8ebfb-48-48.png"); }
+body:is([data-demo-page="analysis"],[data-demo-page="return-center"],[data-demo-page="assistant"],[data-demo-page="home"],[data-demo-page="protocol-manager"]) .rail > :nth-child(9) { --rc-nav-icon: url("https://cdn.dewu.com/node-common/22461047-38b0-de55-63a0-89abf992dc61-48-48.png"); }
+body:is([data-demo-page="analysis"],[data-demo-page="return-center"],[data-demo-page="assistant"],[data-demo-page="home"],[data-demo-page="protocol-manager"]) .rail > :nth-child(10) { --rc-nav-icon: url("https://cdn.dewu.com/node-common/0d8758a7-b08c-9251-6bde-3ac75a1ba1a7-48-48.png"); }
+body:is([data-demo-page="analysis"],[data-demo-page="return-center"],[data-demo-page="assistant"],[data-demo-page="home"],[data-demo-page="protocol-manager"]) .rail > :nth-child(12) { --rc-nav-icon: url("https://h5static.dewucdn.com/node-common/c1997c3c-711a-c2d6-b497-b6d487c91bb7-48-48.png"); }
 
-body:is([data-demo-page="analysis"],[data-demo-page="return-center"],[data-demo-page="assistant"]) .sidebar {
+body:is([data-demo-page="analysis"],[data-demo-page="return-center"],[data-demo-page="assistant"],[data-demo-page="protocol-manager"]) .sidebar {
   left: 84px;
   width: 116px;
   padding: 6px 0 24px;
@@ -208,7 +208,7 @@ body[data-demo-page="assistant"] .rc-portal-topbar > button:first-child::after {
 /* Match the existing navigation breakpoint without leaving a blank column. */
 @media (max-width: 1100px) {
   .rc-portal-topbar { left: 0; }
-  body:is([data-demo-page="analysis"],[data-demo-page="return-center"],[data-demo-page="assistant"]) {
+  body:is([data-demo-page="analysis"],[data-demo-page="return-center"],[data-demo-page="assistant"],[data-demo-page="protocol-manager"]) {
     background-position: 0 0;
   }
   body:is([data-demo-page="return-center"],[data-demo-page="assistant"]) #afterSalesRoot {
@@ -221,4 +221,23 @@ body[data-demo-page="assistant"] .rc-portal-topbar > button:first-child::after {
     flex-wrap: nowrap;
     overflow-x: auto;
   }
+}
+
+/* The test merchant portal orders the Other section's rail differently. */
+@media (min-width: 1101px) {
+  body[data-demo-page="protocol-manager"] .rail { display: flex; flex-direction: column; }
+  body[data-demo-page="protocol-manager"] .rail > * { flex-shrink: 0; }
+  body[data-demo-page="protocol-manager"] .rail > :nth-child(1) { order: 1; }
+  body[data-demo-page="protocol-manager"] .rail > :nth-child(3) { order: 2; }
+  body[data-demo-page="protocol-manager"] .rail > :nth-child(4) { order: 3; }
+  body[data-demo-page="protocol-manager"] .rail > :nth-child(5) { order: 4; }
+  body[data-demo-page="protocol-manager"] .rail > :nth-child(6) { order: 5; }
+  body[data-demo-page="protocol-manager"] .rail > :nth-child(8) { order: 6; }
+  body[data-demo-page="protocol-manager"] .rail > :nth-child(9) { order: 7; }
+  body[data-demo-page="protocol-manager"] .rail > :nth-child(10) { order: 8; }
+  body[data-demo-page="protocol-manager"] .rail > :nth-child(7) { order: 9; }
+  body[data-demo-page="protocol-manager"] .rail > :nth-child(2) { order: 10; }
+  body[data-demo-page="protocol-manager"] .rail > :nth-child(11) { order: 11; }
+  body[data-demo-page="protocol-manager"] .rail > :nth-child(12) { order: 12; }
+  body[data-demo-page="protocol-manager"] .rail span { font-size: 14px; }
 }

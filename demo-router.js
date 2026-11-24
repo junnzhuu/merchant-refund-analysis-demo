@@ -4,14 +4,17 @@
     home: '/main/dataBoard',
     analysis: '/data/refund-analysis',
     'return-center': '/after-sales/return-center',
-    assistant: '/after-sales/assistant'
+    assistant: '/after-sales/assistant',
+    'protocol-manager': '/main/protocolManager'
   };
-  const LABELS = { home: '首页', analysis: '退款分析', 'return-center': '退货中心', assistant: '售后小助手' };
+  const LABELS = { home: '首页', analysis: '退款分析', 'return-center': '退货中心', assistant: '售后小助手', 'protocol-manager': '协议管理' };
   const homePage = document.getElementById('merchantHome');
   const analysisPage = document.getElementById('refundAnalysisPage');
   const salesRoot = document.getElementById('afterSalesRoot');
+  const protocolRoot = document.getElementById('protocolManagerRoot');
   const dataSidebar = document.getElementById('dataSidebar');
   const salesSidebar = document.getElementById('afterSalesSidebar');
+  const otherSidebar = document.getElementById('otherSidebar');
   const returnButton = document.getElementById('returnToAfterSales');
   const returnTopbar = document.getElementById('returnCenterTopbar');
   const returnFloats = document.getElementById('returnCenterFloats');
@@ -22,6 +25,7 @@
   let returnPage = null;
   let homeMetrics;
   let homeRefreshTimer;
+  let protocolManager;
   const ai = window.RefundAiDemo.mount({
     model: window.RefundModel,
     data: bridge.getData(),
@@ -83,6 +87,7 @@
     if (currentPage) positions.set(currentPage, window.scrollY);
     clearTimeout(homeRefreshTimer);
     sales.hide();
+    protocolManager?.hide();
     ai.close();
     bridge.suspend();
     document.body.dataset.demoPage = page;
@@ -90,15 +95,18 @@
     returnFloats.hidden = page === 'analysis';
     const isAnalysis = page === 'analysis';
     const isHome = page === 'home';
-    const isAfterSales = !isAnalysis && !isHome;
+    const isAfterSales = page === 'return-center' || page === 'assistant';
+    const isProtocol = page === 'protocol-manager';
     homePage.hidden = !isHome;
     analysisPage.hidden = !isAnalysis;
     salesRoot.hidden = !isAfterSales;
     dataSidebar.hidden = !isAnalysis;
     salesSidebar.hidden = !isAfterSales;
+    protocolRoot.hidden = !isProtocol;
+    otherSidebar.hidden = !isProtocol;
     returnButton.hidden = !isAnalysis || !returnPage;
-    returnButton.textContent = returnPage === 'home' ? '返回首页' : '返回售后';
-    const activeSection = isHome ? 'home' : isAnalysis ? 'data' : 'after-sales';
+    returnButton.textContent = returnPage === 'home' ? '返回首页' : returnPage === 'protocol-manager' ? '返回协议管理' : '返回售后';
+    const activeSection = isHome ? 'home' : isAnalysis ? 'data' : isProtocol ? 'other' : 'after-sales';
     primaryNav.forEach(button => {
       const active = button.dataset.navSection === activeSection;
       button.classList.toggle('selected', active);
@@ -113,13 +121,17 @@
     });
     if (isAfterSales) sales.show(page);
     if (isHome) openHome();
+    if (isProtocol) {
+      protocolManager ||= window.ProtocolManagerDemo.mount({ root: protocolRoot, notify: toast });
+      protocolManager.show();
+    }
     currentPage = page;
     document.title = '得物商家后台 · ' + LABELS[page];
     window.scrollTo({ top: positions.get(page) || 0, behavior: 'instant' });
     if (isAnalysis) bridge.resume();
   }
 
-  const pageBySection = { home: 'home', data: 'analysis', 'after-sales': 'return-center' };
+  const pageBySection = { home: 'home', data: 'analysis', 'after-sales': 'return-center', other: 'protocol-manager' };
   primaryNav.forEach(button => button.addEventListener('click', () => {
     navigate(pageBySection[button.dataset.navSection]);
   }));
@@ -127,6 +139,9 @@
   returnButton.addEventListener('click', () => navigate(returnPage || 'return-center'));
   salesSidebar.querySelectorAll('[data-demo-action]').forEach(button => {
     button.addEventListener('click', () => toast(button.dataset.demoAction + '仅展示入口，当前为售后分析 Demo'));
+  });
+  otherSidebar.querySelectorAll('[data-demo-action]').forEach(button => {
+    button.addEventListener('click', () => toast(button.dataset.demoAction + '为演示入口'));
   });
   returnTopbar.querySelectorAll('button').forEach(button => button.addEventListener('click', () => toast(button.textContent.trim() + '为演示入口')));
   returnFloats.querySelector('[data-return-ai]').addEventListener('click', event => ai.open({sourceLabel: LABELS[currentPage] || '退货中心', opener: event.currentTarget}));
