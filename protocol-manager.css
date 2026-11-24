@@ -743,8 +743,6 @@ body[data-demo-page="protocol-manager"] .rc-portal-floats [data-return-support]:
 #protocolManagerRoot .pm-exit-secondary-copy {
   margin: 12px 0 0;
   color: var(--pm-muted);
-  font-size: 12px;
-  line-height: 20px;
 }
 
 #protocolManagerRoot .pm-exit-copy .pm-link { display: inline; }
