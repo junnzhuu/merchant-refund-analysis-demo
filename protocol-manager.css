@@ -444,46 +444,6 @@ body[data-demo-page="protocol-manager"] .rc-portal-floats [data-return-support]:
   text-decoration: underline;
 }
 
-#protocolManagerRoot .pm-link:is(:disabled, [aria-disabled="true"]) {
-  color: #a9a9b9;
-  cursor: not-allowed;
-  text-decoration: none;
-}
-
-#protocolManagerRoot .pm-disabled-action { position: relative; display: inline-flex; }
-#protocolManagerRoot .pm-disabled-action .pm-link { pointer-events: none; }
-#protocolManagerRoot .pm-disabled-action { cursor: not-allowed; }
-
-#protocolManagerRoot .pm-expired-tooltip {
-  visibility: hidden;
-  position: absolute;
-  pointer-events: none;
-  z-index: 2;
-  right: 0;
-  bottom: calc(100% + 7px);
-  padding: 5px 9px;
-  border-radius: 3px;
-  background: #33333d;
-  color: white;
-  font-size: 12px;
-  line-height: 20px;
-  white-space: nowrap;
-}
-
-#protocolManagerRoot .pm-expired-tooltip::after {
-  content: "";
-  position: absolute;
-  right: 20px;
-  top: 100%;
-  width: 0;
-  height: 0;
-  border-top: 5px solid #33333d;
-  border-right: 5px solid transparent;
-  border-left: 5px solid transparent;
-}
-
-#protocolManagerRoot .pm-disabled-action:is(:hover, :focus-visible) .pm-expired-tooltip { visibility: visible; }
-
 #protocolManagerRoot .pm-pagination {
   display: flex;
   justify-content: flex-end;
