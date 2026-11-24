@@ -140,12 +140,13 @@
       tbody.innerHTML = visible.length ? visible.map(record => {
         const reasonTitle = record.status === 'exited' && record.reasons.length ? ` title="退出原因：${record.reasons.map(reason => REASONS[reason]).join('、')}"` : '';
         const withinSigningPeriod = canChange(record);
-        const viewAction = record.status === 'unsigned' && withinSigningPeriod ? '' :
+        const canSign = record.status !== 'signed' && withinSigningPeriod;
+        const viewAction = canSign ? '' :
           `<button type="button" class="pm-link" data-pm-action="view" data-protocol-id="${record.id}">查看</button>`;
         let action = '';
         if (record.status === 'signed') {
           action = withinSigningPeriod ? `<button type="button" class="pm-link" data-pm-action="exit" data-protocol-id="${record.id}">退出协议</button>` : `<span class="pm-disabled-action" tabindex="0" title="已过协议签署有效期，不可申请退出" aria-label="已过协议签署有效期，不可申请退出"><button type="button" class="pm-link" disabled>退出协议</button><span class="pm-expired-tooltip" role="tooltip">已过协议签署有效期，不可申请退出</span></span>`;
-        } else if (withinSigningPeriod) {
+        } else if (canSign) {
           action = `<button type="button" class="pm-link" data-pm-action="sign" data-protocol-id="${record.id}">签署协议</button>`;
         }
         return `<tr data-protocol-id="${record.id}"><td>${record.name}</td><td>${record.name}</td><td>${record.createdAt}</td><td>不限制出价</td><td><span class="pm-status pm-status-${record.status}"${reasonTitle}>${STATUS_LABELS[record.status]}</span></td><td>${record.confirmedAt || '-'}</td><td><div class="pm-row-actions">${viewAction}${action}</div></td></tr>`;
@@ -326,7 +327,7 @@
       closeJump();
     });
     function focusRecord(recordId) {
-      const button = tbody.querySelector(`[data-protocol-id="${recordId}"] [data-pm-action="view"]`);
+      const button = tbody.querySelector(`[data-protocol-id="${recordId}"] :is([data-pm-action="view"], [data-pm-action="sign"])`);
       if (button) button.focus();
       else form.elements.name.focus();
     }
