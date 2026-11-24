@@ -587,6 +587,7 @@ body[data-demo-page="protocol-manager"] .rc-portal-floats [data-return-support]:
 }
 
 #protocolManagerRoot .pm-reason-field > label { padding-top: 5px; }
+#protocolManagerRoot .pm-required-mark { margin-right: 4px; color: #df2020; }
 #protocolManagerRoot .pm-reason-select { position: relative; }
 #protocolManagerRoot .pm-select-trigger {
   display: flex;
@@ -638,7 +639,7 @@ body[data-demo-page="protocol-manager"] .rc-portal-floats [data-return-support]:
 #protocolManagerRoot .pm-reason-option:is(:hover, :focus-within),
 #protocolManagerRoot .pm-reason-option:has(input:checked) { background: #f2fcfc; }
 
-#protocolManagerRoot .pm-reason-option input {
+#protocolManagerRoot :is(.pm-reason-option, .pm-exit-confirmation) input {
   width: 14px;
   height: 14px;
   margin: 0;
@@ -667,11 +668,15 @@ body[data-demo-page="protocol-manager"] .rc-portal-floats [data-return-support]:
 
 #protocolManagerRoot .pm-exit-copy .pm-link { display: inline; }
 
-#protocolManagerRoot .pm-validation {
-  margin: 6px 0 0;
-  color: #df2020;
-  line-height: 20px;
+#protocolManagerRoot .pm-exit-confirmation {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 14px;
+  cursor: pointer;
 }
+
+#protocolManagerRoot .pm-exit-confirmation input { flex: none; }
 
 #protocolManagerRoot .pm-document-meta {
   margin: 0 0 8px;

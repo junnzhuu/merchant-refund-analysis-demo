@@ -3,7 +3,6 @@
 
   const STORAGE_KEY = 'merchant-protocol-demo-v1';
   const SIGNING_DEADLINE = '2027-02-08 23:59';
-  const LEGACY_SIGNING_DEADLINE = '2026-12-31';
   const SCENES = {
     before: { label: '活动开始前', time: '2027-01-20 10:00' },
     after: { label: '活动开始后', time: '2027-02-03 10:00' },
@@ -13,8 +12,7 @@
   const SEED = [
     { id: 'spring-2027-direct', kind: 'direct', name: '2027年春节不打烊服务协议-直发履约', createdAt: '2026-12-22 10:00', confirmedAt: '2026-12-22 10:08', status: 'signed', reasons: [] },
     { id: 'spring-2027-aftersales', kind: 'aftersales', name: '2027年春节不打烊服务协议-售后履约', createdAt: '2026-12-22 10:00', confirmedAt: '2026-12-22 10:08', status: 'signed', reasons: [] },
-    { id: 'spring-2027-customer', kind: 'customer', name: '2027年春节不打烊服务协议-客服履约', createdAt: '2026-12-22 10:00', confirmedAt: '2026-12-22 10:08', status: 'signed', reasons: [] },
-    { id: 'spring-2026-customer', kind: 'customer', legacy: true, name: '2026年春节客服不打烊活动协议', createdAt: '2026-10-25 01:23', confirmedAt: '2026-10-25 01:23', status: 'signed', reasons: [] }
+    { id: 'spring-2027-customer', kind: 'customer', name: '2027年春节不打烊服务协议-客服履约', createdAt: '2026-12-22 10:00', confirmedAt: '2026-12-22 10:08', status: 'signed', reasons: [] }
   ];
   const STATUS_LABELS = { signed: '已签署', unsigned: '未签署', exited: '已退出' };
   const LOGISTICS_LINK = '<a href="https://t1-stark.dewu.com/main/brandStraight/logisticsConfig" target="_blank" rel="noopener noreferrer">转得物配</a>';
@@ -89,11 +87,11 @@
       <dialog class="pm-dialog pm-exit-dialog" aria-labelledby="pmExitTitle">
         <header class="pm-dialog-header"><h2 id="pmExitTitle">退出协议确认</h2><button type="button" class="pm-dialog-close" data-pm-close aria-label="关闭退出协议确认">×</button></header>
         <div class="pm-dialog-body">
-          <div class="pm-reason-field"><label id="pmReasonLabel" for="pmReasonTrigger">退出原因:</label><div class="pm-reason-select"><button type="button" id="pmReasonTrigger" class="pm-select-trigger" aria-label="退出原因" aria-haspopup="true" aria-expanded="false" aria-controls="pmReasonMenu"><span class="pm-placeholder">请选择退出原因</span></button><div id="pmReasonMenu" class="pm-reason-menu" role="group" aria-labelledby="pmReasonLabel" hidden></div></div></div>
-          <p class="pm-validation" role="alert" hidden>请选择退出原因</p>
+          <div class="pm-reason-field"><label id="pmReasonLabel" for="pmReasonTrigger"><span class="pm-required-mark" aria-hidden="true">*</span>退出原因:<span id="pmReasonRequired" class="sr-only">必选</span></label><div class="pm-reason-select"><button type="button" id="pmReasonTrigger" class="pm-select-trigger" aria-label="退出原因" aria-describedby="pmReasonRequired" aria-haspopup="true" aria-expanded="false" aria-controls="pmReasonMenu"><span class="pm-placeholder">请选择退出原因</span></button><div id="pmReasonMenu" class="pm-reason-menu" role="group" aria-labelledby="pmReasonLabel" hidden></div></div></div>
           <div class="pm-exit-copy">确定要退出该协议，退出后协议对应权益也会取消？</div>
+          <label class="pm-exit-confirmation" hidden><input type="checkbox">我已了解，确认退出该协议</label>
         </div>
-        <footer class="pm-dialog-footer"><button type="button" class="pm-button pm-button-primary" data-pm-confirm-exit>确定退出</button><button type="button" class="pm-button" data-pm-close>取 消</button></footer>
+        <footer class="pm-dialog-footer"><button type="button" class="pm-button pm-button-primary" data-pm-confirm-exit disabled>确定退出</button><button type="button" class="pm-button" data-pm-close>取 消</button></footer>
       </dialog>
       <dialog class="pm-dialog pm-view-dialog" aria-labelledby="pmViewTitle">
         <header class="pm-dialog-header"><h2 id="pmViewTitle">协议详情</h2><button type="button" class="pm-dialog-close" data-pm-close aria-label="关闭协议详情">×</button></header>
@@ -113,8 +111,10 @@
     const jumpDialog = root.querySelector('.pm-jump-dialog');
     const reasonTrigger = root.querySelector('#pmReasonTrigger');
     const reasonMenu = root.querySelector('#pmReasonMenu');
-    const validation = root.querySelector('.pm-validation');
-    const exitCopy = root.querySelector('.pm-exit-copy');
+    const exitCopy = exitDialog.querySelector('.pm-exit-copy');
+    const exitConfirmation = exitDialog.querySelector('.pm-exit-confirmation');
+    const exitAcknowledgement = exitConfirmation.querySelector('input');
+    const exitButton = exitDialog.querySelector('[data-pm-confirm-exit]');
     const signButton = root.querySelector('[data-pm-confirm-sign]');
     const demoPanel = root.querySelector('.pm-demo-panel');
     const demoToggle = root.querySelector('.pm-demo-toggle');
@@ -125,13 +125,14 @@
       } catch (_) { /* Interactions continue when storage is unavailable. */ }
     }
 
-    function canChange(record) {
-      return record.legacy || SCENES[scene].time <= SIGNING_DEADLINE;
+    function isWithinSigningPeriod() {
+      return SCENES[scene].time <= SIGNING_DEADLINE;
     }
 
     function render() {
+      const withinSigningPeriod = isWithinSigningPeriod();
+      const cutoff = SIGNING_DEADLINE.slice(0, 10);
       const filtered = records.filter(record => {
-        const cutoff = record.legacy ? LEGACY_SIGNING_DEADLINE : SIGNING_DEADLINE.slice(0, 10);
         return (!filters.name || record.name.includes(filters.name)) && (!filters.type || record.id === filters.type) && (!filters.status || record.status === filters.status) && filters.limit !== 'limited' && (!filters.start || cutoff >= filters.start) && (!filters.end || cutoff <= filters.end);
       });
       const pages = Math.max(1, Math.ceil(filtered.length / pageSize));
@@ -139,7 +140,6 @@
       const visible = filtered.slice((page - 1) * pageSize, page * pageSize);
       tbody.innerHTML = visible.length ? visible.map(record => {
         const reasonTitle = record.status === 'exited' && record.reasons.length ? ` title="退出原因：${record.reasons.map(reason => REASONS[reason]).join('、')}"` : '';
-        const withinSigningPeriod = canChange(record);
         const canSign = record.status !== 'signed' && withinSigningPeriod;
         const viewAction = canSign ? '' :
           `<button type="button" class="pm-link" data-pm-action="view" data-protocol-id="${record.id}">查看</button>`;
@@ -163,6 +163,12 @@
       reasonTrigger.setAttribute('aria-expanded', 'false');
     }
 
+    function updateExitConfirmation() {
+      const hasReason = selectedReasons.length > 0;
+      exitConfirmation.hidden = !hasReason;
+      exitButton.disabled = !hasReason || !exitAcknowledgement.checked;
+    }
+
     function closeDialogs(restoreFocus = true) {
       closeReasonMenu();
       if (jumpDialog.open) jumpDialog.close();
@@ -170,6 +176,8 @@
       if (viewDialog.open) viewDialog.close();
       activeRecord = null;
       selectedReasons = [];
+      exitAcknowledgement.checked = false;
+      updateExitConfirmation();
       if (restoreFocus && opener && opener.isConnected) opener.focus();
       opener = null;
       jumpOpener = null;
@@ -181,29 +189,19 @@
 
     function updateExitCopy() {
       reasonTrigger.innerHTML = selectedReasons.length ? selectedReasons.map(reason => `<span class="pm-reason-tag">${REASONS[reason]}</span>`).join('') : '<span class="pm-placeholder">请选择退出原因</span>';
-      if (!activeRecord || activeRecord.legacy || !selectedReasons.length) {
+      if (!selectedReasons.length) {
         exitCopy.textContent = '确定要退出该协议，退出后协议对应权益也会取消？';
       } else {
         const key = selectedReasons.includes('warehouse') && selectedReasons.includes('transport') ? 'both' : selectedReasons[0];
         exitCopy.innerHTML = EXIT_COPY[scene === 'before' ? 'before' : 'after'][key];
       }
-      if (selectedReasons.length) {
-        validation.hidden = true;
-        reasonTrigger.removeAttribute('aria-invalid');
-        reasonTrigger.removeAttribute('aria-describedby');
-      }
     }
 
     function openExit(record, target) {
-      if (!canChange(record)) return;
+      if (!isWithinSigningPeriod()) return;
       closeDialogs(false);
       activeRecord = record;
       opener = target;
-      selectedReasons = [];
-      validation.hidden = true;
-      validation.id = 'pmReasonError';
-      reasonTrigger.removeAttribute('aria-invalid');
-      reasonTrigger.removeAttribute('aria-describedby');
       reasonMenu.innerHTML = allowedReasons(record).map(reason => `<label class="pm-reason-option"><input type="checkbox" value="${reason}"><span>${REASONS[reason]}</span></label>`).join('');
       updateExitCopy();
       exitDialog.showModal();
@@ -216,15 +214,14 @@
       viewerMode = mode;
       opener = target;
       const kindLabel = record.kind === 'direct' ? '直发履约' : record.kind === 'customer' ? '客服履约' : '售后履约';
-      const signing = mode === 'sign' && canChange(record);
-      const signingDeadline = record.legacy ? LEGACY_SIGNING_DEADLINE : SIGNING_DEADLINE + ':00';
+      const signing = mode === 'sign' && isWithinSigningPeriod();
       root.querySelector('.pm-view-meta').innerHTML = `<span>协议类型：${escapeHtml(record.name)}</span>` + (signing
-        ? `<span>协议签署时间：${escapeHtml(record.confirmedAt || '')}</span><span>截止签约时间：${signingDeadline}</span><span>截止限制出价时间未签约是否限制出价：不限制出价</span>`
+        ? `<span>协议签署时间：${escapeHtml(record.confirmedAt || '')}</span><span>截止签约时间：${SIGNING_DEADLINE}:00</span><span>截止限制出价时间未签约是否限制出价：不限制出价</span>`
         : `<span>状态：${STATUS_LABELS[record.status]}</span><span>协议创建时间：${record.createdAt}</span><span>协议确认时间：${escapeHtml(record.confirmedAt || '-')}</span>`);
       root.querySelector('.pm-document').innerHTML = `
         <h2 class="pm-document-title">${escapeHtml(record.name)}</h2>
         <p class="pm-document-meta">协议状态：${STATUS_LABELS[record.status]}${record.confirmedAt ? `　协议确认时间：${escapeHtml(record.confirmedAt)}` : ''}</p>
-        <p class="pm-document-notice">${record.legacy ? '原型示例，协议正文仅作演示' : '原型示例，2027 正式正文待提供'}。本页为非约束性的演示内容，不构成真实协议。</p>
+        <p class="pm-document-notice">原型示例，2027 正式正文待提供。本页为非约束性的演示内容，不构成真实协议。</p>
         <h3>一、审慎阅读</h3><p>本示例用于展示协议阅读、签署、退出和再次签署的交互。正式签署前，请完整阅读平台提供的协议正文，并确认您理解相关活动约定。</p>
         <h3>二、签约</h3><p>当前示例为${kindLabel}协议。点击下方确认按钮后，协议列表将展示签署后的示例状态和确认时间。</p>
         <h3>三、活动约定</h3><p>活动时间、适用范围、履约要求及权益以正式发布的协议和公告为准。本示例不对尚未确认的合同内容作补充约定。</p>
@@ -299,9 +296,12 @@
         reasonMenu.querySelector('input').focus();
       }
     });
+    exitAcknowledgement.addEventListener('change', updateExitConfirmation);
     reasonMenu.addEventListener('change', () => {
       selectedReasons = [...reasonMenu.querySelectorAll('input:checked')].map(input => input.value);
+      exitAcknowledgement.checked = false;
       updateExitCopy();
+      updateExitConfirmation();
       if (activeRecord.kind !== 'direct') {
         closeReasonMenu();
         reasonTrigger.focus();
@@ -331,15 +331,8 @@
       if (button) button.focus();
       else form.elements.name.focus();
     }
-    exitDialog.querySelector('[data-pm-confirm-exit]').addEventListener('click', () => {
-      if (!activeRecord || !canChange(activeRecord)) return;
-      if (!selectedReasons.length) {
-        validation.hidden = false;
-        reasonTrigger.setAttribute('aria-invalid', 'true');
-        reasonTrigger.setAttribute('aria-describedby', 'pmReasonError');
-        reasonTrigger.focus();
-        return;
-      }
+    exitButton.addEventListener('click', () => {
+      if (!exitDialog.open || !activeRecord || !isWithinSigningPeriod() || !selectedReasons.length || !exitAcknowledgement.checked) return;
       activeRecord.status = 'exited';
       activeRecord.reasons = [...selectedReasons];
       activeRecord.exitedAt = SCENES[scene].time;
@@ -351,7 +344,7 @@
       notify('已退出协议');
     });
     signButton.addEventListener('click', () => {
-      if (!viewDialog.open || !activeRecord || viewerMode !== 'sign' || !canChange(activeRecord)) return;
+      if (!viewDialog.open || !activeRecord || viewerMode !== 'sign' || !isWithinSigningPeriod()) return;
       activeRecord.status = 'signed';
       activeRecord.confirmedAt = SCENES[scene].time;
       activeRecord.reasons = [];
@@ -379,7 +372,7 @@
     root.querySelectorAll('[data-pm-reset]').forEach(button => button.addEventListener('click', () => {
       closeDialogs(false);
       const status = button.dataset.pmReset;
-      records = SEED.map(record => record.legacy ? records.find(current => current.id === record.id) : ({ ...record, status, reasons: [], exitedAt: '', confirmedAt: status === 'signed' ? record.confirmedAt : '' }));
+      records = SEED.map(record => ({ ...record, status, reasons: [], exitedAt: '', confirmedAt: status === 'signed' ? record.confirmedAt : '' }));
       filters = { name: '', type: '', status: '', start: '', end: '', limit: '' };
       form.reset();
       page = 1;
