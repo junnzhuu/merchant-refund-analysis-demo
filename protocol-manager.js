@@ -18,20 +18,46 @@
   const LOGISTICS_LINK = '<a href="https://t1-stark.dewu.com/main/brandStraight/logisticsConfig" target="_blank" rel="noopener noreferrer">转得物配</a>';
   const WAREHOUSE_LINK = '<a href="#" data-pm-action="warehouse">转入仓发货</a>';
   const DEFAULT_EXIT_COPY = '确定要退出该协议？退出后协议对应权益也会取消。';
-  const EXIT_COPY = {
-    before: {
-      warehouse: `您正在申请解除【2027年春节直发发货不打烊活动协议】，点击确认后，您将不再享受得物平台提供的营销推广的奖励资源，或通过${WAREHOUSE_LINK}，以获取平台的推广资源。若您确认需退出，请关注平台在27年1月发布的春节发货时效调整公告！`,
-      transport: `您正在申请解除【2027年春节直发发货不打烊活动协议】，点击确认后，您将不再享受得物平台提供的营销推广的奖励资源，或通过${LOGISTICS_LINK}，以获取平台的推广资源，切换后需保持使用得物配3个月。若您确认需退出，请关注平台在27年1月发布的春节发货时效调整公告！`,
-      both: `您正在申请解除【2027年春节直发发货不打烊活动协议】，点击确认后，您将不再享受得物平台提供的营销推广的奖励资源，或通过${LOGISTICS_LINK}、${WAREHOUSE_LINK}，以获取平台的推广资源，切换后需保持使用得物配3个月。若您确认需退出，请关注平台在27年1月发布的春节发货时效调整公告！`,
-      customer: '您正在申请解除【2027年春节客服不打烊活动协议】，点击确认后，您将不再享受得物平台提供的营销推广的奖励资源，。。。。。若您确认需退出，请关注平台在27年1月发布的春节客服时效调整公告！',
-      aftersales: '您正在申请解除【2027年春节售后不打烊活动协议】，点击确认后，您将不再享受得物平台提供的营销推广的奖励资源，若您确认需退出，请关注平台在27年1月发布的春节售后时效调整公告！'
+  const EXIT_REWARD_LOSS = '不再享受得物平台提供的营销推广的奖励资源';
+  const SHIPPING_EXIT_NOTICE = '若您确认退出，请关注平台在27年1月发布的春节发货时效调整公告！';
+  const BEFORE_EXIT_COPY = {
+    warehouse: {
+      main: `退出后，您将<strong>${EXIT_REWARD_LOSS}</strong>，或通过${WAREHOUSE_LINK}，以获取平台的推广资源。`,
+      secondary: SHIPPING_EXIT_NOTICE
     },
+    transport: {
+      main: `退出后，您将<strong>${EXIT_REWARD_LOSS}</strong>，或通过${LOGISTICS_LINK}，以获取平台的推广资源，切换后需保持使用得物配3个月。`,
+      secondary: SHIPPING_EXIT_NOTICE
+    },
+    both: {
+      main: `退出后，您将<strong>${EXIT_REWARD_LOSS}</strong>，或通过${LOGISTICS_LINK}、${WAREHOUSE_LINK}，以获取平台的推广资源，切换后需保持使用得物配3个月。`,
+      secondary: SHIPPING_EXIT_NOTICE
+    },
+    customer: {
+      main: `退出后，您将<strong>${EXIT_REWARD_LOSS}</strong>，。。。。。`,
+      secondary: '若您确认退出，请关注平台在27年1月发布的春节客服时效调整公告！'
+    },
+    aftersales: {
+      main: `退出后，您将<strong>${EXIT_REWARD_LOSS}。</strong>`,
+      secondary: '若您确认退出，请关注平台在27年1月发布的春节售后时效调整公告！'
+    }
+  };
+  const EXIT_COPY = {
+    before: BEFORE_EXIT_COPY,
     after: {
-      warehouse: `您正在申请解除【2027年春节直发发货不打烊活动协议】，点击确认后，您将不再享受得物平台提供的营销推广的奖励资源，或通过${WAREHOUSE_LINK}，以获取平台的推广资源。若您确认需退出，自协议解除之日起，新产生的订单将按春节发货时效考核，并按活动期内成交订单金额的 5% 收取违约金（退出前已产生的订单仍需按原时效完成发货），请关注平台在27年1月发布的春节发货时效调整公告！`,
-      transport: `您正在申请解除【2027年春节直发发货不打烊活动协议】，点击确认后，您将不再享受得物平台提供的营销推广的奖励资源，或通过${LOGISTICS_LINK}，以获取平台的推广资源，切换后需保持使用得物配3个月。若您确认需退出，平台将xxxxxx，请关注平台在27年1月发布的春节发货时效调整公告！`,
-      both: `您正在申请解除【2027年春节直发发货不打烊活动协议】，点击确认后，您将不再享受得物平台提供的营销推广的奖励资源，或通过${LOGISTICS_LINK}、${WAREHOUSE_LINK}，以获取平台的推广资源，切换后需保持使用得物配3个月。若您确认需退出，请关注平台在27年1月发布的春节发货时效调整公告！`,
-      customer: '您正在申请解除【2027年春节客服不打烊活动协议】，点击确认后，您将不再享受得物平台提供的营销推广的奖励资源，。。。。。若您确认需退出，请关注平台在27年1月发布的春节客服时效调整公告！',
-      aftersales: '您正在申请解除【2027年春节售后不打烊活动协议】，点击确认后，您将不再享受得物平台提供的营销推广的奖励资源，若您确认需退出，请关注平台在27年1月发布的春节售后时效调整公告！'
+      ...BEFORE_EXIT_COPY,
+      warehouse: {
+        ...BEFORE_EXIT_COPY.warehouse,
+        secondary: '若您确认退出，自协议解除之日起，新产生的订单将按春节发货时效考核，并按活动期内成交订单金额的<strong> 5% </strong>收取违约金（退出前已产生的订单仍需按原时效完成发货），请关注平台在27年1月发布的春节发货时效调整公告！'
+      },
+      transport: {
+        ...BEFORE_EXIT_COPY.transport,
+        secondary: '若您确认退出，平台将xxxxxx，请关注平台在27年1月发布的春节发货时效调整公告！'
+      },
+      aftersales: {
+        main: `退出后，您将<strong>${EXIT_REWARD_LOSS}</strong>。`,
+        secondary: '若您确认需退出，请关注平台在27年1月发布的春节售后时效调整公告！'
+      }
     }
   };
 
@@ -86,13 +112,23 @@
         </section>
       </div>
       <dialog class="pm-dialog pm-exit-dialog" aria-labelledby="pmExitTitle">
-        <header class="pm-dialog-header"><h2 id="pmExitTitle">退出协议确认</h2><button type="button" class="pm-dialog-close" data-pm-close aria-label="关闭退出协议确认">×</button></header>
+        <header class="pm-dialog-header"><h2 id="pmExitTitle">退出协议</h2><button type="button" class="pm-dialog-close" data-pm-close aria-label="关闭退出协议">×</button></header>
         <div class="pm-dialog-body">
+          <div class="pm-exit-agreement">
+            <div class="pm-exit-agreement-label">当前协议</div>
+            <div class="pm-exit-agreement-name"></div>
+          </div>
           <div class="pm-reason-field"><label id="pmReasonLabel" for="pmReasonTrigger"><span class="pm-required-mark" aria-hidden="true">*</span>退出原因:<span id="pmReasonRequired" class="sr-only">必选</span></label><div class="pm-reason-select"><button type="button" id="pmReasonTrigger" class="pm-select-trigger" aria-label="退出原因" aria-describedby="pmReasonRequired" aria-haspopup="true" aria-expanded="false" aria-controls="pmReasonMenu"><span class="pm-placeholder">请选择退出原因</span></button><div id="pmReasonMenu" class="pm-reason-menu" role="group" aria-labelledby="pmReasonLabel" hidden></div></div></div>
-          <div class="pm-exit-copy">${DEFAULT_EXIT_COPY}</div>
-          <label class="pm-exit-confirmation" hidden><span class="pm-required-mark" aria-hidden="true">*</span><input type="checkbox">我已了解，确认退出该协议</label>
+          <div class="pm-exit-copy">
+            <div class="pm-exit-warning">
+              <span class="pm-exit-warning-icon" aria-hidden="true">!</span>
+              <p class="pm-exit-main-copy">${DEFAULT_EXIT_COPY}</p>
+            </div>
+            <p class="pm-exit-secondary-copy" hidden></p>
+          </div>
+          <label class="pm-exit-confirmation" hidden><input type="checkbox">我已了解退出影响</label>
         </div>
-        <footer class="pm-dialog-footer"><button type="button" class="pm-button pm-button-primary" data-pm-confirm-exit disabled>确定退出</button><button type="button" class="pm-button" data-pm-close>取 消</button></footer>
+        <footer class="pm-dialog-footer"><button type="button" class="pm-button" data-pm-close>暂不退出</button><button type="button" class="pm-button pm-button-primary" data-pm-confirm-exit disabled>确认退出</button></footer>
       </dialog>
       <dialog class="pm-dialog pm-view-dialog" aria-labelledby="pmViewTitle">
         <header class="pm-dialog-header"><h2 id="pmViewTitle">协议详情</h2><button type="button" class="pm-dialog-close" data-pm-close aria-label="关闭协议详情">×</button></header>
@@ -112,7 +148,10 @@
     const jumpDialog = root.querySelector('.pm-jump-dialog');
     const reasonTrigger = root.querySelector('#pmReasonTrigger');
     const reasonMenu = root.querySelector('#pmReasonMenu');
-    const exitCopy = exitDialog.querySelector('.pm-exit-copy');
+    const exitAgreementName = exitDialog.querySelector('.pm-exit-agreement-name');
+    const exitBody = exitDialog.querySelector('.pm-dialog-body');
+    const exitMainCopy = exitDialog.querySelector('.pm-exit-main-copy');
+    const exitSecondaryCopy = exitDialog.querySelector('.pm-exit-secondary-copy');
     const exitConfirmation = exitDialog.querySelector('.pm-exit-confirmation');
     const exitAcknowledgement = exitConfirmation.querySelector('input');
     const exitButton = exitDialog.querySelector('[data-pm-confirm-exit]');
@@ -190,12 +229,16 @@
 
     function updateExitCopy() {
       reasonTrigger.innerHTML = selectedReasons.length ? selectedReasons.map(reason => `<span class="pm-reason-tag">${REASONS[reason]}</span>`).join('') : '<span class="pm-placeholder">请选择退出原因</span>';
-      if (!selectedReasons.length) {
-        exitCopy.textContent = DEFAULT_EXIT_COPY;
-      } else {
-        const key = selectedReasons.includes('warehouse') && selectedReasons.includes('transport') ? 'both' : selectedReasons[0];
-        exitCopy.innerHTML = EXIT_COPY[scene === 'before' ? 'before' : 'after'][key];
+      const key = selectedReasons.length === 2 ? 'both' : selectedReasons[0];
+      const copy = EXIT_COPY[scene === 'before' ? 'before' : 'after'][key];
+      exitSecondaryCopy.hidden = !copy;
+      if (!copy) {
+        exitMainCopy.textContent = DEFAULT_EXIT_COPY;
+        exitSecondaryCopy.textContent = '';
+        return;
       }
+      exitMainCopy.innerHTML = copy.main;
+      exitSecondaryCopy.innerHTML = copy.secondary;
     }
 
     function openExit(record, target) {
@@ -203,10 +246,12 @@
       closeDialogs(false);
       activeRecord = record;
       opener = target;
+      exitAgreementName.textContent = record.name;
       reasonMenu.innerHTML = allowedReasons(record).map(reason => `<label class="pm-reason-option"><input type="checkbox" value="${reason}"><span>${REASONS[reason]}</span></label>`).join('');
       updateExitCopy();
       exitDialog.showModal();
-      reasonTrigger.focus();
+      exitBody.scrollTop = 0;
+      reasonTrigger.focus({ preventScroll: true });
     }
 
     function openViewer(record, mode, target) {

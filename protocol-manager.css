@@ -659,26 +659,128 @@ body[data-demo-page="protocol-manager"] .rc-portal-floats [data-return-support]:
   line-height: 20px;
 }
 
+#protocolManagerRoot .pm-exit-dialog {
+  width: min(560px, calc(100vw - 32px));
+  overflow: hidden;
+  border-radius: 3px;
+}
+
+#protocolManagerRoot .pm-exit-dialog[open] {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr) auto;
+}
+
+#protocolManagerRoot .pm-exit-dialog .pm-dialog-header {
+  min-height: 54px;
+  border-bottom: 0;
+}
+
+#protocolManagerRoot .pm-exit-dialog .pm-dialog-header h2 { font-size: 14px; }
+#protocolManagerRoot .pm-exit-dialog .pm-dialog-close { color: #4c4c59; }
+
+#protocolManagerRoot .pm-exit-dialog .pm-dialog-body {
+  padding: 13px 23px 12px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+#protocolManagerRoot .pm-exit-agreement {
+  display: grid;
+  gap: 4px;
+  margin-bottom: 24px;
+  padding: 12px 16px;
+  background: #f6f6f8;
+}
+
+#protocolManagerRoot .pm-exit-agreement-label {
+  color: var(--pm-muted);
+  font-size: 12px;
+  line-height: 18px;
+}
+
+#protocolManagerRoot .pm-exit-agreement-name {
+  color: var(--pm-text);
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 24px;
+  overflow-wrap: anywhere;
+}
+
 #protocolManagerRoot .pm-exit-copy {
-  margin: 16px 0 0;
-  color: var(--pm-body);
-  line-height: 23px;
+  margin: 20px 0 0;
+  color: #4c4c59;
+  line-height: 22px;
   text-align: left;
+  overflow-wrap: anywhere;
+}
+
+#protocolManagerRoot .pm-exit-warning {
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+  padding: 7px 15px;
+  border: 1px solid #ffe0ad;
+  border-radius: 2px;
+  background: #fff9ef;
+}
+
+#protocolManagerRoot .pm-exit-warning-icon {
+  display: inline-grid;
+  flex: none;
+  place-items: center;
+  width: 15px;
+  height: 15px;
+  margin-top: 3px;
+  border-radius: 50%;
+  color: white;
+  background: #fc9d00;
+  font: 700 11px/1 Arial, sans-serif;
+}
+
+#protocolManagerRoot .pm-exit-main-copy { min-width: 0; margin: 0; }
+#protocolManagerRoot .pm-exit-copy strong { color: var(--pm-text); font-weight: 600; }
+
+#protocolManagerRoot .pm-exit-secondary-copy {
+  margin: 12px 0 0;
+  color: var(--pm-muted);
+  font-size: 12px;
+  line-height: 20px;
 }
 
 #protocolManagerRoot .pm-exit-copy .pm-link { display: inline; }
 
 #protocolManagerRoot .pm-exit-confirmation {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 8px;
   width: fit-content;
   max-width: 100%;
-  margin: 14px auto 0;
+  margin: 16px 0 0;
+  color: var(--pm-text);
   cursor: pointer;
 }
 
-#protocolManagerRoot .pm-exit-confirmation input { flex: none; }
+#protocolManagerRoot .pm-exit-confirmation input {
+  flex: none;
+  width: 16px;
+  height: 16px;
+  margin: 3px 0 0;
+}
+
+#protocolManagerRoot .pm-exit-dialog .pm-dialog-footer {
+  min-height: 0;
+  padding: 8px 23px 15px;
+  border-top: 0;
+}
+
+#protocolManagerRoot .pm-exit-dialog .pm-dialog-footer .pm-button { min-width: 88px; }
+
+#protocolManagerRoot .pm-exit-dialog [data-pm-confirm-exit]:disabled {
+  border-color: var(--pm-accent);
+  color: white;
+  background: var(--pm-accent);
+  opacity: .35;
+}
 
 #protocolManagerRoot .pm-document-meta {
   margin: 0 0 8px;
@@ -878,6 +980,8 @@ body[data-demo-page="protocol-manager"] .rc-portal-floats [data-return-support]:
   }
   #protocolManagerRoot .pm-dialog-body { padding: 16px; }
   #protocolManagerRoot .pm-dialog-header { padding-left: 16px; }
+  #protocolManagerRoot .pm-exit-dialog .pm-dialog-body { padding-inline: 15px; }
+  #protocolManagerRoot .pm-exit-dialog .pm-dialog-footer { padding-inline: 15px; }
   #protocolManagerRoot .pm-view-meta { margin: 16px 16px 8px; }
   #protocolManagerRoot .pm-document-viewer { margin-inline: 16px; }
   #protocolManagerRoot .pm-document-viewer-body { grid-template-columns: minmax(0, 1fr); }
