@@ -90,7 +90,7 @@
         <div class="pm-dialog-body">
           <div class="pm-reason-field"><label id="pmReasonLabel" for="pmReasonTrigger"><span class="pm-required-mark" aria-hidden="true">*</span>退出原因:<span id="pmReasonRequired" class="sr-only">必选</span></label><div class="pm-reason-select"><button type="button" id="pmReasonTrigger" class="pm-select-trigger" aria-label="退出原因" aria-describedby="pmReasonRequired" aria-haspopup="true" aria-expanded="false" aria-controls="pmReasonMenu"><span class="pm-placeholder">请选择退出原因</span></button><div id="pmReasonMenu" class="pm-reason-menu" role="group" aria-labelledby="pmReasonLabel" hidden></div></div></div>
           <div class="pm-exit-copy">${DEFAULT_EXIT_COPY}</div>
-          <label class="pm-exit-confirmation" hidden><input type="checkbox">我已了解，确认退出该协议</label>
+          <label class="pm-exit-confirmation" hidden><span class="pm-required-mark" aria-hidden="true">*</span><input type="checkbox">我已了解，确认退出该协议</label>
         </div>
         <footer class="pm-dialog-footer"><button type="button" class="pm-button pm-button-primary" data-pm-confirm-exit disabled>确定退出</button><button type="button" class="pm-button" data-pm-close>取 消</button></footer>
       </dialog>
