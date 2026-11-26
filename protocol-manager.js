@@ -17,6 +17,7 @@
   const STATUS_LABELS = { signed: '已签署', unsigned: '未签署', exited: '已退出' };
   const LOGISTICS_LINK = '<a href="https://t1-stark.dewu.com/main/brandStraight/logisticsConfig" target="_blank" rel="noopener noreferrer">转得物配</a>';
   const WAREHOUSE_LINK = '<a href="#" data-pm-action="warehouse">转入仓发货</a>';
+  const RESIGN_BLOCKED_COPY = '因违规被剔除出活动，无法再次签署该协议';
   const DEFAULT_EXIT_COPY = '确定要退出该协议？退出后协议对应权益也会取消。';
   const EXIT_REWARD_LOSS = '不再享受得物平台提供的营销推广的奖励资源';
   const SHIPPING_EXIT_NOTICE = '若您确认退出，请关注平台在27年1月发布的春节发货时效调整公告！';
@@ -66,7 +67,7 @@
   }
 
   function mount({ root, notify = function () {} }) {
-    let records = SEED.map(record => ({ ...record, reasons: [] }));
+    let records = SEED.map(record => ({ ...record, reasons: [], excludedFromActivity: false }));
     let scene = 'before';
     let filters = { name: '', type: '', status: '', start: '', end: '', limit: '' };
     let page = 1;
@@ -83,7 +84,14 @@
         records = records.map(record => {
           const previous = saved.records.find(item => item && item.id === record.id);
           if (!previous || !Object.hasOwn(STATUS_LABELS, previous.status)) return record;
-          return { ...record, status: previous.status, confirmedAt: typeof previous.confirmedAt === 'string' ? previous.confirmedAt : record.confirmedAt, exitedAt: typeof previous.exitedAt === 'string' ? previous.exitedAt : '', reasons: Array.isArray(previous.reasons) ? previous.reasons.filter(reason => Object.hasOwn(REASONS, reason)) : [] };
+          return {
+            ...record,
+            status: previous.status,
+            confirmedAt: typeof previous.confirmedAt === 'string' ? previous.confirmedAt : record.confirmedAt,
+            exitedAt: typeof previous.exitedAt === 'string' ? previous.exitedAt : '',
+            reasons: Array.isArray(previous.reasons) ? previous.reasons.filter(reason => Object.hasOwn(REASONS, reason)) : [],
+            excludedFromActivity: record.kind === 'direct' && previous.excludedFromActivity === true
+          };
         });
       }
     } catch (_) { /* Storage is optional for this browser-local prototype. */ }
@@ -137,7 +145,7 @@
         <footer class="pm-dialog-footer pm-view-footer"><button type="button" class="pm-button" data-pm-close>关 闭</button><button type="button" class="pm-button pm-button-primary" data-pm-confirm-sign hidden>确认协议</button></footer>
       </dialog>
       <dialog class="pm-dialog pm-jump-dialog" aria-labelledby="pmJumpTitle"><header class="pm-dialog-header"><h2 id="pmJumpTitle">入仓预约</h2><button type="button" class="pm-dialog-close" data-pm-close-jump aria-label="关闭入仓预约跳转示意">×</button></header><div class="pm-dialog-body"><h3>入仓预约跳转示意</h3><p>此处演示从退出协议提示进入商家后台「入仓预约」的路径。返回后可继续选择原因或确认退出协议。</p><p class="pm-document-notice">原型示例，不会创建真实入仓预约。</p></div><footer class="pm-dialog-footer"><button type="button" class="pm-button pm-button-primary" data-pm-close-jump>返回协议</button></footer></dialog>
-      <div class="pm-demo"><button type="button" class="pm-demo-toggle" aria-expanded="false" aria-controls="pmDemoPanel">原型演示</button><section class="pm-demo-panel" id="pmDemoPanel" aria-label="原型演示设置" hidden><h3>原型演示</h3><div class="pm-demo-scenes">${Object.entries(SCENES).map(([key, value]) => `<button type="button" class="pm-demo-scene" data-pm-scene="${key}" aria-pressed="${key === scene}">${value.label}</button>`).join('')}</div><p class="pm-demo-time"></p><p class="pm-demo-note">演示签署截止时间：${SIGNING_DEADLINE}。场景时间仅用于原型演示，正式时间待配置。</p><div class="pm-demo-reset"><button type="button" class="pm-button" data-pm-reset="signed">重置为已签署</button><button type="button" class="pm-button" data-pm-reset="unsigned">重置为未签署</button></div><p class="pm-demo-note">签署与退出只更新浏览器中的示例状态；协议正文为非约束性的演示内容。</p></section></div>
+      <div class="pm-demo"><button type="button" class="pm-demo-toggle" aria-expanded="false" aria-controls="pmDemoPanel">原型演示</button><section class="pm-demo-panel" id="pmDemoPanel" aria-label="原型演示设置" hidden><h3>原型演示</h3><div class="pm-demo-scenes">${Object.entries(SCENES).map(([key, value]) => `<button type="button" class="pm-demo-scene" data-pm-scene="${key}" aria-pressed="${key === scene}">${value.label}</button>`).join('')}</div><p class="pm-demo-time"></p><p class="pm-demo-note">演示签署截止时间：${SIGNING_DEADLINE}。场景时间仅用于原型演示，正式时间待配置。</p><div class="pm-demo-reset"><button type="button" class="pm-button" data-pm-reset="signed">重置为已签署</button><button type="button" class="pm-button" data-pm-reset="unsigned">重置为未签署</button><button type="button" class="pm-button" data-pm-simulate-exclusion disabled>模拟直发违规剔除</button></div><p class="pm-demo-note">签署与退出只更新浏览器中的示例状态；协议正文为非约束性的演示内容。</p></section></div>
     `;
 
     const form = root.querySelector('.pm-filters');
@@ -158,15 +166,27 @@
     const signButton = root.querySelector('[data-pm-confirm-sign]');
     const demoPanel = root.querySelector('.pm-demo-panel');
     const demoToggle = root.querySelector('.pm-demo-toggle');
+    const simulateExclusionButton = demoPanel.querySelector('[data-pm-simulate-exclusion]');
 
     function persist() {
       try {
-        sessionStorage.setItem(STORAGE_KEY, JSON.stringify({ version: 1, records: records.map(({ id, status, reasons, confirmedAt, exitedAt }) => ({ id, status, reasons, confirmedAt, exitedAt })) }));
+        const savedRecords = records.map(({ id, status, reasons, confirmedAt, exitedAt, excludedFromActivity }) => (
+          { id, status, reasons, confirmedAt, exitedAt, excludedFromActivity }
+        ));
+        sessionStorage.setItem(STORAGE_KEY, JSON.stringify({ version: 1, records: savedRecords }));
       } catch (_) { /* Interactions continue when storage is unavailable. */ }
     }
 
     function isWithinSigningPeriod() {
       return SCENES[scene].time <= SIGNING_DEADLINE;
+    }
+
+    function canSign(record) {
+      return isWithinSigningPeriod() && record.status !== 'signed' && !record.excludedFromActivity;
+    }
+
+    function canSimulateExclusion(record) {
+      return scene === 'after' && isWithinSigningPeriod() && record?.status === 'signed' && !record.excludedFromActivity;
     }
 
     function render() {
@@ -181,17 +201,25 @@
       tbody.innerHTML = visible.length ? visible.map(record => {
         const reasonTitle = record.status === 'exited' && record.reasons.length ? ` title="退出原因：${record.reasons.map(reason => REASONS[reason]).join('、')}"` : '';
         const signed = record.status === 'signed';
-        const viewAction = signed
+        const blocked = !signed && record.excludedFromActivity;
+        const viewAction = signed || blocked
           ? `<button type="button" class="pm-link" data-pm-action="view" data-protocol-id="${record.id}">查看</button>`
           : '';
-        const action = signed
-          ? `<button type="button" class="pm-link" data-pm-action="exit" data-protocol-id="${record.id}">退出协议</button>`
-          : `<button type="button" class="pm-link" data-pm-action="sign" data-protocol-id="${record.id}">签署协议</button>`;
+        let action;
+        if (signed) {
+          action = `<button type="button" class="pm-link" data-pm-action="exit" data-protocol-id="${record.id}">退出协议</button>`;
+        } else if (blocked) {
+          const tooltipId = `pmResignBlocked-${record.id}`;
+          action = `<span class="pm-sign-blocked" role="group" tabindex="0" aria-label="签署协议不可用" aria-describedby="${tooltipId}"><button type="button" class="pm-link" disabled>签署协议</button><span class="pm-sign-tooltip" id="${tooltipId}" role="tooltip">${RESIGN_BLOCKED_COPY}</span></span>`;
+        } else {
+          action = `<button type="button" class="pm-link" data-pm-action="sign" data-protocol-id="${record.id}">签署协议</button>`;
+        }
         return `<tr data-protocol-id="${record.id}"><td>${record.name}</td><td>${record.name}</td><td>${record.createdAt}</td><td>不限制出价</td><td><span class="pm-status pm-status-${record.status}"${reasonTitle}>${STATUS_LABELS[record.status]}</span></td><td>${record.confirmedAt || '-'}</td><td><div class="pm-row-actions">${viewAction}${action}</div></td></tr>`;
       }).join('') : '<tr><td colspan="7" class="pm-empty"><div class="pm-empty-icon" aria-hidden="true">▱</div>暂无数据</td></tr>';
       const start = filtered.length ? (page - 1) * pageSize + 1 : 0;
       const end = Math.min(page * pageSize, filtered.length);
       pagination.innerHTML = `<span class="pm-page-count">第 ${start}-${end} 条/总共 ${filtered.length} 条</span><button type="button" class="pm-page-arrow" aria-label="上一页" data-pm-page="${page - 1}" ${page === 1 ? 'disabled' : ''}>‹</button>${Array.from({ length: pages }, (_, index) => `<button type="button" class="pm-page-button" data-pm-page="${index + 1}"${index + 1 === page ? ' aria-current="page"' : ''}>${index + 1}</button>`).join('')}<button type="button" class="pm-page-arrow" aria-label="下一页" data-pm-page="${page + 1}" ${page === pages ? 'disabled' : ''}>›</button>`;
+      simulateExclusionButton.disabled = !canSimulateExclusion(records.find(record => record.kind === 'direct'));
       root.querySelector('.pm-demo-time').textContent = `当前演示时间：${SCENES[scene].time}`;
       root.querySelectorAll('[data-pm-scene]').forEach(button => button.setAttribute('aria-pressed', String(button.dataset.pmScene === scene)));
     }
@@ -253,12 +281,13 @@
     }
 
     function openViewer(record, mode, target) {
+      if (mode === 'sign' && !canSign(record)) return;
       closeDialogs(false);
       activeRecord = record;
       viewerMode = mode;
       opener = target;
       const kindLabel = record.kind === 'direct' ? '直发履约' : record.kind === 'customer' ? '客服履约' : '售后履约';
-      const signing = mode === 'sign' && isWithinSigningPeriod();
+      const signing = mode === 'sign';
       root.querySelector('.pm-view-meta').innerHTML = `<span>协议类型：${escapeHtml(record.name)}</span>` + (signing
         ? `<span>协议签署时间：${escapeHtml(record.confirmedAt || '')}</span><span>截止签约时间：${SIGNING_DEADLINE}:00</span><span>截止限制出价时间未签约是否限制出价：不限制出价</span>`
         : `<span>状态：${STATUS_LABELS[record.status]}</span><span>协议创建时间：${record.createdAt}</span><span>协议确认时间：${escapeHtml(record.confirmedAt || '-')}</span>`);
@@ -388,7 +417,7 @@
       notify('已退出协议');
     });
     signButton.addEventListener('click', () => {
-      if (!viewDialog.open || !activeRecord || viewerMode !== 'sign' || !isWithinSigningPeriod()) return;
+      if (!viewDialog.open || !activeRecord || viewerMode !== 'sign' || !canSign(activeRecord)) return;
       activeRecord.status = 'signed';
       activeRecord.confirmedAt = SCENES[scene].time;
       activeRecord.reasons = [];
@@ -413,10 +442,18 @@
       render();
       notify(`已切换至${SCENES[scene].label}演示场景`);
     }));
+    simulateExclusionButton.addEventListener('click', () => {
+      const directAgreement = records.find(record => record.kind === 'direct');
+      if (!canSimulateExclusion(directAgreement)) return;
+      directAgreement.excludedFromActivity = true;
+      persist();
+      render();
+      notify('已模拟直发商家因违规被剔除出活动');
+    });
     root.querySelectorAll('[data-pm-reset]').forEach(button => button.addEventListener('click', () => {
       closeDialogs(false);
       const status = button.dataset.pmReset;
-      records = SEED.map(record => ({ ...record, status, reasons: [], exitedAt: '', confirmedAt: status === 'signed' ? record.confirmedAt : '' }));
+      records = SEED.map(record => ({ ...record, status, reasons: [], exitedAt: '', confirmedAt: status === 'signed' ? record.confirmedAt : '', excludedFromActivity: false }));
       filters = { name: '', type: '', status: '', start: '', end: '', limit: '' };
       form.reset();
       page = 1;

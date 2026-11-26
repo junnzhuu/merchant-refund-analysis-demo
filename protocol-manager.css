@@ -444,6 +444,39 @@ body[data-demo-page="protocol-manager"] .rc-portal-floats [data-return-support]:
   text-decoration: underline;
 }
 
+#protocolManagerRoot .pm-sign-blocked {
+  position: relative;
+  display: inline-flex;
+  cursor: not-allowed;
+}
+
+#protocolManagerRoot .pm-sign-blocked .pm-link {
+  color: #a9a9b9;
+  pointer-events: none;
+}
+
+#protocolManagerRoot .pm-sign-tooltip {
+  position: absolute;
+  z-index: 2;
+  top: 50%;
+  right: calc(100% + 8px);
+  visibility: hidden;
+  transform: translateY(-50%);
+  width: max-content;
+  max-width: min(230px, calc(100vw - 40px));
+  padding: 5px 9px;
+  border-radius: 3px;
+  color: white;
+  background: #33333d;
+  font-size: 12px;
+  line-height: 20px;
+  pointer-events: none;
+}
+
+#protocolManagerRoot .pm-sign-blocked:is(:hover, :focus-visible) .pm-sign-tooltip {
+  visibility: visible;
+}
+
 #protocolManagerRoot .pm-pagination {
   display: flex;
   justify-content: flex-end;
